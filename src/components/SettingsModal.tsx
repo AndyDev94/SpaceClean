@@ -53,7 +53,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       setUpdateStatus({
         checked: true,
         isLatest: true,
-        version: 'v1.0.1',
+        version: 'v2.0.0',
         message: 'You are running the latest version of SpaceClean.'
       });
     }, 1200);
@@ -208,7 +208,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       SpaceClean
                     </h3>
                     <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', background: 'rgba(59, 130, 246, 0.15)', color: 'var(--accent-primary)', fontWeight: 600 }}>
-                      v1.0.1 Stable
+                      v2.0.0 Stable
                     </span>
                   </div>
                   <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '4px' }}>
@@ -270,7 +270,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               >
                 <div>
                   <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-main)' }}>
-                    Current Version: <strong style={{ color: 'var(--accent-primary)' }}>v1.0.1</strong>
+                    Current Version: <strong style={{ color: 'var(--accent-primary)' }}>v2.0.0</strong>
                   </div>
                   <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '2px' }}>
                     Automatic update checking via GitHub Releases for {osName}.
@@ -314,7 +314,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
               <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '14px' }}>
                 <h4 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-main)', marginBottom: '8px' }}>
-                  What's New in v1.0.1:
+                  What's New in v2.0.0:
                 </h4>
                 <ul style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.7, paddingLeft: '18px', margin: 0 }}>
                   <li>🧠 <strong>RAM Optimizer & Scan Milestone Navigator</strong>: Scans TBs without lag and allows jumping back to previous scan parts.</li>
@@ -322,6 +322,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <li>🛡️ <strong>"Keep Both (Important)" Protection</strong>: Mark intentional duplicates safe so automated sweeps skip them.</li>
                   <li>📦 <strong>Multi-Select Batch App Uninstaller</strong>: Safe sequential queue uninstallation.</li>
                   <li>📂 <strong>Interactive Starting Screen</strong>: 1-click Browse Folder and Scan Drive actions.</li>
+                  <li>🌐 <strong>Dynamic Cross-Platform Engine</strong>: Auto-adapts for macOS, Linux, and Windows.</li>
                 </ul>
               </div>
             </div>

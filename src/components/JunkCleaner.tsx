@@ -21,6 +21,8 @@ interface JunkCleanerProps {
   isLoading: boolean;
   onRefresh: () => void;
   onCleanJunk: (selectedItems: JunkItem[]) => void;
+  isJunkIgnored?: boolean;
+  onToggleIgnoreAll?: (ignored: boolean) => void;
 }
 
 export const JunkCleaner: React.FC<JunkCleanerProps> = ({
@@ -28,9 +30,11 @@ export const JunkCleaner: React.FC<JunkCleanerProps> = ({
   isLoading,
   onRefresh,
   onCleanJunk,
+  isJunkIgnored = false,
+  onToggleIgnoreAll,
 }) => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
-    new Set(junkItems.filter(j => j.isSafe && (j.totalBytes > 0 || j.fileCount > 0)).map(j => j.id))
+    new Set(isJunkIgnored ? [] : junkItems.filter(j => j.isSafe && (j.totalBytes > 0 || j.fileCount > 0)).map(j => j.id))
   );
   const [isActionLoading, setIsActionLoading] = useState<string | null>(null);
 
@@ -42,11 +46,22 @@ export const JunkCleaner: React.FC<JunkCleanerProps> = ({
   };
 
   const selectAllSafe = () => {
+    if (isJunkIgnored) {
+      onToggleIgnoreAll?.(false);
+    }
     setSelectedIds(new Set(junkItems.filter(j => j.isSafe && (j.totalBytes > 0 || j.fileCount > 0)).map(j => j.id)));
   };
 
   const clearSelection = () => {
     setSelectedIds(new Set());
+  };
+
+  const handleIgnoreAllClick = () => {
+    const next = !isJunkIgnored;
+    if (next) {
+      clearSelection();
+    }
+    onToggleIgnoreAll?.(next);
   };
 
   const selectedItems = junkItems.filter(j => selectedIds.has(j.id));
@@ -97,10 +112,36 @@ export const JunkCleaner: React.FC<JunkCleanerProps> = ({
           </p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          {/* Ignore All Button (Placed right beside Rescan Junk) */}
+          <button
+            className={`btn ${isJunkIgnored ? 'btn-primary' : 'btn-secondary'}`}
+            style={{
+              padding: '6px 12px',
+              fontSize: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: isJunkIgnored ? 'rgba(16, 185, 129, 0.18)' : undefined,
+              borderColor: isJunkIgnored ? '#10b981' : undefined,
+              color: isJunkIgnored ? '#10b981' : undefined,
+              fontWeight: 600
+            }}
+            onClick={handleIgnoreAllClick}
+            title={isJunkIgnored ? 'Junk ignored and notification badge hidden. Click to unignore.' : 'Ignore all junk and hide notification badge'}
+          >
+            <ShieldCheck size={14} style={{ color: isJunkIgnored ? '#10b981' : '#10b981' }} />
+            <span>{isJunkIgnored ? '🛡️ Ignored (Keeping All)' : 'Ignore All'}</span>
+          </button>
+
           <button
             className="btn btn-secondary"
-            onClick={onRefresh}
+            onClick={() => {
+              if (isJunkIgnored) {
+                onToggleIgnoreAll?.(false);
+              }
+              onRefresh();
+            }}
             disabled={isLoading || !!isActionLoading}
             title="Rescan System Junk and Recycle Bin"
           >

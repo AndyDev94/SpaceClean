@@ -32,6 +32,7 @@ interface NavbarProps {
   scannedFilesCount: number;
   junkCount: number;
   duplicatesCount: number;
+  isJunkIgnored?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -47,6 +48,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   scannedFilesCount,
   junkCount,
   duplicatesCount,
+  isJunkIgnored = false,
 }) => {
   return (
     <div className="header-bar">
@@ -151,7 +153,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         >
           <Trash2 size={14} />
           <span>Junk</span>
-          {junkCount > 0 && (
+          {junkCount > 0 && !isJunkIgnored && (
             <span style={{ fontSize: '10px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', padding: '1px 5px', borderRadius: '10px', fontWeight: 600 }}>
               {junkCount}
             </span>

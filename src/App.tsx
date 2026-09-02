@@ -81,6 +81,15 @@ export const App: React.FC = () => {
   // Junk & Duplicates
   const [junkItems, setJunkItems] = useState<JunkItem[]>([]);
   const [isJunkLoading, setIsJunkLoading] = useState(false);
+  const [isJunkIgnored, setIsJunkIgnored] = useState<boolean>(() => {
+    return localStorage.getItem('spaceclean_junk_ignored') === 'true';
+  });
+
+  const handleToggleIgnoreJunk = (ignored: boolean) => {
+    setIsJunkIgnored(ignored);
+    localStorage.setItem('spaceclean_junk_ignored', String(ignored));
+  };
+
   const [duplicates, setDuplicates] = useState<DuplicateGroup[]>([]);
   const [isDuplicatesScanning, setIsDuplicatesScanning] = useState(false);
 
@@ -598,6 +607,7 @@ export const App: React.FC = () => {
         scannedFilesCount={files.length}
         junkCount={junkItems.filter(j => j.totalBytes > 0).length}
         duplicatesCount={duplicates.length}
+        isJunkIgnored={isJunkIgnored}
       />
 
       {/* Main App Workspace */}
@@ -924,6 +934,8 @@ export const App: React.FC = () => {
               isLoading={isJunkLoading}
               onRefresh={loadJunk}
               onCleanJunk={handleCleanJunkItems}
+              isJunkIgnored={isJunkIgnored}
+              onToggleIgnoreAll={handleToggleIgnoreJunk}
             />
           )}
 

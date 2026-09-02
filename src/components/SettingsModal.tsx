@@ -16,7 +16,10 @@ import {
   Film,
   AppWindow,
   Cpu,
-  Heart
+  Heart,
+  ShieldAlert,
+  Search,
+  Globe
 } from 'lucide-react';
 import { StorageLogo } from './StorageLogo';
 import { osName, cmdOrCtrl, trashName, fileManagerName } from '../utils/platform';
@@ -90,14 +93,24 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             if (ghRes.ok) {
               const release = await ghRes.json();
               const latestTag = release.tag_name || 'v2.0.0';
+              
+              // Semver comparison: only flag update if remote version is strictly newer than 2.0.0
+              const parseVer = (v: string) => v.replace(/^v/, '').split('.').map(n => parseInt(n, 10) || 0);
+              const [rMaj = 0, rMin = 0, rPatch = 0] = parseVer(latestTag);
+              const [cMaj = 2, cMin = 0, cPatch = 0] = parseVer('v2.0.0');
+              const isNewer =
+                rMaj > cMaj ||
+                (rMaj === cMaj && rMin > cMin) ||
+                (rMaj === cMaj && rMin === cMin && rPatch > cPatch);
+
               setIsCheckingUpdate(false);
               setUpdateStatus({
-                status: latestTag === 'v2.0.0' ? 'not-available' : 'available',
+                status: isNewer ? 'available' : 'not-available',
                 version: latestTag,
-                message: latestTag === 'v2.0.0'
-                  ? 'You are running the latest version of SpaceClean (v2.0.0).'
-                  : `New release ${latestTag} is available on GitHub Releases!`,
-                releaseUrl: release.html_url
+                message: isNewer
+                  ? `New release ${latestTag} is available on GitHub Releases!`
+                  : 'You are running the latest version of SpaceClean (v2.0.0).',
+                releaseUrl: isNewer ? release.html_url : undefined
               });
               return;
             }
@@ -465,17 +478,65 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               )}
 
               <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '14px' }}>
-                <h4 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-main)', marginBottom: '8px' }}>
-                  What's New in v2.0.0:
-                </h4>
-                <ul style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.7, paddingLeft: '18px', margin: 0 }}>
-                  <li>🧠 <strong>RAM Optimizer & Scan Milestone Navigator</strong>: Scans TBs without lag and allows jumping back to previous scan parts.</li>
-                  <li>🔍 <strong>Duplicate Finder Preview Drawer & Date Filter</strong>: Live side-preview for audio, video, images, text, and date ranges.</li>
-                  <li>🛡️ <strong>"Keep Both (Important)" Protection</strong>: Mark intentional duplicates safe so automated sweeps skip them.</li>
-                  <li>📦 <strong>Multi-Select Batch App Uninstaller</strong>: Safe sequential queue uninstallation.</li>
-                  <li>📂 <strong>Interactive Starting Screen</strong>: 1-click Browse Folder and Scan Drive actions.</li>
-                  <li>🌐 <strong>Dynamic Cross-Platform Engine</strong>: Auto-adapts for macOS, Linux, and Windows.</li>
-                </ul>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                  <h4 style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Sparkles size={14} style={{ color: 'var(--accent-primary)' }} />
+                    <span>What's New in SpaceClean v2.0.0:</span>
+                  </h4>
+                  <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '3px', background: 'rgba(59, 130, 246, 0.15)', color: 'var(--accent-primary)', fontWeight: 600 }}>Major Release</span>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ padding: '8px 10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
+                    <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                      <ShieldAlert size={13} style={{ color: '#ef4444' }} />
+                      <span>Mode 7: Threat Detection & VirusTotal Cloud Intelligence</span>
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                      Heuristic scanner for camouflaged malware (<code>.pdf.exe</code>), rogue temp binaries, ransomware locking patterns, with direct 1-click <strong>VirusTotal (70+ Antivirus engines)</strong> cloud verification.
+                    </div>
+                  </div>
+
+                  <div style={{ padding: '8px 10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
+                    <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                      <Sparkles size={13} style={{ color: 'var(--accent-primary)' }} />
+                      <span>Smart RAM Optimizer & Milestone Part Navigator</span>
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                      Effortlessly scans massive 500GB–2TB+ drives in smooth 5,000-file parts without memory bloat. Switch seamlessly between Part 1, Part 2, and All Scanned parts.
+                    </div>
+                  </div>
+
+                  <div style={{ padding: '8px 10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
+                    <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                      <Search size={13} style={{ color: '#a855f7' }} />
+                      <span>Duplicate Finder Preview Drawer & "Keep Both" Protection</span>
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                      Live side-preview for audio, video, images, and text. Lock intentional copies permanently with <strong>Keep Both (Important)</strong>.
+                    </div>
+                  </div>
+
+                  <div style={{ padding: '8px 10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
+                    <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                      <AppWindow size={13} style={{ color: '#10b981' }} />
+                      <span>Multi-Select Batch App Uninstaller</span>
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                      Check multiple unwanted programs or heavy games (&gt;500MB) to uninstall in a safe sequential execution queue.
+                    </div>
+                  </div>
+
+                  <div style={{ padding: '8px 10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
+                    <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                      <Globe size={13} style={{ color: 'var(--accent-primary)' }} />
+                      <span>Dynamic Cross-Platform Engine & Auto-Updates</span>
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                      Auto-detects macOS, Linux, and Windows for OS terminology (Cmd vs Ctrl, Finder vs File Explorer, Trash vs Recycle Bin) and supports silent background auto-updates.
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}

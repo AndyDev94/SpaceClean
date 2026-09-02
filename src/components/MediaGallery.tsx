@@ -23,7 +23,8 @@ import {
   ImagePlay,
   Clock,
   Camera,
-  Scissors
+  Scissors,
+  Monitor
 } from 'lucide-react';
 import { FileInfo } from '../types';
 import { formatBytes } from '../utils/filterUtils';
@@ -824,7 +825,7 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                           </span>
                         ) : subtype === 'screenshot' ? (
                           <span style={{ padding: '2px 5px', borderRadius: '4px', background: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa', fontSize: '10px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                            <Scissors size={10} /> SNIP
+                            <Monitor size={10} /> SCREEN
                           </span>
                         ) : (
                           <span style={{ padding: '2px 5px', borderRadius: '4px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', fontSize: '10px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
@@ -1037,7 +1038,7 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                             gap: '3px'
                           }}
                         >
-                          <Scissors size={10} /> SNIP
+                          <Monitor size={10} /> SCREEN
                         </span>
                       )}
                       {subtype === 'photo' && (

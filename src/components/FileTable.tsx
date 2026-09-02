@@ -293,25 +293,6 @@ export const FileTable: React.FC<FileTableProps> = ({
                 margin: '0 auto'
               }}
             >
-              {/* Icon with glow badge */}
-              <div
-                style={{
-                  width: '60px',
-                  height: '60px',
-                  borderRadius: '16px',
-                  background: 'rgba(59, 130, 246, 0.15)',
-                  border: '1px solid rgba(59, 130, 246, 0.3)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'var(--accent-primary)',
-                  marginBottom: '16px',
-                  boxShadow: '0 0 25px rgba(59, 130, 246, 0.25)'
-                }}
-              >
-                <FolderOpen size={30} />
-              </div>
-
               <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-main)', marginBottom: '6px' }}>
                 Ready to Analyze & Clean Disk Space
               </h3>

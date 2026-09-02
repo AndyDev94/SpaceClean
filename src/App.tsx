@@ -413,8 +413,13 @@ export const App: React.FC = () => {
       const target = e.target as HTMLElement;
       const isInputFocused = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
 
-      // Escape key: Priority closing of Modal -> Drawer -> Blur Input
+      // Escape key: Priority closing of Settings Modal -> Delete Modal -> Drawer -> Blur Input
       if (e.key === 'Escape') {
+        if (isSettingsModalOpen) {
+          setIsSettingsModalOpen(false);
+          e.preventDefault();
+          return;
+        }
         if (isDeleteModalOpen) {
           setIsDeleteModalOpen(false);
           e.preventDefault();
@@ -435,7 +440,7 @@ export const App: React.FC = () => {
       // If user is currently typing in a text field, avoid intercepting text keys
       if (isInputFocused) return;
 
-      // Tab switcher shortcuts (Alt+1 to Alt+8)
+      // Tab switcher shortcuts (Ctrl+1 to Ctrl+8 or Alt+1 to Alt+8)
       const tabMap: Record<string, AppTab> = {
         '1': 'explorer',
         '2': 'folders',
@@ -447,12 +452,31 @@ export const App: React.FC = () => {
         '8': 'uninstall'
       };
 
-      if ((e.altKey || (!e.ctrlKey && !e.metaKey && !e.shiftKey)) && tabMap[e.key]) {
-        if (e.altKey) {
-          setActiveTab(tabMap[e.key]);
-          e.preventDefault();
-          return;
-        }
+      if ((e.ctrlKey || e.metaKey || e.altKey) && tabMap[e.key]) {
+        setActiveTab(tabMap[e.key]);
+        e.preventDefault();
+        return;
+      }
+
+      // Ctrl+, : Open Settings Modal
+      if ((e.ctrlKey || e.metaKey) && e.key === ',') {
+        e.preventDefault();
+        setIsSettingsModalOpen(true);
+        return;
+      }
+
+      // Ctrl+O : Browse Folder
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'o' || e.key === 'O')) {
+        e.preventDefault();
+        handleBrowseFolder();
+        return;
+      }
+
+      // Ctrl+S / Ctrl+Enter : Start or Rescan Scan
+      if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S' || e.key === 'Enter')) {
+        e.preventDefault();
+        handleStartScan(selectedPath);
+        return;
       }
 
       // Ctrl+A / Cmd+A: Select all

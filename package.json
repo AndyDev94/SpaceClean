@@ -1,8 +1,8 @@
 {
   "name": "spaceclean",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Next-generation, ultra-fast storage cleaner & visual disk analyzer by Aneesh",
-  "author": "Aneesh",
+  "author": "Aneesh <andydev94@users.noreply.github.com>",
   "license": "MIT",
   "main": "dist-electron/main.js",
   "scripts": {
@@ -74,7 +74,8 @@
         "deb"
       ],
       "icon": "build/icon.png",
-      "category": "Utility"
+      "category": "Utility",
+      "maintainer": "Aneesh <andydev94@users.noreply.github.com>"
     },
     "appImage": {
       "artifactName": "${productName}.${ext}"

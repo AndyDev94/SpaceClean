@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Copy,
   Trash2,
@@ -11,7 +11,9 @@ import {
   Search,
   Calendar,
   X,
-  SlidersHorizontal
+  ShieldCheck,
+  Star,
+  Check
 } from 'lucide-react';
 import { DuplicateGroup, FileInfo } from '../types';
 import { formatBytes } from '../utils/filterUtils';
@@ -56,6 +58,37 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
   const [datePreset, setDatePreset] = useState<DateFilterPreset>('all');
   const [customStartDate, setCustomStartDate] = useState<string>('');
   const [customEndDate, setCustomEndDate] = useState<string>('');
+  const [hideIgnored, setHideIgnored] = useState<boolean>(false);
+
+  // Persistent Intentionally Duplicated / Important Group Hashes
+  const [ignoredGroupHashes, setIgnoredGroupHashes] = useState<Set<string>>(() => {
+    try {
+      const saved = localStorage.getItem('spaceclean_ignored_duplicates');
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
+
+  const toggleIgnoreGroup = (group: DuplicateGroup) => {
+    setIgnoredGroupHashes(prev => {
+      const next = new Set(prev);
+      const key = group.hash || group.id;
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+        // Automatically deselect all files in this group so they won't be deleted
+        const updatedSelected = new Set(selectedPaths);
+        group.files.forEach(f => updatedSelected.delete(f.path));
+        onSetSelectedPaths(updatedSelected);
+      }
+      try {
+        localStorage.setItem('spaceclean_ignored_duplicates', JSON.stringify(Array.from(next)));
+      } catch {}
+      return next;
+    });
+  };
 
   const toggleGroupCollapse = (groupId: string) => {
     setCollapsedGroups(prev => {
@@ -66,9 +99,14 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
     });
   };
 
-  // Filter duplicates by search and date range
+  // Filter duplicates by search, date range, and ignored state
   const filteredDuplicates = useMemo(() => {
     let result = duplicates;
+
+    // 0. Hide Ignored Filter
+    if (hideIgnored) {
+      result = result.filter(g => !ignoredGroupHashes.has(g.hash || g.id));
+    }
 
     // 1. Search Query Filter
     if (searchQuery.trim()) {
@@ -134,17 +172,23 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
     }
 
     return result;
-  }, [duplicates, searchQuery, datePreset, customStartDate, customEndDate]);
+  }, [duplicates, searchQuery, datePreset, customStartDate, customEndDate, hideIgnored, ignoredGroupHashes]);
 
-  const totalWastedBytes = filteredDuplicates.reduce((acc, d) => acc + d.wastedBytes, 0);
+  // Total wasted bytes (excluding intentionally kept duplicate groups)
+  const totalWastedBytes = filteredDuplicates
+    .filter(g => !ignoredGroupHashes.has(g.hash || g.id))
+    .reduce((acc, d) => acc + d.wastedBytes, 0);
 
-  // Smart selection helpers (operates on filtered list)
+  const ignoredCount = duplicates.filter(g => ignoredGroupHashes.has(g.hash || g.id)).length;
+
+  // Smart selection helpers (skips intentionally ignored groups)
   const handleKeepNewest = () => {
     const next = new Set<string>();
     filteredDuplicates.forEach(group => {
-      // Sort newest first
+      // If user marked this group as intentionally kept, skip it completely
+      if (ignoredGroupHashes.has(group.hash || group.id)) return;
+
       const sorted = [...group.files].sort((a, b) => (b.modifiedAt || b.createdAt || 0) - (a.modifiedAt || a.createdAt || 0));
-      // Keep first (newest), select remaining
       for (let i = 1; i < sorted.length; i++) {
         next.add(sorted[i].path);
       }
@@ -155,9 +199,10 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
   const handleKeepOldest = () => {
     const next = new Set<string>();
     filteredDuplicates.forEach(group => {
-      // Sort oldest first
+      // If user marked this group as intentionally kept, skip it completely
+      if (ignoredGroupHashes.has(group.hash || group.id)) return;
+
       const sorted = [...group.files].sort((a, b) => (a.modifiedAt || a.createdAt || 0) - (b.modifiedAt || b.createdAt || 0));
-      // Keep first (oldest), select remaining
       for (let i = 1; i < sorted.length; i++) {
         next.add(sorted[i].path);
       }
@@ -171,6 +216,19 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
 
   const handleSelectGroupCopies = (group: DuplicateGroup) => {
     const next = new Set(selectedPaths);
+    // If it was ignored, remove from ignored since user is explicitly marking clones
+    const key = group.hash || group.id;
+    if (ignoredGroupHashes.has(key)) {
+      setIgnoredGroupHashes(prev => {
+        const copy = new Set(prev);
+        copy.delete(key);
+        try {
+          localStorage.setItem('spaceclean_ignored_duplicates', JSON.stringify(Array.from(copy)));
+        } catch {}
+        return copy;
+      });
+    }
+
     // Keep first, select the rest
     for (let i = 1; i < group.files.length; i++) {
       next.add(group.files[i].path);
@@ -192,7 +250,7 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
     }
   };
 
-  const hasActiveFilters = searchQuery.trim() !== '' || datePreset !== 'all';
+  const hasActiveFilters = searchQuery.trim() !== '' || datePreset !== 'all' || hideIgnored;
 
   return (
     <div
@@ -214,6 +272,7 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
           </h2>
           <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
             Found {filteredDuplicates.length.toLocaleString()} duplicate groups consuming {formatBytes(totalWastedBytes)} redundant space
+            {ignoredCount > 0 && ` (${ignoredCount} marked as intentional & preserved)`}
             {hasActiveFilters && ` (filtered from ${duplicates.length} total groups)`}.
           </p>
         </div>
@@ -243,7 +302,7 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
         </div>
       </div>
 
-      {/* Control Bar: Search Box + Date Filter Dropdown + Custom Date Range */}
+      {/* Control Bar: Search Box + Date Filter Dropdown + Custom Date Range + Ignore Toggle */}
       <div
         style={{
           display: 'flex',
@@ -261,7 +320,7 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', flex: 1 }}>
           {/* Filename / Path Search Box */}
-          <div style={{ position: 'relative', flex: '1', minWidth: '180px', maxWidth: '320px' }}>
+          <div style={{ position: 'relative', flex: '1', minWidth: '180px', maxWidth: '300px' }}>
             <Search size={13} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
             <input
               type="text"
@@ -367,6 +426,19 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
             </div>
           )}
 
+          {/* Filter toggle to hide/show intentionally kept files */}
+          {ignoredCount > 0 && (
+            <button
+              className={`btn btn-secondary ${hideIgnored ? 'active' : ''}`}
+              onClick={() => setHideIgnored(!hideIgnored)}
+              style={{ padding: '4px 9px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px' }}
+              title="Toggle view to hide or show intentional duplicate groups"
+            >
+              <Star size={12} style={{ color: '#10b981' }} />
+              <span>{hideIgnored ? 'Show Kept Groups' : `Hide ${ignoredCount} Kept`}</span>
+            </button>
+          )}
+
           {hasActiveFilters && (
             <button
               className="btn btn-secondary"
@@ -375,6 +447,7 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
                 setDatePreset('all');
                 setCustomStartDate('');
                 setCustomEndDate('');
+                setHideIgnored(false);
               }}
               style={{ padding: '3px 8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '3px' }}
               title="Reset search and date filters"
@@ -465,6 +538,7 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
         ) : (
           filteredDuplicates.map((group, gIdx) => {
             const isCollapsed = collapsedGroups.has(group.id);
+            const isIgnored = ignoredGroupHashes.has(group.hash || group.id);
             const groupSelectedCount = group.files.filter(f => selectedPaths.has(f.path)).length;
 
             return (
@@ -472,7 +546,7 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
                 key={group.id}
                 style={{
                   flexShrink: 0,
-                  border: '1px solid var(--border-color)',
+                  border: isIgnored ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid var(--border-color)',
                   borderRadius: 'var(--radius-md)',
                   background: 'var(--bg-panel)',
                   overflow: 'hidden',
@@ -483,17 +557,17 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
                 <div
                   style={{
                     padding: '10px 14px',
-                    background: 'var(--bg-subtle)',
+                    background: isIgnored ? 'rgba(16, 185, 129, 0.08)' : 'var(--bg-subtle)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    borderBottom: isCollapsed ? 'none' : '1px solid var(--border-color)',
+                    borderBottom: isCollapsed ? 'none' : isIgnored ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid var(--border-color)',
                     cursor: 'pointer',
                     userSelect: 'none'
                   }}
                   onClick={() => toggleGroupCollapse(group.id)}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                     <button
                       style={{
                         background: 'transparent',
@@ -512,8 +586,8 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
                       style={{
                         fontSize: '12px',
                         fontWeight: 700,
-                        color: '#a855f7',
-                        background: 'rgba(168, 85, 247, 0.15)',
+                        color: isIgnored ? '#10b981' : '#a855f7',
+                        background: isIgnored ? 'rgba(16, 185, 129, 0.15)' : 'rgba(168, 85, 247, 0.15)',
                         padding: '2px 8px',
                         borderRadius: '4px'
                       }}
@@ -525,28 +599,72 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
                       {group.files.length} Identical Copies ({group.formattedSize} each)
                     </span>
 
-                    {groupSelectedCount > 0 && (
+                    {/* Intentionally Duplicated (Kept) Badge */}
+                    {isIgnored && (
+                      <span
+                        style={{
+                          fontSize: '11px',
+                          color: '#10b981',
+                          fontWeight: 600,
+                          background: 'rgba(16, 185, 129, 0.12)',
+                          padding: '2px 8px',
+                          borderRadius: '4px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
+                        <ShieldCheck size={12} />
+                        <span>Intentionally Duplicated (Protected)</span>
+                      </span>
+                    )}
+
+                    {!isIgnored && groupSelectedCount > 0 && (
                       <span style={{ fontSize: '11px', color: '#ef4444', fontWeight: 600, background: 'rgba(239, 68, 68, 0.12)', padding: '1px 6px', borderRadius: '4px' }}>
                         {groupSelectedCount} marked for deletion
                       </span>
                     )}
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ fontSize: '12px', color: '#ef4444', fontWeight: 700 }}>
-                      Wasted Space: {formatBytes(group.wastedBytes)}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                    <div style={{ fontSize: '12px', color: isIgnored ? 'var(--text-muted)' : '#ef4444', fontWeight: 700, textDecoration: isIgnored ? 'line-through' : undefined }}>
+                      {isIgnored ? `Preserved: ${formatBytes(group.wastedBytes)}` : `Wasted: ${formatBytes(group.wastedBytes)}`}
                     </div>
 
+                    {/* Mark Clones Button */}
                     <button
                       className="btn btn-secondary"
-                      style={{ padding: '2px 8px', fontSize: '11px' }}
+                      style={{ padding: '3px 8px', fontSize: '11px' }}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleSelectGroupCopies(group);
                       }}
-                      title="Keep 1 original and mark all other copies in this group for deletion"
+                      title="Keep 1 original and mark all other duplicate copies in this group for deletion"
                     >
                       Mark Clones
+                    </button>
+
+                    {/* Mark Important / Ignore Button */}
+                    <button
+                      className="btn btn-secondary"
+                      style={{
+                        padding: '3px 8px',
+                        fontSize: '11px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        background: isIgnored ? 'rgba(16, 185, 129, 0.15)' : undefined,
+                        borderColor: isIgnored ? '#10b981' : undefined,
+                        color: isIgnored ? '#10b981' : undefined
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleIgnoreGroup(group);
+                      }}
+                      title={isIgnored ? 'Click to unprotect and allow duplicate cleaning' : 'Mark as intentional duplicate / important (prevents accidental deletion and skips in smart mark)'}
+                    >
+                      <Star size={11} />
+                      <span>{isIgnored ? 'Protected (Important)' : 'Keep Both (Important)'}</span>
                     </button>
                   </div>
                 </div>
@@ -587,9 +705,11 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
                             <input
                               type="checkbox"
                               checked={isSelected}
+                              disabled={isIgnored}
                               onChange={() => onToggleSelect(file.path)}
                               onClick={e => e.stopPropagation()}
-                              style={{ cursor: 'pointer', width: '15px', height: '15px' }}
+                              style={{ cursor: isIgnored ? 'not-allowed' : 'pointer', width: '15px', height: '15px', opacity: isIgnored ? 0.4 : 1 }}
+                              title={isIgnored ? 'This duplicate group is marked as intentional/important and protected from deletion.' : 'Select for deletion'}
                             />
 
                             <div style={{ minWidth: 0 }}>

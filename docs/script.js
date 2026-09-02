@@ -48,23 +48,23 @@ document.addEventListener('DOMContentLoaded', () => {
   const REPO_RELEASES = 'https://github.com/AndyDev94/SpaceClean/releases/latest/download';
 
   if (isMac) {
-    if (heroBtn) heroBtn.href = `${REPO_RELEASES}/SpaceClean-1.0.0.dmg`;
+    if (heroBtn) heroBtn.href = `${REPO_RELEASES}/SpaceClean.dmg`;
     if (osIcon) osIcon.textContent = '🍎';
     if (downloadLabel) downloadLabel.textContent = 'Download for macOS';
-    if (downloadSubtext) downloadSubtext.textContent = 'v1.0.0 • Apple Silicon & Intel (.dmg)';
+    if (downloadSubtext) downloadSubtext.textContent = 'Apple Silicon & Intel (.dmg)';
     if (cardMac) cardMac.classList.add('highlighted');
   } else if (isLinux) {
-    if (heroBtn) heroBtn.href = `${REPO_RELEASES}/SpaceClean-1.0.0.AppImage`;
+    if (heroBtn) heroBtn.href = `${REPO_RELEASES}/SpaceClean.AppImage`;
     if (osIcon) osIcon.textContent = '🐧';
     if (downloadLabel) downloadLabel.textContent = 'Download for Linux';
-    if (downloadSubtext) downloadSubtext.textContent = 'v1.0.0 • Universal (.AppImage)';
+    if (downloadSubtext) downloadSubtext.textContent = 'Universal Standalone (.AppImage)';
     if (cardLinux) cardLinux.classList.add('highlighted');
   } else {
     // Windows
-    if (heroBtn) heroBtn.href = `${REPO_RELEASES}/SpaceClean.Setup.1.0.0.exe`;
+    if (heroBtn) heroBtn.href = `${REPO_RELEASES}/SpaceClean-Setup.exe`;
     if (osIcon) osIcon.textContent = '💻';
     if (downloadLabel) downloadLabel.textContent = 'Download for Windows';
-    if (downloadSubtext) downloadSubtext.textContent = 'v1.0.0 • NSIS Setup (.exe)';
+    if (downloadSubtext) downloadSubtext.textContent = 'NSIS Setup Installer (.exe)';
     if (cardWindows) cardWindows.classList.add('highlighted');
   }
 });

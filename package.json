@@ -31,7 +31,8 @@
         "nsis",
         "portable"
       ],
-      "icon": "build/icon.png"
+      "icon": "build/icon.png",
+      "artifactName": "${productName}-Setup.${ext}"
     },
     "nsis": {
       "oneClick": false,
@@ -40,13 +41,17 @@
       "createStartMenuShortcut": true,
       "shortcutName": "SpaceClean"
     },
+    "portable": {
+      "artifactName": "${productName}.${ext}"
+    },
     "mac": {
       "target": [
         "dmg",
         "zip"
       ],
       "icon": "build/icon.png",
-      "category": "public.app-category.utilities"
+      "category": "public.app-category.utilities",
+      "artifactName": "${productName}.${ext}"
     },
     "dmg": {
       "title": "SpaceClean Installer",
@@ -69,7 +74,8 @@
         "deb"
       ],
       "icon": "build/icon.png",
-      "category": "Utility"
+      "category": "Utility",
+      "artifactName": "${productName}.${ext}"
     }
   },
   "dependencies": {

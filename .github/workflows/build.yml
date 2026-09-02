@@ -21,7 +21,7 @@ jobs:
             platform: win
           - os: macos-latest
             platform: mac
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             platform: linux
 
     steps:
@@ -31,14 +31,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
 
       - name: Install System Dependencies (Linux)
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.platform == 'linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libarchive-tools fakeroot dpkg libfuse2 || sudo apt-get install -y libarchive-tools fakeroot dpkg libfuse2t64 || true
+          sudo apt-get install -y libarchive-tools fakeroot dpkg libfuse2 desktop-file-utils
 
       - name: Install Dependencies
         run: npm install

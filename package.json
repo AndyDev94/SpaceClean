@@ -74,8 +74,13 @@
         "deb"
       ],
       "icon": "build/icon.png",
-      "category": "Utility",
+      "category": "Utility"
+    },
+    "appImage": {
       "artifactName": "${productName}.${ext}"
+    },
+    "deb": {
+      "packageName": "spaceclean"
     }
   },
   "dependencies": {

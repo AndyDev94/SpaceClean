@@ -205,11 +205,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '4px',
+            gap: '6px',
             padding: '8px 16px',
             background: 'var(--bg-panel)',
             borderBottom: '1px solid var(--border-color)',
-            overflowX: 'auto'
+            overflow: 'hidden'
           }}
         >
           <button

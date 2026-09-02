@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, dialog, shell } from 'electron';
 import path from 'path';
 import fs from 'fs';
+import { autoUpdater } from 'electron-updater';
 import {
   getWindowsDrives,
   scanDirectoryWithFolders,
@@ -24,6 +25,60 @@ process.env.VITE_PUBLIC = app.isPackaged
 
 let win: BrowserWindow | null = null;
 let isScanCancelled = false;
+
+// Configure autoUpdater
+autoUpdater.autoDownload = true;
+autoUpdater.autoInstallOnAppQuit = true;
+
+function setupAutoUpdater() {
+  autoUpdater.on('checking-for-update', () => {
+    win?.webContents.send('app:update-status', {
+      status: 'checking',
+      message: 'Checking for updates on GitHub Releases...'
+    });
+  });
+
+  autoUpdater.on('update-available', (info) => {
+    win?.webContents.send('app:update-status', {
+      status: 'available',
+      version: info.version,
+      releaseNotes: info.releaseNotes,
+      message: `SpaceClean v${info.version} is available! Downloading update in background...`
+    });
+  });
+
+  autoUpdater.on('update-not-available', (info) => {
+    win?.webContents.send('app:update-status', {
+      status: 'not-available',
+      version: info?.version || app.getVersion(),
+      message: `You are on the latest version (v${app.getVersion()}).`
+    });
+  });
+
+  autoUpdater.on('error', (err) => {
+    win?.webContents.send('app:update-status', {
+      status: 'error',
+      message: err?.message || 'Could not connect to GitHub Releases.'
+    });
+  });
+
+  autoUpdater.on('download-progress', (progressObj) => {
+    win?.webContents.send('app:update-progress', {
+      percent: Math.round(progressObj.percent),
+      transferred: progressObj.transferred,
+      total: progressObj.total,
+      bytesPerSecond: progressObj.bytesPerSecond
+    });
+  });
+
+  autoUpdater.on('update-downloaded', (info) => {
+    win?.webContents.send('app:update-status', {
+      status: 'downloaded',
+      version: info.version,
+      message: `SpaceClean v${info.version} is ready to install!`
+    });
+  });
+}
 
 function createWindow() {
   win = new BrowserWindow({
@@ -52,6 +107,14 @@ function createWindow() {
 
 app.whenReady().then(() => {
   createWindow();
+  setupAutoUpdater();
+
+  // Automatic silent check on launch in packaged mode
+  if (app.isPackaged) {
+    setTimeout(() => {
+      autoUpdater.checkForUpdatesAndNotify().catch(() => {});
+    }, 4000);
+  }
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
@@ -349,4 +412,32 @@ ipcMain.handle('get-file-data-url', async (_event, filePath: string) => {
   } catch (e) {
     return null;
   }
+});
+
+// Auto-Updater: Manual Trigger Check
+ipcMain.handle('check-for-updates', async () => {
+  if (!app.isPackaged) {
+    return {
+      status: 'dev-mode',
+      version: app.getVersion(),
+      message: 'Running in development environment. Auto-update applies in packaged release builds.'
+    };
+  }
+  try {
+    const result = await autoUpdater.checkForUpdates();
+    return {
+      status: 'checked',
+      version: result?.updateInfo?.version || app.getVersion()
+    };
+  } catch (err: any) {
+    return {
+      status: 'error',
+      message: err?.message || 'Could not check GitHub Releases'
+    };
+  }
+});
+
+// Auto-Updater: Restart and Install Downloaded Update
+ipcMain.handle('quit-and-install', () => {
+  autoUpdater.quitAndInstall();
 });

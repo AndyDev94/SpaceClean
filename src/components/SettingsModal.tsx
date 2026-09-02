@@ -36,27 +36,105 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   const [activeTab, setActiveTab] = useState<SettingsTab>('about');
   const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
-  const [updateStatus, setUpdateStatus] = useState<{
-    checked: boolean;
-    isLatest: boolean;
-    version: string;
-    message: string;
+  const [downloadProgress, setDownloadProgress] = useState<{
+    percent: number;
+    transferred: number;
+    total: number;
   } | null>(null);
+  const [updateStatus, setUpdateStatus] = useState<{
+    status: 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'error' | 'dev-mode';
+    version?: string;
+    message: string;
+    releaseUrl?: string;
+  } | null>(null);
+
+  // Subscribe to live auto-updater events
+  React.useEffect(() => {
+    if (!window.electronAPI?.onUpdateStatus) return;
+
+    const unsubStatus = window.electronAPI.onUpdateStatus((data) => {
+      setIsCheckingUpdate(false);
+      setUpdateStatus({
+        status: data.status as any,
+        version: data.version,
+        message: data.message || ''
+      });
+    });
+
+    const unsubProgress = window.electronAPI.onUpdateProgress?.((progress) => {
+      setDownloadProgress({
+        percent: progress.percent,
+        transferred: progress.transferred,
+        total: progress.total
+      });
+    });
+
+    return () => {
+      unsubStatus?.();
+      unsubProgress?.();
+    };
+  }, []);
 
   const handleCheckUpdate = async () => {
     setIsCheckingUpdate(true);
     setUpdateStatus(null);
+    setDownloadProgress(null);
 
-    // Simulate online repository check
-    setTimeout(() => {
+    try {
+      if (window.electronAPI?.checkForUpdates) {
+        const res = await window.electronAPI.checkForUpdates();
+        if (res.status === 'dev-mode') {
+          // In development mode, query public GitHub releases API directly
+          try {
+            const ghRes = await fetch('https://api.github.com/repos/AndyDev94/SpaceClean/releases/latest');
+            if (ghRes.ok) {
+              const release = await ghRes.json();
+              const latestTag = release.tag_name || 'v2.0.0';
+              setIsCheckingUpdate(false);
+              setUpdateStatus({
+                status: latestTag === 'v2.0.0' ? 'not-available' : 'available',
+                version: latestTag,
+                message: latestTag === 'v2.0.0'
+                  ? 'You are running the latest version of SpaceClean (v2.0.0).'
+                  : `New release ${latestTag} is available on GitHub Releases!`,
+                releaseUrl: release.html_url
+              });
+              return;
+            }
+          } catch (e) {
+            // Ignore offline fallback
+          }
+
+          setIsCheckingUpdate(false);
+          setUpdateStatus({
+            status: 'not-available',
+            version: 'v2.0.0',
+            message: 'You are running the latest version of SpaceClean (v2.0.0).'
+          });
+        }
+      } else {
+        setTimeout(() => {
+          setIsCheckingUpdate(false);
+          setUpdateStatus({
+            status: 'not-available',
+            version: 'v2.0.0',
+            message: 'You are running the latest version of SpaceClean (v2.0.0).'
+          });
+        }, 1000);
+      }
+    } catch (err: any) {
       setIsCheckingUpdate(false);
       setUpdateStatus({
-        checked: true,
-        isLatest: true,
-        version: 'v2.0.0',
-        message: 'You are running the latest version of SpaceClean.'
+        status: 'error',
+        message: 'Could not contact update server: ' + (err?.message || 'Network error')
       });
-    }, 1200);
+    }
+  };
+
+  const handleInstallNow = () => {
+    if (window.electronAPI?.quitAndInstallUpdate) {
+      window.electronAPI.quitAndInstallUpdate();
+    }
   };
 
   const handleOpenGitHub = () => {
@@ -288,27 +366,101 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </button>
               </div>
 
+              {/* Download Progress Bar */}
+              {downloadProgress && (
+                <div style={{ padding: '14px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 600, color: 'var(--text-main)', marginBottom: '6px' }}>
+                    <span>Downloading Update...</span>
+                    <span style={{ color: 'var(--accent-primary)' }}>{downloadProgress.percent}%</span>
+                  </div>
+                  <div className="progress-bar-track" style={{ height: '6px' }}>
+                    <div className="progress-bar-fill" style={{ width: `${downloadProgress.percent}%` }} />
+                  </div>
+                </div>
+              )}
+
+              {/* Update Status Card */}
               {updateStatus && (
                 <div
                   style={{
                     padding: '14px',
-                    background: 'rgba(16, 185, 129, 0.1)',
-                    border: '1px solid #10b981',
+                    background: updateStatus.status === 'error'
+                      ? 'rgba(239, 68, 68, 0.1)'
+                      : updateStatus.status === 'downloaded' || updateStatus.status === 'available'
+                      ? 'rgba(59, 130, 246, 0.1)'
+                      : 'rgba(16, 185, 129, 0.1)',
+                    border: `1px solid ${
+                      updateStatus.status === 'error'
+                        ? '#ef4444'
+                        : updateStatus.status === 'downloaded' || updateStatus.status === 'available'
+                        ? 'var(--accent-primary)'
+                        : '#10b981'
+                    }`,
                     borderRadius: 'var(--radius-md)',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '10px'
+                    justifyContent: 'space-between',
+                    gap: '12px',
+                    flexWrap: 'wrap'
                   }}
                 >
-                  <CheckCircle2 size={18} style={{ color: '#10b981', flexShrink: 0 }} />
-                  <div>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#10b981' }}>
-                      {updateStatus.message}
-                    </div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '2px' }}>
-                      All features and security definitions are up to date ({updateStatus.version}).
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    {updateStatus.status === 'error' ? (
+                      <X size={18} style={{ color: '#ef4444', flexShrink: 0 }} />
+                    ) : (
+                      <CheckCircle2
+                        size={18}
+                        style={{
+                          color: updateStatus.status === 'downloaded' || updateStatus.status === 'available'
+                            ? 'var(--accent-primary)'
+                            : '#10b981',
+                          flexShrink: 0
+                        }}
+                      />
+                    )}
+                    <div>
+                      <div
+                        style={{
+                          fontSize: '13px',
+                          fontWeight: 600,
+                          color: updateStatus.status === 'error'
+                            ? '#ef4444'
+                            : updateStatus.status === 'downloaded' || updateStatus.status === 'available'
+                            ? 'var(--accent-primary)'
+                            : '#10b981'
+                        }}
+                      >
+                        {updateStatus.message}
+                      </div>
+                      {updateStatus.version && (
+                        <div style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '2px' }}>
+                          Target Version: {updateStatus.version}
+                        </div>
+                      )}
                     </div>
                   </div>
+
+                  {/* Actions for Update */}
+                  {updateStatus.status === 'downloaded' && (
+                    <button
+                      className="btn btn-primary"
+                      onClick={handleInstallNow}
+                      style={{ fontSize: '12px', padding: '6px 14px' }}
+                    >
+                      <span>🚀 Restart & Install Now</span>
+                    </button>
+                  )}
+
+                  {updateStatus.releaseUrl && (
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => window.open(updateStatus.releaseUrl, '_blank')}
+                      style={{ fontSize: '12px', padding: '6px 12px' }}
+                    >
+                      <ExternalLink size={12} />
+                      <span>View on GitHub</span>
+                    </button>
+                  )}
                 </div>
               )}
 

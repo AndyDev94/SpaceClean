@@ -19,6 +19,10 @@ export interface IElectronAPI {
   openFile: (path: string) => Promise<void>;
   readTextPreview: (path: string) => Promise<string>;
   getFileDataUrl: (path: string) => Promise<string | null>;
+  checkForUpdates: () => Promise<{ status: string; version?: string; message?: string }>;
+  quitAndInstallUpdate: () => Promise<void>;
+  onUpdateStatus: (callback: (data: { status: string; version?: string; message?: string; releaseNotes?: any }) => void) => () => void;
+  onUpdateProgress: (callback: (data: { percent: number; transferred: number; total: number; bytesPerSecond: number }) => void) => () => void;
   onScanProgress: (callback: (data: ScanProgress) => void) => () => void;
   onScanBatch: (callback: (data: { files: FileInfo[]; folders: FolderInfo[] }) => void) => () => void;
   onScanChunkPaused: (callback: (data: ScanProgress) => void) => () => void;
@@ -43,6 +47,22 @@ const api: IElectronAPI = {
   openFile: (path: string) => ipcRenderer.invoke('open-file', path),
   readTextPreview: (path: string) => ipcRenderer.invoke('read-text-preview', path),
   getFileDataUrl: (path: string) => ipcRenderer.invoke('get-file-data-url', path),
+  checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+  quitAndInstallUpdate: () => ipcRenderer.invoke('quit-and-install'),
+  onUpdateStatus: (callback) => {
+    const subscription = (_event: any, data: any) => callback(data);
+    ipcRenderer.on('app:update-status', subscription);
+    return () => {
+      ipcRenderer.removeListener('app:update-status', subscription);
+    };
+  },
+  onUpdateProgress: (callback) => {
+    const subscription = (_event: any, data: any) => callback(data);
+    ipcRenderer.on('app:update-progress', subscription);
+    return () => {
+      ipcRenderer.removeListener('app:update-progress', subscription);
+    };
+  },
   onScanProgress: (callback) => {
     const subscription = (_event: any, data: any) => callback(data);
     ipcRenderer.on('scan:progress', subscription);

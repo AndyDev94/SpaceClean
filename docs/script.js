@@ -48,13 +48,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const REPO_RELEASES = 'https://github.com/AndyDev94/SpaceClean/releases/latest/download';
 
   if (isMac) {
-    if (heroBtn) heroBtn.href = `${REPO_RELEASES}/SpaceClean.dmg`;
+    if (heroBtn) heroBtn.href = `${REPO_RELEASES}/SpaceClean-1.0.0.dmg`;
     if (osIcon) osIcon.textContent = '🍎';
     if (downloadLabel) downloadLabel.textContent = 'Download for macOS';
     if (downloadSubtext) downloadSubtext.textContent = 'v1.0.0 • Apple Silicon & Intel (.dmg)';
     if (cardMac) cardMac.classList.add('highlighted');
   } else if (isLinux) {
-    if (heroBtn) heroBtn.href = `${REPO_RELEASES}/SpaceClean.AppImage`;
+    if (heroBtn) heroBtn.href = `${REPO_RELEASES}/SpaceClean-1.0.0.AppImage`;
     if (osIcon) osIcon.textContent = '🐧';
     if (downloadLabel) downloadLabel.textContent = 'Download for Linux';
     if (downloadSubtext) downloadSubtext.textContent = 'v1.0.0 • Universal (.AppImage)';

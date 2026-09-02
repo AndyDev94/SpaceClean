@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import {
   Image as ImageIcon,
   Film,
@@ -18,11 +18,15 @@ import {
   Square,
   Sparkles,
   Layers,
-  X
+  X,
+  Zap,
+  ChevronDown,
+  Activity,
+  ImagePlay
 } from 'lucide-react';
 import { FileInfo } from '../types';
 import { formatBytes } from '../utils/filterUtils';
-import { format, subDays, isBefore, getYear } from 'date-fns';
+import { format, subDays, isBefore, isAfter, startOfDay, endOfDay } from 'date-fns';
 
 interface MediaGalleryProps {
   files: FileInfo[];
@@ -33,9 +37,19 @@ interface MediaGalleryProps {
   onOpenDeleteModal: () => void;
 }
 
-type MediaFilterType = 'all' | 'video' | 'image';
+type MediaFilterType = 'all' | 'video' | 'image' | 'gif';
 type GridSize = 'compact' | 'standard' | 'large' | 'list';
-type DateFilterPreset = 'all' | 'today' | '7days' | '30days' | '90days' | '6months' | '1year' | 'older_1year';
+type DateFilterPreset =
+  | 'all'
+  | 'today'
+  | '7days'
+  | '30days'
+  | '90days'
+  | '6months'
+  | '1year'
+  | 'older_1year'
+  | 'custom';
+
 type SortOption =
   | 'size_desc'
   | 'size_asc'
@@ -44,6 +58,8 @@ type SortOption =
   | 'name_asc'
   | 'name_desc'
   | 'type_asc';
+
+const INITIAL_BATCH_SIZE = 120;
 
 export const MediaGallery: React.FC<MediaGalleryProps> = ({
   files,
@@ -57,10 +73,24 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
   const [gridSize, setGridSize] = useState<GridSize>('standard');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [datePreset, setDatePreset] = useState<DateFilterPreset>('all');
+  const [customStartDate, setCustomStartDate] = useState<string>('');
+  const [customEndDate, setCustomEndDate] = useState<string>('');
   const [minSizeBytes, setMinSizeBytes] = useState<number>(0);
   const [selectedExtension, setSelectedExtension] = useState<string>('all');
   const [sortBy, setSortBy] = useState<SortOption>('size_desc');
   const [focusedIndex, setFocusedIndex] = useState<number>(0);
+
+  // Smooth Media Scan state (Progressive chunking for zero lag)
+  const [visibleCount, setVisibleCount] = useState<number>(INITIAL_BATCH_SIZE);
+  const [isSmoothScanMode, setIsSmoothScanMode] = useState<boolean>(true);
+
+  // Helper to determine precise media kind (video, gif, photo)
+  const getMediaSubtype = (file: FileInfo): 'video' | 'gif' | 'photo' => {
+    const ext = (file.extension || '').toLowerCase();
+    if (ext === 'gif') return 'gif';
+    if (file.category === 'video') return 'video';
+    return 'photo';
+  };
 
   // Discover all distinct media extensions in current scan
   const mediaExtensions = useMemo(() => {
@@ -74,15 +104,32 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
     return Array.from(extMap.entries()).sort((a, b) => b[1] - a[1]);
   }, [files]);
 
-  // Filter media files with full date, size, type, extension, and search
-  const filteredMediaFiles = useMemo(() => {
+  // Counts for each subtype
+  const counts = useMemo(() => {
+    let video = 0;
+    let gif = 0;
+    let photo = 0;
+    files.forEach(f => {
+      if (f.category === 'video') video++;
+      else if (f.category === 'image') {
+        if (f.extension.toLowerCase() === 'gif') gif++;
+        else photo++;
+      }
+    });
+    return { all: video + gif + photo, video, gif, photo };
+  }, [files]);
+
+  // Filter media files with full date, custom range, size, type, extension, and search
+  const allFilteredMediaFiles = useMemo(() => {
     const now = new Date();
 
     return files.filter(f => {
-      // 1. Category check
+      // 1. Category and subtype check
       if (f.category !== 'image' && f.category !== 'video') return false;
-      if (mediaType === 'video' && f.category !== 'video') return false;
-      if (mediaType === 'image' && f.category !== 'image') return false;
+      const subtype = getMediaSubtype(f);
+      if (mediaType === 'video' && subtype !== 'video') return false;
+      if (mediaType === 'image' && subtype !== 'photo') return false;
+      if (mediaType === 'gif' && subtype !== 'gif') return false;
 
       // 2. Specific extension filter
       if (selectedExtension !== 'all' && f.extension.toLowerCase() !== selectedExtension.toLowerCase()) {
@@ -98,23 +145,30 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
         if (!f.name.toLowerCase().includes(q) && !f.path.toLowerCase().includes(q)) return false;
       }
 
-      // 5. Date preset filter
-      if (datePreset !== 'all') {
-        const fileDate = new Date(f.modifiedAt || f.createdAt);
-        if (datePreset === 'today') {
-          if (isBefore(fileDate, subDays(now, 1))) return false;
-        } else if (datePreset === '7days') {
-          if (isBefore(fileDate, subDays(now, 7))) return false;
-        } else if (datePreset === '30days') {
-          if (isBefore(fileDate, subDays(now, 30))) return false;
-        } else if (datePreset === '90days') {
-          if (isBefore(fileDate, subDays(now, 90))) return false;
-        } else if (datePreset === '6months') {
-          if (isBefore(fileDate, subDays(now, 180))) return false;
-        } else if (datePreset === '1year') {
-          if (isBefore(fileDate, subDays(now, 365))) return false;
-        } else if (datePreset === 'older_1year') {
-          if (!isBefore(fileDate, subDays(now, 365))) return false;
+      // 5. Date preset & Custom Range filter
+      const fileDate = new Date(f.modifiedAt || f.createdAt);
+      if (datePreset === 'today') {
+        if (isBefore(fileDate, subDays(now, 1))) return false;
+      } else if (datePreset === '7days') {
+        if (isBefore(fileDate, subDays(now, 7))) return false;
+      } else if (datePreset === '30days') {
+        if (isBefore(fileDate, subDays(now, 30))) return false;
+      } else if (datePreset === '90days') {
+        if (isBefore(fileDate, subDays(now, 90))) return false;
+      } else if (datePreset === '6months') {
+        if (isBefore(fileDate, subDays(now, 180))) return false;
+      } else if (datePreset === '1year') {
+        if (isBefore(fileDate, subDays(now, 365))) return false;
+      } else if (datePreset === 'older_1year') {
+        if (!isBefore(fileDate, subDays(now, 365))) return false;
+      } else if (datePreset === 'custom') {
+        if (customStartDate) {
+          const start = startOfDay(new Date(customStartDate));
+          if (isBefore(fileDate, start)) return false;
+        }
+        if (customEndDate) {
+          const end = endOfDay(new Date(customEndDate));
+          if (isAfter(fileDate, end)) return false;
         }
       }
 
@@ -139,37 +193,45 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
           return b.size - a.size;
       }
     });
-  }, [files, mediaType, selectedExtension, minSizeBytes, searchQuery, datePreset, sortBy]);
+  }, [files, mediaType, selectedExtension, minSizeBytes, searchQuery, datePreset, customStartDate, customEndDate, sortBy]);
+
+  // Sliced items for smooth rendering without DOM freeze
+  const displayedMediaFiles = useMemo(() => {
+    if (!isSmoothScanMode || visibleCount >= allFilteredMediaFiles.length) {
+      return allFilteredMediaFiles;
+    }
+    return allFilteredMediaFiles.slice(0, visibleCount);
+  }, [allFilteredMediaFiles, isSmoothScanMode, visibleCount]);
 
   const totalMediaBytes = useMemo(() => {
-    return filteredMediaFiles.reduce((acc, f) => acc + f.size, 0);
-  }, [filteredMediaFiles]);
+    return allFilteredMediaFiles.reduce((acc, f) => acc + f.size, 0);
+  }, [allFilteredMediaFiles]);
 
   const selectedMediaCount = useMemo(() => {
-    return filteredMediaFiles.filter(f => selectedPaths.has(f.path)).length;
-  }, [filteredMediaFiles, selectedPaths]);
+    return allFilteredMediaFiles.filter(f => selectedPaths.has(f.path)).length;
+  }, [allFilteredMediaFiles, selectedPaths]);
 
   const selectedMediaBytes = useMemo(() => {
-    return filteredMediaFiles
+    return allFilteredMediaFiles
       .filter(f => selectedPaths.has(f.path))
       .reduce((acc, f) => acc + f.size, 0);
-  }, [filteredMediaFiles, selectedPaths]);
+  }, [allFilteredMediaFiles, selectedPaths]);
 
   const handleSelectAllFiltered = () => {
     const next = new Set(selectedPaths);
-    filteredMediaFiles.filter(f => !f.isProtected).forEach(f => next.add(f.path));
+    allFilteredMediaFiles.filter(f => !f.isProtected).forEach(f => next.add(f.path));
     onSetSelectedPaths(next);
   };
 
   const handleDeselectFiltered = () => {
     const next = new Set(selectedPaths);
-    filteredMediaFiles.forEach(f => next.delete(f.path));
+    allFilteredMediaFiles.forEach(f => next.delete(f.path));
     onSetSelectedPaths(next);
   };
 
   const handleSelectLargeMedia = (minBytes: number) => {
     const next = new Set(selectedPaths);
-    filteredMediaFiles.filter(f => !f.isProtected && f.size >= minBytes).forEach(f => next.add(f.path));
+    allFilteredMediaFiles.filter(f => !f.isProtected && f.size >= minBytes).forEach(f => next.add(f.path));
     onSetSelectedPaths(next);
   };
 
@@ -178,8 +240,11 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
     setSelectedExtension('all');
     setMinSizeBytes(0);
     setDatePreset('all');
+    setCustomStartDate('');
+    setCustomEndDate('');
     setSearchQuery('');
     setSortBy('size_desc');
+    setVisibleCount(INITIAL_BATCH_SIZE);
   };
 
   const isFilterApplied =
@@ -187,6 +252,8 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
     selectedExtension !== 'all' ||
     minSizeBytes > 0 ||
     datePreset !== 'all' ||
+    customStartDate !== '' ||
+    customEndDate !== '' ||
     searchQuery.trim() !== '';
 
   const getTileWidth = () => {
@@ -202,47 +269,59 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
   };
 
   // Keyboard navigation listener (Arrow keys, Spacebar toggle, Enter preview)
-  React.useEffect(() => {
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT')) {
         return;
       }
-      if (filteredMediaFiles.length === 0) return;
+      if (displayedMediaFiles.length === 0) return;
 
       const cols = gridSize === 'list' ? 1 : gridSize === 'compact' ? 6 : gridSize === 'large' ? 3 : 4;
 
       if (e.key === 'ArrowRight') {
         e.preventDefault();
-        setFocusedIndex(prev => Math.min(filteredMediaFiles.length - 1, prev + 1));
+        setFocusedIndex(prev => {
+          const next = Math.min(displayedMediaFiles.length - 1, prev + 1);
+          if (next >= visibleCount - 10 && visibleCount < allFilteredMediaFiles.length) {
+            setVisibleCount(c => c + INITIAL_BATCH_SIZE);
+          }
+          return next;
+        });
       } else if (e.key === 'ArrowLeft') {
         e.preventDefault();
         setFocusedIndex(prev => Math.max(0, prev - 1));
       } else if (e.key === 'ArrowDown') {
         e.preventDefault();
-        setFocusedIndex(prev => Math.min(filteredMediaFiles.length - 1, prev + (gridSize === 'list' ? 1 : cols)));
+        setFocusedIndex(prev => {
+          const next = Math.min(displayedMediaFiles.length - 1, prev + (gridSize === 'list' ? 1 : cols));
+          if (next >= visibleCount - 10 && visibleCount < allFilteredMediaFiles.length) {
+            setVisibleCount(c => c + INITIAL_BATCH_SIZE);
+          }
+          return next;
+        });
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         setFocusedIndex(prev => Math.max(0, prev - (gridSize === 'list' ? 1 : cols)));
       } else if (e.key === ' ') {
         e.preventDefault();
-        if (filteredMediaFiles[focusedIndex]) {
-          onToggleSelect(filteredMediaFiles[focusedIndex].path);
+        if (displayedMediaFiles[focusedIndex]) {
+          onToggleSelect(displayedMediaFiles[focusedIndex].path);
         }
       } else if (e.key === 'Enter') {
         e.preventDefault();
-        if (filteredMediaFiles[focusedIndex]) {
-          onSelectPreview(filteredMediaFiles[focusedIndex]);
+        if (displayedMediaFiles[focusedIndex]) {
+          onSelectPreview(displayedMediaFiles[focusedIndex]);
         }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [filteredMediaFiles, focusedIndex, gridSize, onToggleSelect, onSelectPreview]);
+  }, [displayedMediaFiles, allFilteredMediaFiles, focusedIndex, gridSize, visibleCount, onToggleSelect, onSelectPreview]);
 
   // Ensure focused item is scrolled into view smoothly
-  React.useEffect(() => {
+  useEffect(() => {
     const activeEl = document.querySelector(`[data-media-index="${focusedIndex}"]`) as HTMLElement;
     if (activeEl) {
       activeEl.scrollIntoView({ block: 'nearest', inline: 'nearest' });
@@ -259,7 +338,7 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
             Media Gallery & Visual Cleaner
           </h2>
           <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
-            {filteredMediaFiles.length} media items ({formatBytes(totalMediaBytes)})
+            {allFilteredMediaFiles.length} media items ({formatBytes(totalMediaBytes)})
             {isFilterApplied ? ' matching active filters.' : ' in scanned folder.'}
           </p>
         </div>
@@ -279,41 +358,107 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
         </div>
       </div>
 
-      {/* Control Bar: Row 1 - Media Type Tabs, Search, Quick Select, Grid Zoom */}
+      {/* Smooth Media Scan Optimizer Banner */}
+      {allFilteredMediaFiles.length > INITIAL_BATCH_SIZE && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '8px 14px',
+            background: 'rgba(59, 130, 246, 0.08)',
+            border: '1px solid rgba(59, 130, 246, 0.25)',
+            borderRadius: 'var(--radius-md)',
+            marginBottom: '12px',
+            fontSize: '12px',
+            gap: '12px',
+            flexWrap: 'wrap'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Sparkles size={15} style={{ color: 'var(--accent-primary)' }} />
+            <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>
+              Smooth Media Scan Optimizer:
+            </span>
+            <span style={{ color: 'var(--text-dim)' }}>
+              Showing Part {Math.ceil(displayedMediaFiles.length / INITIAL_BATCH_SIZE)} ({displayedMediaFiles.length} of {allFilteredMediaFiles.length.toLocaleString()} media loaded without lag)
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {displayedMediaFiles.length < allFilteredMediaFiles.length ? (
+              <>
+                <button
+                  className="btn btn-primary"
+                  style={{ padding: '3px 10px', fontSize: '11px' }}
+                  onClick={() => setVisibleCount(c => Math.min(allFilteredMediaFiles.length, c + INITIAL_BATCH_SIZE))}
+                >
+                  Load Next Part (+{Math.min(INITIAL_BATCH_SIZE, allFilteredMediaFiles.length - displayedMediaFiles.length)})
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  style={{ padding: '3px 10px', fontSize: '11px' }}
+                  onClick={() => {
+                    setIsSmoothScanMode(false);
+                    setVisibleCount(allFilteredMediaFiles.length);
+                  }}
+                >
+                  Show All ({allFilteredMediaFiles.length.toLocaleString()})
+                </button>
+              </>
+            ) : (
+              <span style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px' }}>
+                <CheckCircle size={13} /> All {allFilteredMediaFiles.length.toLocaleString()} media items loaded
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Control Bar: Row 1 - Media Subtype Tabs (Photos, Videos, GIFs), Search, Shortcuts, Grid Mode */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '10px', flexWrap: 'wrap' }}>
-        {/* Media Type Filter Tabs */}
+        {/* Media Subtype Tabs */}
         <div style={{ display: 'flex', alignItems: 'center', background: 'var(--bg-card)', padding: '3px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', gap: '4px' }}>
           <button
             className={`btn btn-secondary ${mediaType === 'all' ? 'active' : ''}`}
-            style={{ padding: '4px 12px', fontSize: '12px', background: mediaType === 'all' ? 'var(--accent-primary)' : 'transparent', color: mediaType === 'all' ? '#fff' : undefined }}
+            style={{ padding: '4px 10px', fontSize: '12px', background: mediaType === 'all' ? 'var(--accent-primary)' : 'transparent', color: mediaType === 'all' ? '#fff' : undefined }}
             onClick={() => setMediaType('all')}
           >
-            All Media ({files.filter(f => f.category === 'image' || f.category === 'video').length})
-          </button>
-          <button
-            className={`btn btn-secondary ${mediaType === 'video' ? 'active' : ''}`}
-            style={{ padding: '4px 12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '5px', background: mediaType === 'video' ? 'var(--accent-primary)' : 'transparent', color: mediaType === 'video' ? '#fff' : undefined }}
-            onClick={() => setMediaType('video')}
-          >
-            <Film size={13} />
-            <span>Videos ({files.filter(f => f.category === 'video').length})</span>
+            All Media ({counts.all})
           </button>
           <button
             className={`btn btn-secondary ${mediaType === 'image' ? 'active' : ''}`}
-            style={{ padding: '4px 12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '5px', background: mediaType === 'image' ? 'var(--accent-primary)' : 'transparent', color: mediaType === 'image' ? '#fff' : undefined }}
+            style={{ padding: '4px 10px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px', background: mediaType === 'image' ? 'var(--accent-primary)' : 'transparent', color: mediaType === 'image' ? '#fff' : undefined }}
             onClick={() => setMediaType('image')}
           >
             <ImageIcon size={13} />
-            <span>Photos ({files.filter(f => f.category === 'image').length})</span>
+            <span>Photos ({counts.photo})</span>
+          </button>
+          <button
+            className={`btn btn-secondary ${mediaType === 'video' ? 'active' : ''}`}
+            style={{ padding: '4px 10px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px', background: mediaType === 'video' ? 'var(--accent-primary)' : 'transparent', color: mediaType === 'video' ? '#fff' : undefined }}
+            onClick={() => setMediaType('video')}
+          >
+            <Film size={13} />
+            <span>Videos ({counts.video})</span>
+          </button>
+          <button
+            className={`btn btn-secondary ${mediaType === 'gif' ? 'active' : ''}`}
+            style={{ padding: '4px 10px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px', background: mediaType === 'gif' ? 'var(--accent-primary)' : 'transparent', color: mediaType === 'gif' ? '#fff' : undefined }}
+            onClick={() => setMediaType('gif')}
+            title="GIF animated images (Frozen preview with badge to avoid memory lag)"
+          >
+            <ImagePlay size={13} />
+            <span>GIFs ({counts.gif})</span>
           </button>
         </div>
 
         {/* Filename / Search Box */}
-        <div style={{ position: 'relative', flex: '1', minWidth: '180px', maxWidth: '300px' }}>
+        <div style={{ position: 'relative', flex: '1', minWidth: '180px', maxWidth: '280px' }}>
           <Search size={13} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
           <input
             type="text"
-            placeholder="Search photos & videos..."
+            placeholder="Search photos, videos, GIFs..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             style={{
@@ -395,7 +540,7 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
         </div>
       </div>
 
-      {/* Control Bar: Row 2 - Date Filter, Minimum Size Filter, Extension Filter, Sort Selector */}
+      {/* Control Bar: Row 2 - Date Preset + Custom Date Range, Minimum Size, Format, Sort */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '14px', flexWrap: 'wrap', padding: '8px 12px', background: 'rgba(15, 23, 42, 0.4)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           {/* Date / Time Filter Dropdown */}
@@ -415,8 +560,29 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
               <option value="6months">Past 6 Months</option>
               <option value="1year">Past 1 Year</option>
               <option value="older_1year">Older than 1 Year (&gt;365d)</option>
+              <option value="custom">Custom Date Range...</option>
             </select>
           </div>
+
+          {/* Custom Date Range Picker */}
+          {datePreset === 'custom' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'var(--bg-card)', padding: '2px 8px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
+              <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>From:</span>
+              <input
+                type="date"
+                value={customStartDate}
+                onChange={e => setCustomStartDate(e.target.value)}
+                style={{ background: 'transparent', border: 'none', color: 'var(--text-main)', fontSize: '11px', outline: 'none' }}
+              />
+              <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>To:</span>
+              <input
+                type="date"
+                value={customEndDate}
+                onChange={e => setCustomEndDate(e.target.value)}
+                style={{ background: 'transparent', border: 'none', color: 'var(--text-main)', fontSize: '11px', outline: 'none' }}
+              />
+            </div>
+          )}
 
           {/* Minimum Size Filter Dropdown */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
@@ -492,7 +658,7 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
 
       {/* Media Display Area (List vs Tiles) */}
       <div style={{ flex: 1, overflowY: 'auto' }}>
-        {filteredMediaFiles.length === 0 ? (
+        {displayedMediaFiles.length === 0 ? (
           <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
             <Film size={44} style={{ margin: '0 auto 12px', opacity: 0.4 }} />
             <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--text-primary)' }}>No media files match your criteria</p>
@@ -518,7 +684,7 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                   <th style={{ width: '38px', padding: '8px 10px', textAlign: 'center' }}>
                     <input
                       type="checkbox"
-                      checked={filteredMediaFiles.length > 0 && filteredMediaFiles.every(f => selectedPaths.has(f.path))}
+                      checked={displayedMediaFiles.length > 0 && displayedMediaFiles.every(f => selectedPaths.has(f.path))}
                       onChange={e => {
                         if (e.target.checked) handleSelectAllFiltered();
                         else handleDeselectFiltered();
@@ -526,7 +692,7 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                       style={{ cursor: 'pointer' }}
                     />
                   </th>
-                  <th style={{ width: '50px', padding: '8px 10px' }}>Type</th>
+                  <th style={{ width: '55px', padding: '8px 10px' }}>Type</th>
                   <th style={{ padding: '8px 10px' }}>File Name</th>
                   <th style={{ padding: '8px 10px' }}>Folder Location</th>
                   <th style={{ width: '110px', padding: '8px 10px', textAlign: 'right' }}>Size</th>
@@ -535,10 +701,10 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                 </tr>
               </thead>
               <tbody>
-                {filteredMediaFiles.map((file, idx) => {
+                {displayedMediaFiles.map((file, idx) => {
                   const isSelected = selectedPaths.has(file.path);
                   const isFocused = focusedIndex === idx;
-                  const isVideo = file.category === 'video';
+                  const subtype = getMediaSubtype(file);
 
                   return (
                     <tr
@@ -572,13 +738,17 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                         />
                       </td>
                       <td style={{ padding: '8px 10px' }}>
-                        {isVideo ? (
+                        {subtype === 'video' ? (
                           <span style={{ padding: '2px 5px', borderRadius: '4px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', fontSize: '10px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                            <Film size={10} /> VID
+                            <Film size={10} /> VIDEO
+                          </span>
+                        ) : subtype === 'gif' ? (
+                          <span style={{ padding: '2px 5px', borderRadius: '4px', background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', fontSize: '10px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                            <ImagePlay size={10} /> GIF
                           </span>
                         ) : (
                           <span style={{ padding: '2px 5px', borderRadius: '4px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', fontSize: '10px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                            <ImageIcon size={10} /> PIC
+                            <ImageIcon size={10} /> PHOTO
                           </span>
                         )}
                       </td>
@@ -624,10 +794,10 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
               paddingBottom: '20px'
             }}
           >
-            {filteredMediaFiles.map((file, idx) => {
+            {displayedMediaFiles.map((file, idx) => {
               const isSelected = selectedPaths.has(file.path);
               const isFocused = focusedIndex === idx;
-              const isVideo = file.category === 'video';
+              const subtype = getMediaSubtype(file);
 
               return (
                 <div
@@ -668,11 +838,11 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                       overflow: 'hidden'
                     }}
                   >
-                    {isVideo ? (
+                    {subtype === 'video' ? (
                       <video
                         src={`file:///${file.path.replace(/\\/g, '/')}`}
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        preload="metadata"
+                        preload="none"
                         muted
                       />
                     ) : (
@@ -703,10 +873,15 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                       <input
                         type="checkbox"
                         checked={isSelected}
-                        onChange={() => onToggleSelect(file.path)}
+                        onChange={() => {
+                          setFocusedIndex(idx);
+                          onToggleSelect(file.path);
+                        }}
                         style={{ width: '16px', height: '16px', cursor: 'pointer' }}
                       />
-                      {isVideo && (
+
+                      {/* Precise Media Type Badges: PHOTO, GIF, VIDEO */}
+                      {subtype === 'video' && (
                         <span
                           style={{
                             fontSize: '10px',
@@ -721,6 +896,40 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                           }}
                         >
                           <Play size={10} fill="#fff" /> VIDEO
+                        </span>
+                      )}
+                      {subtype === 'gif' && (
+                        <span
+                          style={{
+                            fontSize: '10px',
+                            fontWeight: 700,
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            background: 'rgba(245, 158, 11, 0.9)',
+                            color: '#fff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '3px'
+                          }}
+                        >
+                          <ImagePlay size={10} /> GIF
+                        </span>
+                      )}
+                      {subtype === 'photo' && (
+                        <span
+                          style={{
+                            fontSize: '10px',
+                            fontWeight: 700,
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            background: 'rgba(16, 185, 129, 0.85)',
+                            color: '#fff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '3px'
+                          }}
+                        >
+                          <ImageIcon size={10} /> PHOTO
                         </span>
                       )}
                     </div>
@@ -745,6 +954,7 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                       }}
                       onClick={(e) => {
                         e.stopPropagation();
+                        setFocusedIndex(idx);
                         onSelectPreview(file);
                       }}
                       title="Inspect in Live Preview Drawer"

@@ -1,5 +1,33 @@
-// SpaceClean Auto-OS Detection and Release Router
+// SpaceClean Auto-OS Detection, Release Router & Light/Dark Theme Controller
 document.addEventListener('DOMContentLoaded', () => {
+  // 1. Theme Controller
+  const themeToggleBtn = document.getElementById('theme-toggle-btn');
+  const themeIcon = document.getElementById('theme-icon');
+
+  const savedTheme = localStorage.getItem('spaceclean_web_theme') || 
+    (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+
+  function applyTheme(theme) {
+    if (theme === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+      if (themeIcon) themeIcon.textContent = '🌙';
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      if (themeIcon) themeIcon.textContent = '☀️';
+    }
+    localStorage.setItem('spaceclean_web_theme', theme);
+  }
+
+  applyTheme(savedTheme);
+
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      applyTheme(current === 'light' ? 'dark' : 'light');
+    });
+  }
+
+  // 2. OS Auto-Detection & Routing
   const userAgent = window.navigator.userAgent.toLowerCase();
   const platform = window.navigator.platform?.toLowerCase() || '';
 

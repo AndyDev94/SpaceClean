@@ -19,6 +19,90 @@
   --font-mono: 'JetBrains Mono', monospace;
 }
 
+[data-theme="light"] {
+  --bg-dark: #f8fafc;
+  --bg-panel: #ffffff;
+  --bg-card: rgba(255, 255, 255, 0.88);
+  --bg-subtle: rgba(0, 0, 0, 0.04);
+  --border-color: rgba(0, 0, 0, 0.08);
+  --border-glow: rgba(59, 130, 246, 0.4);
+  --text-main: #0f172a;
+  --text-dim: #475569;
+  --text-muted: #64748b;
+}
+
+[data-theme="light"] .navbar {
+  background: rgba(255, 255, 255, 0.88);
+}
+
+[data-theme="light"] .bg-grid {
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+}
+
+[data-theme="light"] .bg-glow {
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, rgba(6, 182, 212, 0.04) 45%, transparent 70%);
+}
+
+[data-theme="light"] .window-header {
+  background: #f1f5f9;
+}
+
+[data-theme="light"] .mock-card {
+  background: #f8fafc;
+}
+
+[data-theme="light"] kbd {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+  color: #1e293b;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .btn-card.secondary {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+[data-theme="light"] .btn-card.secondary:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+[data-theme="light"] .source-box {
+  background: #f1f5f9;
+}
+
+[data-theme="light"] .code-snippet {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+
+[data-theme="light"] .footer {
+  background: #f1f5f9;
+}
+
+.theme-toggle-btn {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 15px;
+  transition: all 0.2s ease;
+  color: var(--text-main);
+}
+
+.theme-toggle-btn:hover {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: var(--accent-primary);
+  transform: scale(1.05);
+}
+
 * {
   margin: 0;
   padding: 0;

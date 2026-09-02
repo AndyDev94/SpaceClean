@@ -14,6 +14,7 @@ import { LargeFilesView } from './components/LargeFilesView';
 import { MediaGallery } from './components/MediaGallery';
 import { AppUninstaller } from './components/AppUninstaller';
 import { DeleteModal } from './components/DeleteModal';
+import { SettingsModal } from './components/SettingsModal';
 
 import { Play, Sparkles, AlertCircle, RefreshCw, Zap, Layers, CheckCircle2, RotateCw } from 'lucide-react';
 import {
@@ -93,8 +94,9 @@ export const App: React.FC = () => {
   const [duplicates, setDuplicates] = useState<DuplicateGroup[]>([]);
   const [isDuplicatesScanning, setIsDuplicatesScanning] = useState(false);
 
-  // Deletion Modal
+  // Deletion Modal & Settings Modal
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
   // Initialize Drives and Junk
   useEffect(() => {
@@ -588,6 +590,7 @@ export const App: React.FC = () => {
         currentPath={selectedPath}
         currentTheme={currentTheme}
         onSelectTheme={handleSelectTheme}
+        onOpenSettings={() => setIsSettingsModalOpen(true)}
       />
 
       {/* Main Navbar */}
@@ -990,6 +993,12 @@ export const App: React.FC = () => {
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirmDelete={handleConfirmDelete}
         onDeleteFinished={handleDeleteFinished}
+      />
+
+      {/* Settings, Updates, Shortcuts & Detailed Guide Modal */}
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
       />
     </div>
   );

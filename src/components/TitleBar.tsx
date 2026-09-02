@@ -1,5 +1,5 @@
 import React from 'react';
-import { Minus, Square, X } from 'lucide-react';
+import { Minus, Square, X, Settings } from 'lucide-react';
 import { StorageLogo } from './StorageLogo';
 import { ThemeSelector } from './ThemeSelector';
 import { ThemePreset } from '../types';
@@ -8,12 +8,14 @@ interface TitleBarProps {
   currentPath: string;
   currentTheme: ThemePreset;
   onSelectTheme: (theme: ThemePreset) => void;
+  onOpenSettings: () => void;
 }
 
 export const TitleBar: React.FC<TitleBarProps> = ({
   currentPath,
   currentTheme,
   onSelectTheme,
+  onOpenSettings,
 }) => {
   const handleControl = (action: 'minimize' | 'maximize' | 'close') => {
     if (window.electronAPI?.windowControl) {
@@ -39,6 +41,15 @@ export const TitleBar: React.FC<TitleBarProps> = ({
       </div>
 
       <div className="titlebar-controls" style={{ gap: '6px' }}>
+        <button
+          className="btn btn-secondary"
+          style={{ padding: '4px 7px', fontSize: '11px', height: '26px' }}
+          onClick={onOpenSettings}
+          title="Settings & Help Guide"
+        >
+          <Settings size={13} />
+        </button>
+
         <ThemeSelector
           currentTheme={currentTheme}
           onSelectTheme={onSelectTheme}

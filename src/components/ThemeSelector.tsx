@@ -121,30 +121,14 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
 
   return (
     <div style={{ position: 'relative' }} ref={dropdownRef}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-        {/* Quick Mode Toggle (Sun/Moon) */}
-        <button
-          className="btn btn-secondary"
-          style={{ padding: '4px 8px', fontSize: '11px', height: '26px' }}
-          onClick={handleQuickToggleMode}
-          title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-        >
-          {isDark ? <Sun size={12} /> : <Moon size={12} />}
-        </button>
-
-        {/* Theme Palette Dropdown Button */}
-        <button
-          className="btn btn-secondary"
-          style={{ padding: '4px 8px', fontSize: '11px', height: '26px' }}
-          onClick={() => setIsOpen(!isOpen)}
-          title="Customize Theme & Palette"
-        >
-          <Palette size={12} />
-          <span style={{ maxWidth: '85px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {activeThemeDef.name}
-          </span>
-        </button>
-      </div>
+      <button
+        className="btn btn-secondary"
+        style={{ padding: '4px 7px', fontSize: '11px', height: '26px' }}
+        onClick={() => setIsOpen(!isOpen)}
+        title={`Customize Theme & Palette (${activeThemeDef.name})`}
+      >
+        <Palette size={13} />
+      </button>
 
       {/* Popover Dropdown */}
       {isOpen && (

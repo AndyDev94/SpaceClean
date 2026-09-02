@@ -21,7 +21,7 @@
 
 ## 📖 Overview
 
-**SpaceClean** is a high-performance, modern desktop application designed to solve disk storage exhaustion on **Windows, macOS, and Linux**. Unlike legacy disk cleaners that freeze when reading massive directories or present walls of unorganized filenames, SpaceClean introduces a **Smart Adaptive Memory Guard**, **Chronological Time Waves**, and a **Live Hardware-Accelerated Media Inspector**.
+**SpaceClean** is a high-performance, modern desktop application designed to solve disk storage exhaustion on **Windows, macOS, and Linux**. Unlike legacy disk cleaners that freeze when reading massive directories or present walls of unorganized filenames, SpaceClean introduces a **Smart RAM Optimizer**, **Chronological Time Waves**, and a **Live Hardware-Accelerated Media Inspector**.
 
 Scan any folder or entire hard drive (from **50 GB to 2 TB+**) smoothly without RAM bloat, identify forgotten storage hogs across past years, and safely reclaim gigabytes with 1-click Recycle Bin/Trash protection.
 
@@ -29,7 +29,7 @@ Scan any folder or entire hard drive (from **50 GB to 2 TB+**) smoothly without 
 
 ## ✨ Key Features
 
-### 🧠 1. Smart Memory Guard (Part-by-Part Scanning)
+### 🧠 1. Smart RAM Optimizer (Part-by-Part Scanning)
 - **Automatic Load Detection**: When scanning large locations (50GB–500GB+ / 20k+ files), the scanner keeps memory and system strain near zero.
 - **Smooth Part-by-Part Pausing**: Automatically pauses after safe intervals (~20,000 files or ~25 GB) so you can review and clean what was scanned first without lag before continuing.
 - **Queue-Based Scanner**: Pauses and resumes seamlessly from directory queues without re-scanning.

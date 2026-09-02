@@ -647,7 +647,7 @@ export const App: React.FC = () => {
                       Part {chunkInfo.chunkNumber} Ready to Clean ({chunkInfo.formattedBytes} • {chunkInfo.scannedFiles.toLocaleString()} files)
                     </span>
                     <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '3px', background: 'var(--bg-subtle)', color: 'var(--accent-primary)', fontWeight: 600 }}>
-                      Memory Guard Active • {chunkInfo.remainingQueueCount} subfolders queued
+                      RAM Optimizer Active • {chunkInfo.remainingQueueCount} subfolders queued
                     </span>
                   </div>
                   <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '2px' }}>

@@ -487,6 +487,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {/* Mode 7: Threat Detection */}
                   <div style={{ padding: '8px 10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
                     <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
                       <ShieldAlert size={13} style={{ color: '#ef4444' }} />
@@ -497,9 +498,32 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </div>
                   </div>
 
+                  {/* Mode 8: Media Gallery */}
                   <div style={{ padding: '8px 10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
                     <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
-                      <Sparkles size={13} style={{ color: 'var(--accent-primary)' }} />
+                      <Film size={13} style={{ color: '#10b981' }} />
+                      <span>Mode 8: Media Gallery & Hardware-Accelerated Visual Grid</span>
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                      Interactive visual manager for photos, screenshots, and videos with a responsive zoom grid slider, inline video playback with timeline scrubbing, and 1-click multi-select cleanup.
+                    </div>
+                  </div>
+
+                  {/* Mode 9: Apps Uninstaller */}
+                  <div style={{ padding: '8px 10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
+                    <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                      <AppWindow size={13} style={{ color: 'var(--accent-primary)' }} />
+                      <span>Mode 9: Multi-Select Batch Applications Uninstaller</span>
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                      Detects installed software, publishers, and storage footprint. Select multiple unwanted programs or heavy games (&gt;500MB) to uninstall sequentially without installer conflicts.
+                    </div>
+                  </div>
+
+                  {/* Smart RAM Optimizer */}
+                  <div style={{ padding: '8px 10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
+                    <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                      <Sparkles size={13} style={{ color: '#f59e0b' }} />
                       <span>Smart RAM Optimizer & Milestone Part Navigator</span>
                     </div>
                     <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.4 }}>
@@ -507,6 +531,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </div>
                   </div>
 
+                  {/* Duplicate Finder */}
                   <div style={{ padding: '8px 10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
                     <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
                       <Search size={13} style={{ color: '#a855f7' }} />
@@ -517,16 +542,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </div>
                   </div>
 
-                  <div style={{ padding: '8px 10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
-                    <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
-                      <AppWindow size={13} style={{ color: '#10b981' }} />
-                      <span>Multi-Select Batch App Uninstaller</span>
-                    </div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.4 }}>
-                      Check multiple unwanted programs or heavy games (&gt;500MB) to uninstall in a safe sequential execution queue.
-                    </div>
-                  </div>
-
+                  {/* Cross-Platform & Auto-Updates */}
                   <div style={{ padding: '8px 10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
                     <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
                       <Globe size={13} style={{ color: 'var(--accent-primary)' }} />

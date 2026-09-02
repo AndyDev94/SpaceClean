@@ -158,7 +158,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           onClick={() => onTabChange('large_files')}
         >
           <BarChart3 size={14} />
-          <span>Space Hogs</span>
+          <span>Largest Files</span>
         </button>
 
         <button

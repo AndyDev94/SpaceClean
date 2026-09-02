@@ -230,12 +230,12 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#10b981', fontWeight: 600, fontSize: '13px' }}>
                         <Recycle size={16} />
-                        <span>Move to Recycle Bin</span>
+                        <span>Move to Recycle Bin (Recommended)</span>
                       </div>
                       {toRecycleBin && <Check size={15} style={{ color: '#10b981' }} />}
                     </div>
                     <p style={{ fontSize: '11px', color: 'var(--text-dim)', lineHeight: '1.4' }}>
-                      <strong>Safe & Recommended.</strong> Files can be restored from the Recycle Bin if needed.
+                      <strong>Safe & recoverable.</strong> Files are sent to your OS Recycle Bin and can be restored if needed.
                     </p>
                   </div>
 
@@ -252,7 +252,7 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({
                       {!toRecycleBin && <Check size={15} style={{ color: '#ef4444' }} />}
                     </div>
                     <p style={{ fontSize: '11px', color: 'var(--text-dim)', lineHeight: '1.4' }}>
-                      <strong>Immediate space reclaim.</strong> Bypasses Recycle Bin. Files cannot be recovered!
+                      <strong>Instant space recovery.</strong> Bypasses the Recycle Bin. Files cannot be restored!
                     </p>
                   </div>
                 </div>
@@ -261,7 +261,7 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({
               {!toRecycleBin && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: 'var(--radius-sm)', fontSize: '12px', color: '#f87171' }}>
                   <AlertTriangle size={16} style={{ flexShrink: 0 }} />
-                  <span>Caution: Permanent deletion cannot be undone.</span>
+                  <span>Caution: Permanently deleted files cannot be recovered.</span>
                 </div>
               )}
 

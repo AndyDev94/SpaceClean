@@ -296,7 +296,7 @@ export const AppUninstaller: React.FC = () => {
                     {app.formattedSize || '—'}
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                    disk footprint
+                    App Size
                   </div>
                 </div>
 
@@ -306,7 +306,7 @@ export const AppUninstaller: React.FC = () => {
                     <button
                       className="btn btn-secondary"
                       style={{ padding: '6px 10px', fontSize: '12px' }}
-                      title="Open App Directory in File Explorer"
+                      title="Open App Folder in File Explorer"
                       onClick={() => handleOpenFolder(app.installLocation)}
                     >
                       <FolderOpen size={14} />
@@ -325,8 +325,9 @@ export const AppUninstaller: React.FC = () => {
                         alignItems: 'center',
                         gap: '4px'
                       }}
+                      title="System App (Required by Windows)"
                     >
-                      <Shield size={12} /> System
+                      <Shield size={12} /> System App
                     </span>
                   ) : (
                     <button
@@ -334,10 +335,10 @@ export const AppUninstaller: React.FC = () => {
                       style={{ padding: '6px 12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}
                       onClick={() => handleUninstall(app)}
                       disabled={uninstallingId === app.id}
-                      title="Launch native uninstaller"
+                      title="Open Uninstaller"
                     >
                       <Trash2 size={13} />
-                      <span>{uninstallingId === app.id ? 'Launching...' : 'Uninstall'}</span>
+                      <span>{uninstallingId === app.id ? 'Opening...' : 'Uninstall'}</span>
                     </button>
                   )}
                 </div>

@@ -330,9 +330,11 @@ export const FileFilterBar: React.FC<FileFilterBarProps> = ({
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <SlidersHorizontal size={13} style={{ color: 'var(--text-dim)' }} />
+          <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Minimum Size:</span>
           <select
             value={filter.minSizeBytes}
             onChange={e => handleSizeFilter(Number(e.target.value))}
+            title="Filter by Minimum File Size"
           >
             <option value={0}>Any Size</option>
             <option value={10 * 1024 * 1024}>&gt; 10 MB</option>

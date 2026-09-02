@@ -1005,8 +1005,8 @@ export async function scanSystemJunk(): Promise<JunkItem[]> {
       },
       {
         id: 'mac_user_logs',
-        name: 'User Crash & Diagnostic Logs (~/Library/Logs)',
-        description: 'Application crash logs and diagnostic telemetry files',
+        name: 'App Error & Diagnostic Logs (~/Library/Logs)',
+        description: 'Application error logs and diagnostic reports',
         path: path.join(homeDir, 'Library', 'Logs'),
         category: 'logs',
         isSafe: true
@@ -1014,7 +1014,7 @@ export async function scanSystemJunk(): Promise<JunkItem[]> {
       {
         id: 'mac_system_temp',
         name: 'macOS Temporary Items (/tmp)',
-        description: 'Temporary files and socket buffers created by macOS services',
+        description: 'Temporary files left behind by running apps and system processes',
         path: '/tmp',
         category: 'system_temp',
         isSafe: true
@@ -1022,7 +1022,7 @@ export async function scanSystemJunk(): Promise<JunkItem[]> {
       {
         id: 'mac_xcode_data',
         name: 'Xcode DerivedData & Simulator Cache',
-        description: 'Old build artifacts, symbol tables, and index data from Apple Developer tools',
+        description: 'Old build files and developer cache from Apple Developer tools',
         path: path.join(homeDir, 'Library', 'Developer', 'Xcode', 'DerivedData'),
         category: 'cache',
         isSafe: true

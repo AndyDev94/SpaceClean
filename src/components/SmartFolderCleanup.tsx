@@ -220,27 +220,27 @@ export const SmartFolderCleanup: React.FC<SmartFolderCleanupProps> = ({
     return [
       {
         id: 'stage_quick_wins',
-        title: 'Stage 1: Safe Quick Wins & Stale Logs',
-        subtitle: 'Temporary installer leftovers, crash dumps, and obsolete cache files',
+        title: 'Stage 1: Safe to Delete (Cache & Temp Files)',
+        subtitle: 'Temporary installer leftovers, crash logs, and obsolete cache files',
         icon: <Zap size={16} className="text-amber-400" />,
         safetyLevel: 'safe',
-        safetyLabel: '100% Safe to Clean',
+        safetyLabel: '100% Safe to Delete',
         files: stage1Files,
         totalBytes: stage1Bytes,
       },
       {
         id: 'stage_space_hogs',
-        title: 'Stage 2: Massive Space Hogs (>200 MB)',
+        title: 'Stage 2: Very Large Files (over 200 MB)',
         subtitle: 'Large video captures, disk images (.iso), large installers, or VM containers',
         icon: <Archive size={16} className="text-red-400" />,
         safetyLevel: 'review',
-        safetyLabel: 'Review Before Cleaning',
+        safetyLabel: 'Review Before Deleting',
         files: stage2Files,
         totalBytes: stage2Bytes,
       },
       {
         id: 'stage_stale_files',
-        title: 'Stage 3: Stale & Inactive Files (>6 Months)',
+        title: 'Stage 3: Forgotten Files (Unopened in 6+ Months)',
         subtitle: 'Files untouched for over 180 days that occupy valuable disk storage',
         icon: <Clock size={16} className="text-blue-400" />,
         safetyLevel: 'recommended',
@@ -250,11 +250,11 @@ export const SmartFolderCleanup: React.FC<SmartFolderCleanupProps> = ({
       },
       {
         id: 'stage_duplicates',
-        title: 'Stage 4: Redundant Duplicate Copies',
-        subtitle: 'Identical file duplicates taking extra storage space',
-        icon: <Layers size={16} className="text-purple-400" />,
+        title: 'Stage 4: Exact Duplicate Copies',
+        subtitle: 'Verified redundant copies taking up unnecessary storage space',
+        icon: <Shield size={16} className="text-purple-400" />,
         safetyLevel: 'safe',
-        safetyLabel: 'Keep 1 Original, Delete Duplicates',
+        safetyLabel: 'Redundant Copies',
         files: duplicateFiles,
         totalBytes: stage4Bytes,
       },
@@ -403,12 +403,12 @@ export const SmartFolderCleanup: React.FC<SmartFolderCleanupProps> = ({
                 </span>
                 {chunkInfo && chunkInfo.isChunkPaused && (
                   <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', background: 'rgba(59, 130, 246, 0.15)', color: 'var(--accent-primary)', fontWeight: 600, border: '1px solid var(--accent-primary)' }}>
-                    🧠 Wave {chunkInfo.chunkNumber} Ready
+                    Part {chunkInfo.chunkNumber} Ready
                   </span>
                 )}
               </div>
               <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '4px' }}>
-                Breaks down any size directory into chronological year slices. Click column headers (Size, Name, Type, Date) inside any wave to sort files instantly.
+                Organizes any folder into chronological years and age groups. Click column headers (Size, Name, Type, Date) to sort files inside any year.
               </p>
             </div>
           </div>
@@ -423,13 +423,13 @@ export const SmartFolderCleanup: React.FC<SmartFolderCleanupProps> = ({
                 title="Review files partitioned by Year & Age (Oldest to Newest)"
               >
                 <Calendar size={13} />
-                <span>Time Waves (Years)</span>
+                <span>Chronological Year & Age</span>
               </button>
               <button
                 className={`tab-btn ${optimizerMode === 'safety_stages' ? 'active' : ''}`}
                 style={{ padding: '4px 12px', fontSize: '12px' }}
                 onClick={() => setOptimizerMode('safety_stages')}
-                title="Review by Safety Stage (Quick Wins, Space Hogs, Inactive)"
+                title="Review by Safety Category (Safe to Delete, Large Files, Forgotten)"
               >
                 <Layers size={13} />
                 <span>Safety Categories</span>
@@ -468,12 +468,12 @@ export const SmartFolderCleanup: React.FC<SmartFolderCleanupProps> = ({
           {optimizerMode === 'chronological' ? (
             <>
               <Calendar size={14} style={{ color: 'var(--accent-primary)' }} />
-              <span>Chronological Time Slices ({timeWaves.length} Waves)</span>
+              <span>Year & Age Groups ({timeWaves.length} Years)</span>
             </>
           ) : (
             <>
               <Layers size={14} style={{ color: 'var(--accent-primary)' }} />
-              <span>Categorized Safety Waves</span>
+              <span>Categorized Safety Groups</span>
             </>
           )}
         </div>
@@ -502,15 +502,15 @@ export const SmartFolderCleanup: React.FC<SmartFolderCleanupProps> = ({
             <select
               value={timeSortOrder}
               onChange={e => setTimeSortOrder(e.target.value as TimeSortOrder)}
-              style={{ padding: '3px 8px', fontSize: '11px', height: '28px', maxWidth: '240px' }}
+              style={{ padding: '3px 8px', fontSize: '11px', height: '28px', maxWidth: '250px' }}
               title="Change chronological review strategy"
             >
               <option value="oldest_first">⏳ Oldest Years First (Old ➔ New)</option>
-              <option value="largest_oldest">🎯 Largest + Oldest (Top Recovery)</option>
-              <option value="largest_first">📦 Largest Slices First (Heaviest GB)</option>
+              <option value="largest_oldest">🎯 Largest & Oldest (Top Space Recovery)</option>
+              <option value="largest_first">📦 Biggest Years First (Largest GB)</option>
               <option value="newest_first">⚡ Newest Years First (New ➔ Old)</option>
               <option value="most_files">📄 Most Files First (Clutter Density)</option>
-              <option value="smallest_first">🪶 Smallest Slices First (Quick Wins)</option>
+              <option value="smallest_first">🪶 Lightest Years First (Smallest GB)</option>
             </select>
           )}
 

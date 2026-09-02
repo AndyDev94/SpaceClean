@@ -57,10 +57,10 @@ export const LargeFilesView: React.FC<LargeFilesViewProps> = ({
         <div>
           <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Flame size={20} style={{ color: 'var(--accent-coral)' }} />
-            Space Hogs (Top 100 Largest Files)
+            Largest Files (Top 100)
           </h2>
           <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '2px' }}>
-            Directly pinpoint and remove giant files consuming the most disk space. Click Inspect to preview.
+            Pinpoint and delete giant files taking up the most disk space. Click to preview.
           </p>
         </div>
 

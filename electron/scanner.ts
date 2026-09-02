@@ -469,7 +469,8 @@ async function executeScanSession(
             modifiedAt: stats.mtimeMs,
             accessedAt: stats.atimeMs,
             category: getFileCategory(ext),
-            isProtected
+            isProtected,
+            scanPart: session.chunkNumber
           };
 
           session.allFiles.push(fileInfo);

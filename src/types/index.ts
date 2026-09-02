@@ -21,6 +21,7 @@ export interface FileInfo {
   duplicateGroupId?: string;
   isDuplicate?: boolean;
   isProtected?: boolean; // Windows OS Protected file safeguard
+  scanPart?: number; // RAM Optimizer Chunk/Wave Part Number (Part 1, Part 2, etc.)
 }
 
 export interface FolderInfo {

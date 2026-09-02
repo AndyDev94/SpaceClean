@@ -372,11 +372,29 @@ export const App: React.FC = () => {
     }
   }, [activeTab, files.length]);
 
+  // RAM Optimizer Multi-Part Tracking & Filtering
+  const [selectedPartFilter, setSelectedPartFilter] = useState<number | 'all'>('all');
+
+  const availableParts = useMemo(() => {
+    const partsSet = new Set<number>();
+    files.forEach(f => {
+      if (f.scanPart) partsSet.add(f.scanPart);
+      else partsSet.add(1);
+    });
+    return Array.from(partsSet).sort((a, b) => a - b);
+  }, [files]);
+
+  // Base files for active part view
+  const activeDisplayFiles = useMemo(() => {
+    if (selectedPartFilter === 'all') return files;
+    return files.filter(f => (f.scanPart || 1) === selectedPartFilter);
+  }, [files, selectedPartFilter]);
+
   // Computed Filtered & Sorted Files
   const filteredFiles = useMemo(() => {
-    const filtered = filterFiles(files, filter);
+    const filtered = filterFiles(activeDisplayFiles, filter);
     return sortFiles(filtered, filter.sortBy, filter.sortOrder);
-  }, [files, filter]);
+  }, [activeDisplayFiles, filter]);
 
   // Global Keyboard Controls (Arrows, Spacebar, Enter, Delete, Esc, Ctrl+A/D/F, 1-8 Tabs)
   useEffect(() => {
@@ -656,7 +674,39 @@ export const App: React.FC = () => {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                {/* Part Switcher Dropdown inside Milestone Banner */}
+                {availableParts.length > 1 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>Viewing:</span>
+                    <select
+                      value={selectedPartFilter}
+                      onChange={e => setSelectedPartFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))}
+                      style={{
+                        padding: '4px 8px',
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        background: 'var(--bg-panel)',
+                        border: '1px solid var(--accent-primary)',
+                        borderRadius: 'var(--radius-sm)',
+                        color: 'var(--text-main)',
+                        cursor: 'pointer'
+                      }}
+                      title="Cross-check files in Part 1 vs Part 2 vs All Scanned"
+                    >
+                      <option value="all">🌐 All Scanned Parts (1–{availableParts.length}) ({files.length.toLocaleString()} files)</option>
+                      {availableParts.map(p => {
+                        const count = files.filter(f => (f.scanPart || 1) === p).length;
+                        return (
+                          <option key={p} value={p}>
+                            📦 Part {p} Only ({count.toLocaleString()} files)
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                )}
+
                 {activeTab !== 'smart_clean' && (
                   <button
                     className="btn btn-secondary"
@@ -700,6 +750,9 @@ export const App: React.FC = () => {
                 filter={filter}
                 onFilterChange={setFilter}
                 onResetFilter={() => setFilter(INITIAL_FILTER)}
+                selectedPartFilter={selectedPartFilter}
+                onSelectPartFilter={setSelectedPartFilter}
+                availableParts={availableParts}
               />
 
               <FileTable
@@ -732,7 +785,7 @@ export const App: React.FC = () => {
           {/* Tab 3: Media Gallery & Visual Photo/Video Manager */}
           {activeTab === 'media' && (
             <MediaGallery
-              files={files}
+              files={activeDisplayFiles}
               selectedPaths={selectedPaths}
               onToggleSelect={handleToggleSelect}
               onSetSelectedPaths={setSelectedPaths}
@@ -744,7 +797,7 @@ export const App: React.FC = () => {
           {/* Tab 4: Smart Part-by-Part Folder Optimizer */}
           {activeTab === 'smart_clean' && (
             <SmartFolderCleanup
-              files={files}
+              files={activeDisplayFiles}
               folders={folders}
               duplicates={duplicates}
               currentPath={selectedPath}

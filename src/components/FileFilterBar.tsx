@@ -24,6 +24,9 @@ interface FileFilterBarProps {
   filter: FilterState;
   onFilterChange: (newFilter: FilterState) => void;
   onResetFilter: () => void;
+  selectedPartFilter?: number | 'all';
+  onSelectPartFilter?: (part: number | 'all') => void;
+  availableParts?: number[];
 }
 
 const CATEGORY_ITEMS: Array<{ id: FileCategory; label: string; icon: any }> = [
@@ -41,6 +44,9 @@ export const FileFilterBar: React.FC<FileFilterBarProps> = ({
   filter,
   onFilterChange,
   onResetFilter,
+  selectedPartFilter = 'all',
+  onSelectPartFilter,
+  availableParts = [],
 }) => {
   const [customExtInput, setCustomExtInput] = useState('');
   const [isExtDropdownOpen, setIsExtDropdownOpen] = useState(false);
@@ -327,6 +333,34 @@ export const FileFilterBar: React.FC<FileFilterBarProps> = ({
             </div>
           )}
         </div>
+
+        {/* Part Selector Dropdown (Shown when more than 1 part has been scanned) */}
+        {availableParts.length > 1 && onSelectPartFilter && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Layers size={13} style={{ color: 'var(--accent-primary)' }} />
+            <span style={{ fontSize: '11px', color: 'var(--accent-primary)', fontWeight: 600 }}>Part:</span>
+            <select
+              value={selectedPartFilter}
+              onChange={e => onSelectPartFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))}
+              style={{
+                border: selectedPartFilter !== 'all' ? '1px solid var(--accent-primary)' : undefined,
+                background: selectedPartFilter !== 'all' ? 'rgba(59, 130, 246, 0.1)' : undefined,
+                fontWeight: selectedPartFilter !== 'all' ? 700 : 500
+              }}
+              title="Navigate and isolate specific scan parts"
+            >
+              <option value="all">🌐 All Scanned Parts (1–{availableParts.length})</option>
+              {availableParts.map(p => {
+                const count = files.filter(f => (f.scanPart || 1) === p).length;
+                return (
+                  <option key={p} value={p}>
+                    📦 Part {p} Only ({count.toLocaleString()} files)
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+        )}
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <SlidersHorizontal size={13} style={{ color: 'var(--text-dim)' }} />

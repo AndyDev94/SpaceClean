@@ -38,7 +38,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libarchive-tools libfuse2
+          sudo apt-get install -y libarchive-tools fakeroot dpkg libfuse2 || sudo apt-get install -y libarchive-tools fakeroot dpkg libfuse2t64 || true
 
       - name: Install Dependencies
         run: npm install

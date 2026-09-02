@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Copy,
   Trash2,
@@ -7,11 +7,26 @@ import {
   CheckCircle,
   ChevronDown,
   ChevronRight,
-  Eye
+  Eye,
+  Search,
+  Calendar,
+  X,
+  SlidersHorizontal
 } from 'lucide-react';
 import { DuplicateGroup, FileInfo } from '../types';
 import { formatBytes } from '../utils/filterUtils';
-import { format } from 'date-fns';
+import { format, subDays, isBefore, isAfter, startOfDay, endOfDay } from 'date-fns';
+
+type DateFilterPreset =
+  | 'all'
+  | 'today'
+  | '7days'
+  | '30days'
+  | '90days'
+  | '6months'
+  | '1year'
+  | 'older_1year'
+  | 'custom';
 
 interface DuplicateFinderProps {
   duplicates: DuplicateGroup[];
@@ -37,6 +52,10 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
   previewedFilePath,
 }) => {
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [datePreset, setDatePreset] = useState<DateFilterPreset>('all');
+  const [customStartDate, setCustomStartDate] = useState<string>('');
+  const [customEndDate, setCustomEndDate] = useState<string>('');
 
   const toggleGroupCollapse = (groupId: string) => {
     setCollapsedGroups(prev => {
@@ -47,12 +66,82 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
     });
   };
 
-  const totalWastedBytes = duplicates.reduce((acc, d) => acc + d.wastedBytes, 0);
+  // Filter duplicates by search and date range
+  const filteredDuplicates = useMemo(() => {
+    let result = duplicates;
 
-  // Smart selection helpers
+    // 1. Search Query Filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      result = result.filter(g =>
+        g.files.some(
+          f =>
+            f.name.toLowerCase().includes(q) ||
+            f.path.toLowerCase().includes(q) ||
+            (f.extension || '').toLowerCase().includes(q)
+        )
+      );
+    }
+
+    // 2. Date Filter
+    if (datePreset !== 'all') {
+      const now = new Date();
+      let startDate: Date | null = null;
+      let endDate: Date | null = null;
+      let isOlderThan = false;
+
+      switch (datePreset) {
+        case 'today':
+          startDate = startOfDay(now);
+          endDate = endOfDay(now);
+          break;
+        case '7days':
+          startDate = subDays(now, 7);
+          break;
+        case '30days':
+          startDate = subDays(now, 30);
+          break;
+        case '90days':
+          startDate = subDays(now, 90);
+          break;
+        case '6months':
+          startDate = subDays(now, 180);
+          break;
+        case '1year':
+          startDate = subDays(now, 365);
+          break;
+        case 'older_1year':
+          startDate = subDays(now, 365);
+          isOlderThan = true;
+          break;
+        case 'custom':
+          if (customStartDate) startDate = startOfDay(new Date(customStartDate));
+          if (customEndDate) endDate = endOfDay(new Date(customEndDate));
+          break;
+      }
+
+      result = result.filter(g => {
+        return g.files.some(f => {
+          const d = f.modifiedAt || f.createdAt;
+          if (!d) return false;
+          const fileDate = new Date(d);
+          if (isOlderThan && startDate) return isBefore(fileDate, startDate);
+          if (startDate && isBefore(fileDate, startDate)) return false;
+          if (endDate && isAfter(fileDate, endDate)) return false;
+          return true;
+        });
+      });
+    }
+
+    return result;
+  }, [duplicates, searchQuery, datePreset, customStartDate, customEndDate]);
+
+  const totalWastedBytes = filteredDuplicates.reduce((acc, d) => acc + d.wastedBytes, 0);
+
+  // Smart selection helpers (operates on filtered list)
   const handleKeepNewest = () => {
     const next = new Set<string>();
-    duplicates.forEach(group => {
+    filteredDuplicates.forEach(group => {
       // Sort newest first
       const sorted = [...group.files].sort((a, b) => (b.modifiedAt || b.createdAt || 0) - (a.modifiedAt || a.createdAt || 0));
       // Keep first (newest), select remaining
@@ -65,7 +154,7 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
 
   const handleKeepOldest = () => {
     const next = new Set<string>();
-    duplicates.forEach(group => {
+    filteredDuplicates.forEach(group => {
       // Sort oldest first
       const sorted = [...group.files].sort((a, b) => (a.modifiedAt || a.createdAt || 0) - (b.modifiedAt || b.createdAt || 0));
       // Keep first (oldest), select remaining
@@ -89,11 +178,11 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
     onSetSelectedPaths(next);
   };
 
-  const selectedCount = duplicates.reduce((acc, g) => {
+  const selectedCount = filteredDuplicates.reduce((acc, g) => {
     return acc + g.files.filter(f => selectedPaths.has(f.path)).length;
   }, 0);
 
-  const selectedBytes = duplicates.reduce((acc, g) => {
+  const selectedBytes = filteredDuplicates.reduce((acc, g) => {
     return acc + g.files.filter(f => selectedPaths.has(f.path)).reduce((s, f) => s + f.size, 0);
   }, 0);
 
@@ -102,6 +191,8 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
       await window.electronAPI.showItemInFolder(filePath);
     }
   };
+
+  const hasActiveFilters = searchQuery.trim() !== '' || datePreset !== 'all';
 
   return (
     <div
@@ -115,14 +206,15 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
       }}
     >
       {/* Top Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '12px', flexShrink: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '12px', flexShrink: 0 }}>
         <div>
           <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Copy size={20} style={{ color: '#a855f7' }} />
             Duplicate File Finder
           </h2>
           <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
-            Found {duplicates.length.toLocaleString()} duplicate groups consuming {formatBytes(totalWastedBytes)} redundant space.
+            Found {filteredDuplicates.length.toLocaleString()} duplicate groups consuming {formatBytes(totalWastedBytes)} redundant space
+            {hasActiveFilters && ` (filtered from ${duplicates.length} total groups)`}.
           </p>
         </div>
 
@@ -151,41 +243,192 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
         </div>
       </div>
 
-      {/* Smart Select Action Toolbar */}
-      {duplicates.length > 0 && (
+      {/* Control Bar: Search Box + Date Filter Dropdown + Custom Date Range */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '10px',
+          marginBottom: '10px',
+          flexWrap: 'wrap',
+          padding: '8px 12px',
+          background: 'var(--bg-subtle)',
+          borderRadius: 'var(--radius-md)',
+          border: '1px solid var(--border-color)',
+          flexShrink: 0
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', flex: 1 }}>
+          {/* Filename / Path Search Box */}
+          <div style={{ position: 'relative', flex: '1', minWidth: '180px', maxWidth: '320px' }}>
+            <Search size={13} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+            <input
+              type="text"
+              placeholder="Search duplicate names, paths..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '6px 28px 6px 30px',
+                fontSize: '12px',
+                background: 'var(--bg-input)',
+                border: '1px solid var(--border-color)',
+                borderRadius: 'var(--radius-md)',
+                color: 'var(--text-main)',
+                outline: 'none'
+              }}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 0 }}
+                title="Clear search"
+              >
+                <X size={12} />
+              </button>
+            )}
+          </div>
+
+          {/* Date Filter Dropdown */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <Calendar size={13} style={{ color: 'var(--accent-primary)' }} />
+            <span style={{ fontSize: '11px', color: 'var(--text-main)', fontWeight: 600 }}>Date:</span>
+            <select
+              value={datePreset}
+              onChange={e => setDatePreset(e.target.value as DateFilterPreset)}
+              style={{
+                padding: '4px 8px',
+                fontSize: '11px',
+                fontWeight: 500,
+                background: 'var(--bg-input)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '4px',
+                color: 'var(--text-main)',
+                cursor: 'pointer'
+              }}
+            >
+              <option value="all">All Dates</option>
+              <option value="today">Today</option>
+              <option value="7days">Past 7 Days</option>
+              <option value="30days">Past 30 Days</option>
+              <option value="90days">Past 90 Days</option>
+              <option value="6months">Past 6 Months</option>
+              <option value="1year">Past 1 Year</option>
+              <option value="older_1year">Older than 1 Year (&gt;365d)</option>
+              <option value="custom">Custom Date Range...</option>
+            </select>
+          </div>
+
+          {/* Custom Date Range Picker */}
+          {datePreset === 'custom' && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'var(--bg-panel)',
+                padding: '3px 8px',
+                borderRadius: '4px',
+                border: '1px solid var(--accent-primary)',
+                boxShadow: '0 0 8px rgba(59, 130, 246, 0.2)'
+              }}
+            >
+              <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-main)' }}>From:</span>
+              <input
+                type="date"
+                value={customStartDate}
+                onChange={e => setCustomStartDate(e.target.value)}
+                style={{
+                  background: 'var(--bg-input)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '3px',
+                  color: 'var(--text-main)',
+                  fontSize: '11px',
+                  padding: '2px 5px',
+                  outline: 'none'
+                }}
+              />
+              <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-main)' }}>To:</span>
+              <input
+                type="date"
+                value={customEndDate}
+                onChange={e => setCustomEndDate(e.target.value)}
+                style={{
+                  background: 'var(--bg-input)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '3px',
+                  color: 'var(--text-main)',
+                  fontSize: '11px',
+                  padding: '2px 5px',
+                  outline: 'none'
+                }}
+              />
+            </div>
+          )}
+
+          {hasActiveFilters && (
+            <button
+              className="btn btn-secondary"
+              onClick={() => {
+                setSearchQuery('');
+                setDatePreset('all');
+                setCustomStartDate('');
+                setCustomEndDate('');
+              }}
+              style={{ padding: '3px 8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '3px' }}
+              title="Reset search and date filters"
+            >
+              <X size={11} />
+              <span>Reset</span>
+            </button>
+          )}
+        </div>
+
+        {/* Smart Mark Action Buttons */}
+        {filteredDuplicates.length > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>
+              Smart Mark:
+            </span>
+            <button className="btn btn-secondary" style={{ padding: '3px 8px', fontSize: '11px' }} onClick={handleKeepNewest}>
+              Keep Newest
+            </button>
+            <button className="btn btn-secondary" style={{ padding: '3px 8px', fontSize: '11px' }} onClick={handleKeepOldest}>
+              Keep Oldest
+            </button>
+            <button className="btn btn-secondary" style={{ padding: '3px 8px', fontSize: '11px' }} onClick={handleDeselectAll}>
+              Deselect All
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Selected Items Status Banner */}
+      {selectedCount > 0 && (
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            marginBottom: '14px',
-            padding: '8px 12px',
-            background: 'var(--bg-subtle)',
+            marginBottom: '10px',
+            padding: '6px 12px',
+            background: 'rgba(239, 68, 68, 0.08)',
             borderRadius: 'var(--radius-md)',
-            border: '1px solid var(--border-color)',
-            flexWrap: 'wrap',
-            gap: '10px',
+            border: '1px solid rgba(239, 68, 68, 0.25)',
             flexShrink: 0
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '12px', color: 'var(--text-main)', fontWeight: 600 }}>
-              Smart Mark:
-            </span>
-            <button className="btn btn-secondary" style={{ padding: '4px 10px', fontSize: '12px' }} onClick={handleKeepNewest}>
-              Keep Newest (Mark Old Copies)
-            </button>
-            <button className="btn btn-secondary" style={{ padding: '4px 10px', fontSize: '12px' }} onClick={handleKeepOldest}>
-              Keep Oldest (Mark New Copies)
-            </button>
-            <button className="btn btn-secondary" style={{ padding: '4px 10px', fontSize: '12px' }} onClick={handleDeselectAll}>
-              Deselect All
-            </button>
-          </div>
-
-          <span style={{ fontSize: '12px', color: '#a855f7', fontWeight: 700 }}>
-            {selectedCount} copies selected ({formatBytes(selectedBytes)})
+          <span style={{ fontSize: '12px', color: '#ef4444', fontWeight: 600 }}>
+            {selectedCount} duplicate files selected for cleanup ({formatBytes(selectedBytes)})
           </span>
+          <button
+            className="btn btn-danger"
+            style={{ padding: '3px 10px', fontSize: '11px' }}
+            onClick={onOpenDeleteModal}
+          >
+            Clean Selected Now
+          </button>
         </div>
       )}
 
@@ -209,16 +452,18 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
               Computing cryptographic MD5 checksums across identical file sizes
             </p>
           </div>
-        ) : duplicates.length === 0 ? (
+        ) : filteredDuplicates.length === 0 ? (
           <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
             <CheckCircle size={40} style={{ margin: '0 auto 12px', opacity: 0.6, color: '#10b981' }} />
-            <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-main)' }}>No duplicate files found</p>
+            <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-main)' }}>
+              {hasActiveFilters ? 'No duplicate files match current search or date filter' : 'No duplicate files found'}
+            </p>
             <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
-              All indexed files in this folder are unique.
+              {hasActiveFilters ? 'Try adjusting your search query or selecting "All Dates".' : 'All indexed files in this folder are unique.'}
             </p>
           </div>
         ) : (
-          duplicates.map((group, gIdx) => {
+          filteredDuplicates.map((group, gIdx) => {
             const isCollapsed = collapsedGroups.has(group.id);
             const groupSelectedCount = group.files.filter(f => selectedPaths.has(f.path)).length;
 

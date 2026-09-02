@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpaceClean — Ultra-Fast Visual Disk Space Analyzer & Cleaner</title>
+  <meta name="description" content="A next-generation, ultra-fast disk space analyzer and safe storage cleaner for Windows, macOS, and Linux. Built with Electron, React 19 & TypeScript by Aneesh.">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Background Glow & Grid -->
+  <div class="bg-glow"></div>
+  <div class="bg-grid"></div>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="#" class="brand">
+        <img src="icon.png" alt="SpaceClean Logo" class="brand-logo">
+        <span class="brand-name">SpaceClean</span>
+        <span class="brand-by">by Aneesh</span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#time-waves">Time Waves</a>
+        <a href="#shortcuts">Shortcuts</a>
+        <a href="#download" class="nav-download-btn">Get SpaceClean</a>
+        <a href="https://github.com/AndyDev94/SpaceClean" target="_blank" rel="noopener noreferrer" class="github-icon-link" title="GitHub Repository">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-container">
+      <div class="pill-badge">
+        <span class="pill-pulse"></span>
+        <span>Version 1.0.0 is Live & Ready</span>
+      </div>
+
+      <h1 class="hero-title">
+        Clean Gigabytes of Storage in Seconds — <span class="gradient-text">Without the Lag</span>.
+      </h1>
+
+      <p class="hero-subtitle">
+        A next-generation visual disk space analyzer and safe storage cleaner built for <strong>Windows, macOS, and Linux</strong>. Scan massive 50GB–2TB+ locations without RAM bloat, slice clutter by year, and preview media files in real-time.
+      </p>
+
+      <!-- Primary Smart Download CTA -->
+      <div class="cta-wrapper">
+        <div class="primary-download-box">
+          <a id="hero-download-btn" href="https://github.com/AndyDev94/SpaceClean/releases/latest/download/SpaceClean.Setup.1.0.0.exe" class="btn-primary">
+            <span class="btn-icon" id="os-icon">💻</span>
+            <div class="btn-text-group">
+              <span class="btn-label" id="download-label">Download for Windows</span>
+              <span class="btn-subtext" id="download-subtext">v1.0.0 • NSIS Setup (.exe)</span>
+            </div>
+          </a>
+
+          <div class="alt-downloads">
+            <span class="alt-label">Other formats:</span>
+            <a href="https://github.com/AndyDev94/SpaceClean/releases/latest/download/SpaceClean.1.0.0.exe" class="alt-link">Portable (.exe)</a>
+            <span class="dot-sep">•</span>
+            <a href="https://github.com/AndyDev94/SpaceClean/releases/latest/download/SpaceClean.dmg" class="alt-link">macOS (.dmg)</a>
+            <span class="dot-sep">•</span>
+            <a href="https://github.com/AndyDev94/SpaceClean/releases/latest/download/SpaceClean.AppImage" class="alt-link">Linux (.AppImage)</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- App Preview Mockup -->
+      <div class="preview-stage">
+        <div class="window-frame">
+          <div class="window-header">
+            <div class="traffic-lights">
+              <span class="dot red"></span>
+              <span class="dot yellow"></span>
+              <span class="dot green"></span>
+            </div>
+            <div class="window-titlebar-title">SpaceClean by Aneesh — Storage Overview (C:\)</div>
+            <div class="window-actions">
+              <span class="badge-accent">Smart Memory Guard Active</span>
+            </div>
+          </div>
+          <div class="window-body">
+            <div class="mock-grid">
+              <div class="mock-card">
+                <div class="card-icon">🧠</div>
+                <div class="card-stat">0.0% RAM Lag</div>
+                <div class="card-desc">Chunk-based queue scanner</div>
+              </div>
+              <div class="mock-card">
+                <div class="card-icon">⏳</div>
+                <div class="card-stat">Year Slicing</div>
+                <div class="card-desc">Chronological Time Waves</div>
+              </div>
+              <div class="mock-card">
+                <div class="card-icon">🖼️</div>
+                <div class="card-stat">Live Player</div>
+                <div class="card-desc">Hardware-accelerated preview</div>
+              </div>
+              <div class="mock-card">
+                <div class="card-icon">🛡️</div>
+                <div class="card-stat">100% Safe</div>
+                <div class="card-desc">OS System file protection locks</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Feature Grid Section -->
+  <section id="features" class="section">
+    <div class="section-container">
+      <div class="section-header">
+        <span class="section-tag">ENGINE ARCHITECTURE</span>
+        <h2 class="section-title">Engineered to Handle What Other Cleaners Can't</h2>
+        <p class="section-subtitle">Traditional disk utilities freeze when processing 100,000+ files. SpaceClean uses an adaptive queue-based chunk engine designed for speed and reliability.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon-box">🧠</div>
+          <h3>Smart Adaptive Memory Guard</h3>
+          <p>Scans massive drives in smooth milestones (~20k files or ~25 GB). If a folder is huge, SpaceClean pauses gently so you can clean what was scanned first without choking your RAM.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">⏳</div>
+          <h3>Chronological Time Waves</h3>
+          <p>Breaks multi-gigabyte folders into years (2022, 2023, 2024, 2025). Sort by <em>Oldest Years First</em>, <em>Largest + Oldest</em>, or <em>Clutter Density</em> to reclaim storage safely.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">🖼️</div>
+          <h3>Instant Media & Code Inspector</h3>
+          <p>Direct hardware-accelerated previews for 4GB+ videos, audio tracks, RAW images, logs, scripts, and source code directly in an inline inspector drawer.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">🛡️</div>
+          <h3>OS System File Safety Locks</h3>
+          <p>Never accidentally delete critical system files. Hard-coded rules automatically lock Windows, macOS, and Linux system roots and default to your OS Trash/Recycle Bin.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">👯</div>
+          <h3>MD5 Redundant Duplicate Finder</h3>
+          <p>Locate identical file duplicates across nested folders with double-pass sample hashing that identifies wasted storage in seconds.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">🎨</div>
+          <h3>9 Curated Dark & Light Themes</h3>
+          <p>Switch between Obsidian, Midnight OLED, Nordic Forest, Tokyo Night, Clean White, and more with zero-flicker startup persistence.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Keyboard Shortcuts Section -->
+  <section id="shortcuts" class="section bg-subtle-section">
+    <div class="section-container">
+      <div class="section-header">
+        <span class="section-tag">POWER USER CONTROLS</span>
+        <h2 class="section-title">Navigate Entire Drives Without Touching the Mouse</h2>
+        <p class="section-subtitle">Full keyboard traversal enables blazing-fast sorting and inspection.</p>
+      </div>
+
+      <div class="shortcuts-grid">
+        <div class="shortcut-item">
+          <div class="key-combo"><kbd>↑</kbd> <kbd>↓</kbd></div>
+          <div class="shortcut-info">
+            <strong>Row Navigation</strong>
+            <span>Move across files; immediately updates the live preview drawer</span>
+          </div>
+        </div>
+
+        <div class="shortcut-item">
+          <div class="key-combo"><kbd>Space</kbd></div>
+          <div class="shortcut-info">
+            <strong>Toggle Selection</strong>
+            <span>Check or uncheck the highlighted file for deletion</span>
+          </div>
+        </div>
+
+        <div class="shortcut-item">
+          <div class="key-combo"><kbd>Enter</kbd></div>
+          <div class="shortcut-info">
+            <strong>Inspect / Open</strong>
+            <span>Open preview drawer or launch in default OS application</span>
+          </div>
+        </div>
+
+        <div class="shortcut-item">
+          <div class="key-combo"><kbd>Del</kbd></div>
+          <div class="shortcut-info">
+            <strong>Safe Delete Modal</strong>
+            <span>Open deletion confirmation for selected items</span>
+          </div>
+        </div>
+
+        <div class="shortcut-item">
+          <div class="key-combo"><kbd>Ctrl</kbd> + <kbd>A</kbd></div>
+          <div class="shortcut-info">
+            <strong>Select All</strong>
+            <span>Instantly select all unprotected files in active view</span>
+          </div>
+        </div>
+
+        <div class="shortcut-item">
+          <div class="key-combo"><kbd>Alt</kbd> + <kbd>1–6</kbd></div>
+          <div class="shortcut-info">
+            <strong>Tab Switching</strong>
+            <span>Jump directly to Explorer, Folders, Optimizer, Junk, Dups, or Large Files</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Download Section -->
+  <section id="download" class="section download-section">
+    <div class="section-container">
+      <div class="section-header">
+        <span class="section-tag">FREE & OPEN SOURCE</span>
+        <h2 class="section-title">Download SpaceClean for Your Operating System</h2>
+        <p class="section-subtitle">100% offline, zero telemetry, and free forever under the MIT license.</p>
+      </div>
+
+      <div class="download-cards-grid">
+        <!-- Windows Card -->
+        <div class="download-card" id="card-windows">
+          <div class="platform-icon">🪟</div>
+          <h3>Windows</h3>
+          <p class="platform-req">Windows 10, 11 (64-bit)</p>
+          <div class="btn-column">
+            <a href="https://github.com/AndyDev94/SpaceClean/releases/latest/download/SpaceClean.Setup.1.0.0.exe" class="btn-card primary">
+              <span>Download Installer (.exe)</span>
+            </a>
+            <a href="https://github.com/AndyDev94/SpaceClean/releases/latest/download/SpaceClean.1.0.0.exe" class="btn-card secondary">
+              <span>Download Portable (.exe)</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- macOS Card -->
+        <div class="download-card" id="card-mac">
+          <div class="platform-icon">🍎</div>
+          <h3>macOS</h3>
+          <p class="platform-req">macOS 11.0+ (Apple Silicon & Intel)</p>
+          <div class="btn-column">
+            <a href="https://github.com/AndyDev94/SpaceClean/releases/latest/download/SpaceClean.dmg" class="btn-card primary">
+              <span>Download Disk Image (.dmg)</span>
+            </a>
+            <a href="https://github.com/AndyDev94/SpaceClean/releases/latest/download/SpaceClean-mac.zip" class="btn-card secondary">
+              <span>Download Application (.zip)</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Linux Card -->
+        <div class="download-card" id="card-linux">
+          <div class="platform-icon">🐧</div>
+          <h3>Linux</h3>
+          <p class="platform-req">Ubuntu, Debian, Fedora, Arch</p>
+          <div class="btn-column">
+            <a href="https://github.com/AndyDev94/SpaceClean/releases/latest/download/SpaceClean.AppImage" class="btn-card primary">
+              <span>Download AppImage (.AppImage)</span>
+            </a>
+            <a href="https://github.com/AndyDev94/SpaceClean/releases/latest/download/SpaceClean.deb" class="btn-card secondary">
+              <span>Download Debian (.deb)</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Source Code Box -->
+      <div class="source-box">
+        <div class="source-text">
+          <strong>Prefer building from source?</strong>
+          <span>Clone the repository and run locally with Node.js & npm.</span>
+        </div>
+        <div class="code-snippet">
+          <code>git clone https://github.com/AndyDev94/SpaceClean.git &amp;&amp; cd SpaceClean &amp;&amp; npm i &amp;&amp; npm run dev</code>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <div class="footer-brand">
+          <img src="icon.png" alt="SpaceClean Logo" class="footer-logo">
+          <span>SpaceClean</span>
+        </div>
+        <p class="footer-tagline">Crafted with precision by <strong>Aneesh</strong>.</p>
+      </div>
+
+      <div class="footer-right">
+        <a href="https://github.com/AndyDev94/SpaceClean" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://github.com/AndyDev94/SpaceClean/releases">Releases</a>
+        <a href="https://github.com/AndyDev94/SpaceClean/issues">Issues</a>
+        <a href="https://github.com/AndyDev94/SpaceClean/blob/main/LICENSE">MIT License</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

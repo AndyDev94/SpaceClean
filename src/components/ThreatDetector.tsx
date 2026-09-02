@@ -26,6 +26,7 @@ import { ThreatItem, ThreatRiskLevel, FileInfo } from '../types';
 import { formatBytes } from '../utils/filterUtils';
 import { format } from 'date-fns';
 import { osName, fileManagerName, trashName } from '../utils/platform';
+import { Globe, Copy, Check } from 'lucide-react';
 
 interface ThreatDetectorProps {
   threats: ThreatItem[];
@@ -52,6 +53,68 @@ export const ThreatDetector: React.FC<ThreatDetectorProps> = ({
   const [selectedRiskFilter, setSelectedRiskFilter] = useState<'all' | 'high' | 'suspicious' | 'trusted'>('all');
   const [selectedThreatIds, setSelectedThreatIds] = useState<Set<string>>(new Set());
   const [expandedThreatId, setExpandedThreatId] = useState<string | null>(null);
+
+  // File hash cache and loading states
+  const [fileHashes, setFileHashes] = useState<Record<string, { sha256: string; md5: string; isLoading?: boolean }>>({});
+  const [copiedHashKey, setCopiedHashKey] = useState<string | null>(null);
+  const [virusTotalLoadingPath, setVirusTotalLoadingPath] = useState<string | null>(null);
+
+  // Fetch hash on expand
+  const fetchFileHash = async (filePath: string) => {
+    if (fileHashes[filePath] || !window.electronAPI?.getFileHash) return;
+
+    setFileHashes(prev => ({ ...prev, [filePath]: { sha256: '', md5: '', isLoading: true } }));
+    try {
+      const res = await window.electronAPI.getFileHash(filePath);
+      setFileHashes(prev => ({
+        ...prev,
+        [filePath]: { sha256: res.sha256, md5: res.md5, isLoading: false }
+      }));
+      return res.sha256;
+    } catch {
+      setFileHashes(prev => ({
+        ...prev,
+        [filePath]: { sha256: '', md5: '', isLoading: false }
+      }));
+      return '';
+    }
+  };
+
+  const handleVirusTotalLookup = async (filePath: string) => {
+    setVirusTotalLoadingPath(filePath);
+    try {
+      let sha256 = fileHashes[filePath]?.sha256;
+      if (!sha256) {
+        sha256 = (await fetchFileHash(filePath)) || '';
+      }
+
+      if (sha256) {
+        const vtUrl = `https://www.virustotal.com/gui/file/${sha256}/detection`;
+        if (window.electronAPI?.openExternalUrl) {
+          await window.electronAPI.openExternalUrl(vtUrl);
+        } else {
+          window.open(vtUrl, '_blank');
+        }
+      } else {
+        // Fallback search by filename
+        const filename = filePath.split(/[\\/]/).pop() || '';
+        const searchUrl = `https://www.virustotal.com/gui/search/${encodeURIComponent(filename)}`;
+        if (window.electronAPI?.openExternalUrl) {
+          await window.electronAPI.openExternalUrl(searchUrl);
+        } else {
+          window.open(searchUrl, '_blank');
+        }
+      }
+    } finally {
+      setVirusTotalLoadingPath(null);
+    }
+  };
+
+  const handleCopyHash = (hash: string, key: string) => {
+    navigator.clipboard.writeText(hash);
+    setCopiedHashKey(key);
+    setTimeout(() => setCopiedHashKey(null), 2000);
+  };
 
   // Filtered threats
   const filteredThreats = useMemo(() => {
@@ -376,7 +439,13 @@ export const ThreatDetector: React.FC<ThreatDetectorProps> = ({
                       gap: '12px',
                       cursor: 'pointer'
                     }}
-                    onClick={() => setExpandedThreatId(isExpanded ? null : threat.id)}
+                    onClick={() => {
+                      const nextId = isExpanded ? null : threat.id;
+                      setExpandedThreatId(nextId);
+                      if (nextId) {
+                        fetchFileHash(threat.file.path);
+                      }
+                    }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
                       <div
@@ -468,7 +537,7 @@ export const ThreatDetector: React.FC<ThreatDetectorProps> = ({
                         borderTop: '1px solid var(--border-subtle)',
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: '10px'
+                        gap: '12px'
                       }}
                     >
                       {/* Danger Explanation */}
@@ -482,9 +551,77 @@ export const ThreatDetector: React.FC<ThreatDetectorProps> = ({
                         </p>
                       </div>
 
+                      {/* 🌐 VirusTotal Cloud Analysis Bar */}
+                      <div
+                        style={{
+                          padding: '10px 12px',
+                          background: 'rgba(59, 130, 246, 0.08)',
+                          border: '1px solid rgba(59, 130, 246, 0.25)',
+                          borderRadius: 'var(--radius-sm)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: '12px',
+                          flexWrap: 'wrap'
+                        }}
+                      >
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 600, color: 'var(--accent-primary)' }}>
+                            <Globe size={13} />
+                            <span>VirusTotal Cloud Intelligence (70+ Antivirus Engines)</span>
+                          </div>
+                          <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                            Cross-checks this exact file's cryptographic hash against Kaspersky, Bitdefender, Microsoft Defender, and CrowdStrike on VirusTotal.
+                          </div>
+                        </div>
+
+                        <button
+                          className="btn btn-primary"
+                          onClick={() => handleVirusTotalLookup(threat.file.path)}
+                          disabled={virusTotalLoadingPath === threat.file.path}
+                          style={{
+                            fontSize: '11px',
+                            padding: '5px 12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            background: '#2563eb',
+                            borderColor: '#1d4ed8'
+                          }}
+                        >
+                          <ExternalLink size={12} className={virusTotalLoadingPath === threat.file.path ? 'animate-spin' : ''} />
+                          <span>{virusTotalLoadingPath === threat.file.path ? 'Hashing & Querying...' : 'Open on VirusTotal ↗'}</span>
+                        </button>
+                      </div>
+
+                      {/* Cryptographic SHA-256 & MD5 Hash Checksum Card */}
+                      <div style={{ background: 'var(--bg-panel)', padding: '10px 12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-dim)', textTransform: 'uppercase' }}>
+                            Cryptographic SHA-256 Checksum:
+                          </span>
+                          {fileHashes[threat.file.path]?.sha256 && (
+                            <button
+                              className="btn btn-secondary"
+                              style={{ fontSize: '10px', padding: '2px 8px', height: '22px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                              onClick={() => handleCopyHash(fileHashes[threat.file.path].sha256, `sha-${threat.id}`)}
+                            >
+                              {copiedHashKey === `sha-${threat.id}` ? <Check size={11} color="#10b981" /> : <Copy size={11} />}
+                              <span>{copiedHashKey === `sha-${threat.id}` ? 'Copied SHA-256!' : 'Copy Hash'}</span>
+                            </button>
+                          )}
+                        </div>
+
+                        <code style={{ fontSize: '11px', color: 'var(--text-main)', background: 'var(--bg-subtle)', padding: '4px 8px', borderRadius: '3px', wordBreak: 'break-all', fontFamily: 'monospace' }}>
+                          {fileHashes[threat.file.path]?.isLoading
+                            ? 'Calculating cryptographic SHA-256 hash...'
+                            : fileHashes[threat.file.path]?.sha256 || 'Click "Open on VirusTotal" or expand to compute hash'}
+                        </code>
+                      </div>
+
                       {/* Recommendation */}
                       <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.5, padding: '2px 4px' }}>
-                        💡 <strong>Security Action:</strong> {threat.recommendation}
+                        💡 <strong>Recommended Action:</strong> {threat.recommendation}
                       </div>
 
                       {/* Action buttons */}

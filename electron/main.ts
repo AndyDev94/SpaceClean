@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, dialog, shell } from 'electron';
 import path from 'path';
 import fs from 'fs';
+import crypto from 'crypto';
 import { autoUpdater } from 'electron-updater';
 import {
   getWindowsDrives,
@@ -440,4 +441,64 @@ ipcMain.handle('check-for-updates', async () => {
 // Auto-Updater: Restart and Install Downloaded Update
 ipcMain.handle('quit-and-install', () => {
   autoUpdater.quitAndInstall();
+});
+
+// Security & Threat Analysis: Compute SHA-256 and MD5 hashes for VirusTotal lookup
+ipcMain.handle('get-file-hash', async (_event, filePath: string) => {
+  try {
+    const stats = await fs.promises.stat(filePath);
+    // For files up to 250MB, calculate exact SHA-256 and MD5
+    if (stats.size > 250 * 1024 * 1024) {
+      return {
+        sha256: '',
+        md5: '',
+        size: stats.size,
+        error: 'File exceeds 250MB size limit for instant hashing'
+      };
+    }
+
+    return new Promise((resolve) => {
+      const sha256Hash = crypto.createHash('sha256');
+      const md5Hash = crypto.createHash('md5');
+      const stream = fs.createReadStream(filePath);
+
+      stream.on('data', (chunk) => {
+        sha256Hash.update(chunk);
+        md5Hash.update(chunk);
+      });
+
+      stream.on('end', () => {
+        resolve({
+          sha256: sha256Hash.digest('hex'),
+          md5: md5Hash.digest('hex'),
+          size: stats.size
+        });
+      });
+
+      stream.on('error', (err) => {
+        resolve({
+          sha256: '',
+          md5: '',
+          size: stats.size,
+          error: err.message
+        });
+      });
+    });
+  } catch (err: any) {
+    return {
+      sha256: '',
+      md5: '',
+      size: 0,
+      error: err?.message || 'File inaccessible'
+    };
+  }
+});
+
+// Open external URL in default browser (VirusTotal, GitHub, etc.)
+ipcMain.handle('open-external-url', async (_event, targetUrl: string) => {
+  if (targetUrl && (targetUrl.startsWith('https://') || targetUrl.startsWith('http://'))) {
+    await shell.openExternal(targetUrl);
+    return true;
+  }
+  return false;
 });

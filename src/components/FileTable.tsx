@@ -23,7 +23,11 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Eye,
-  Info
+  Info,
+  Sparkles,
+  HardDrive,
+  Play,
+  ShieldCheck
 } from 'lucide-react';
 import { FileInfo, FilterState, FileCategory } from '../types';
 import { formatBytes } from '../utils/filterUtils';
@@ -41,6 +45,9 @@ interface FileTableProps {
   onSortChange: (sortBy: FilterState['sortBy']) => void;
   onPreviewFile?: (file: FileInfo) => void;
   previewedFilePath?: string | null;
+  onBrowseFolder?: () => void;
+  onStartScan?: () => void;
+  selectedPath?: string;
 }
 
 export const FileTable: React.FC<FileTableProps> = ({
@@ -55,6 +62,9 @@ export const FileTable: React.FC<FileTableProps> = ({
   onSortChange,
   onPreviewFile,
   previewedFilePath,
+  onBrowseFolder,
+  onStartScan,
+  selectedPath,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState<number | 'all'>(100);
@@ -258,11 +268,140 @@ export const FileTable: React.FC<FileTableProps> = ({
       {/* Table Content */}
       <div className="table-scroll-area">
         {files.length === 0 ? (
-          <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-dim)' }}>
-            <FileText size={36} style={{ margin: '0 auto 10px', opacity: 0.25 }} />
-            <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-muted)' }}>No files found matching criteria</p>
-            <p style={{ fontSize: '12px', marginTop: '4px' }}>Try clearing filters or selecting another folder/drive.</p>
-          </div>
+          (filter.searchQuery && filter.searchQuery.trim() !== '') ||
+          filter.categories.length > 0 ||
+          filter.extensions.length > 0 ||
+          filter.datePreset !== 'all' ||
+          filter.minSizeBytes > 0 ? (
+            /* Filter Empty State */
+            <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-dim)' }}>
+              <FileText size={36} style={{ margin: '0 auto 10px', opacity: 0.3 }} />
+              <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-main)' }}>No files match your current search filters</p>
+              <p style={{ fontSize: '12px', marginTop: '4px', color: 'var(--text-muted)' }}>Try clearing your search query, adjusting date range, or removing file category filters.</p>
+            </div>
+          ) : (
+            /* Clean Starting Screen with Highlighted Browse & Scan Actions */
+            <div
+              style={{
+                padding: '44px 20px',
+                textAlign: 'center',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                maxWidth: '620px',
+                margin: '0 auto'
+              }}
+            >
+              {/* Icon with glow badge */}
+              <div
+                style={{
+                  width: '60px',
+                  height: '60px',
+                  borderRadius: '16px',
+                  background: 'rgba(59, 130, 246, 0.15)',
+                  border: '1px solid rgba(59, 130, 246, 0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'var(--accent-primary)',
+                  marginBottom: '16px',
+                  boxShadow: '0 0 25px rgba(59, 130, 246, 0.25)'
+                }}
+              >
+                <FolderOpen size={30} />
+              </div>
+
+              <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-main)', marginBottom: '6px' }}>
+                Ready to Analyze & Clean Disk Space
+              </h3>
+
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: '22px', maxWidth: '480px' }}>
+                To use the app, pick a drive from the top bar or click below to browse any custom folder and start scanning.
+              </p>
+
+              {/* Highlighted Action Buttons */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '28px' }}>
+                <button
+                  className="btn btn-primary"
+                  onClick={onBrowseFolder}
+                  style={{
+                    padding: '9px 20px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    boxShadow: '0 4px 15px rgba(59, 130, 246, 0.4)'
+                  }}
+                  title="Open file dialog to pick any folder"
+                >
+                  <FolderOpen size={16} />
+                  <span>Browse Folder to Scan</span>
+                </button>
+
+                {onStartScan && (
+                  <button
+                    className="btn btn-secondary"
+                    onClick={onStartScan}
+                    style={{
+                      padding: '9px 18px',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}
+                    title={`Scan ${selectedPath || 'Selected Drive'}`}
+                  >
+                    <Play size={15} style={{ color: 'var(--accent-primary)' }} />
+                    <span>Scan {selectedPath ? selectedPath : 'Selected Drive'}</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Quick Feature Guides */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                  gap: '12px',
+                  width: '100%',
+                  textAlign: 'left'
+                }}
+              >
+                <div style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', padding: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 600, color: 'var(--text-main)', marginBottom: '4px' }}>
+                    <Sparkles size={14} style={{ color: 'var(--accent-primary)' }} />
+                    <span>RAM Optimizer</span>
+                  </div>
+                  <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
+                    Scans 500GB+ folders in smooth parts without system lag.
+                  </p>
+                </div>
+
+                <div style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', padding: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 600, color: 'var(--text-main)', marginBottom: '4px' }}>
+                    <HardDrive size={14} style={{ color: '#a855f7' }} />
+                    <span>Duplicate Finder</span>
+                  </div>
+                  <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
+                    MD5 cryptographic checksums identify redundant clones.
+                  </p>
+                </div>
+
+                <div style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', padding: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 600, color: 'var(--text-main)', marginBottom: '4px' }}>
+                    <ShieldCheck size={14} style={{ color: '#10b981' }} />
+                    <span>Safe Recycle Bin</span>
+                  </div>
+                  <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
+                    100% safe file recovery with 1-click restore.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )
         ) : (
           <table className="file-table">
             <thead>

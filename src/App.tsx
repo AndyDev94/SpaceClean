@@ -871,6 +871,9 @@ export const App: React.FC = () => {
                 onSortChange={handleSortChange}
                 onPreviewFile={setPreviewFile}
                 previewedFilePath={previewFile?.path}
+                onBrowseFolder={handleBrowseFolder}
+                onStartScan={() => handleStartScan(selectedPath)}
+                selectedPath={selectedPath}
               />
             </>
           )}

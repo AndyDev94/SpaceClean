@@ -1114,8 +1114,24 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
             </span>
           </div>
 
-          {/* Right: Clean Selected (with visible size) + Cancel Button */}
+          {/* Right: Cancel Button on Left + Clean Selected on Right */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              className="btn btn-secondary"
+              style={{
+                padding: '6px 14px',
+                fontSize: '12px',
+                borderRadius: '9999px',
+                background: 'rgba(255, 255, 255, 0.1)',
+                color: '#f1f5f9',
+                border: '1px solid rgba(255, 255, 255, 0.15)'
+              }}
+              onClick={handleDeselectFiltered}
+              title="Deselect all selected media"
+            >
+              Cancel
+            </button>
+
             <button
               className="btn btn-danger"
               style={{
@@ -1133,22 +1149,6 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
             >
               <Trash2 size={13} />
               <span>Clean Selected ({formatBytes(selectedMediaBytes)})</span>
-            </button>
-
-            <button
-              className="btn btn-secondary"
-              style={{
-                padding: '6px 14px',
-                fontSize: '12px',
-                borderRadius: '9999px',
-                background: 'rgba(255, 255, 255, 0.1)',
-                color: '#f1f5f9',
-                border: '1px solid rgba(255, 255, 255, 0.15)'
-              }}
-              onClick={handleDeselectFiltered}
-              title="Deselect all selected media"
-            >
-              Cancel
             </button>
           </div>
         </div>

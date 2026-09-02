@@ -628,14 +628,14 @@ export const App: React.FC = () => {
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                     <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-main)' }}>
-                      🧠 Smart Chunk Milestone: Part {chunkInfo.chunkNumber} Indexed ({chunkInfo.formattedBytes} • {chunkInfo.scannedFiles.toLocaleString()} files)
+                      Part {chunkInfo.chunkNumber} Ready to Clean ({chunkInfo.formattedBytes} • {chunkInfo.scannedFiles.toLocaleString()} files)
                     </span>
                     <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '3px', background: 'var(--bg-subtle)', color: 'var(--accent-primary)', fontWeight: 600 }}>
                       Memory Guard Active • {chunkInfo.remainingQueueCount} subfolders queued
                     </span>
                   </div>
                   <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '2px' }}>
-                    Paused here so you can clean or review this scanned wave without RAM strain. Clean now, or resume scanning remaining parts.
+                    Paused here so you can clean what was scanned first without lag. Clean now, or continue scanning.
                   </p>
                 </div>
               </div>

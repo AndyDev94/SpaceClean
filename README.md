@@ -29,9 +29,9 @@ Scan any folder or entire hard drive (from **50 GB to 2 TB+**) smoothly without 
 
 ## ✨ Key Features
 
-### 🧠 1. Smart Adaptive Memory Guard (Chunk-Scan Engine)
-- **Automatic Load Detection**: When scanning large locations (50GB–500GB+ / 20k+ files), the scanner monitors memory and system strain.
-- **Graceful Chunk Milestones**: Automatically pauses after safe milestones (~20,000 files or ~25 GB) so you can review and clean the indexed wave first before continuing.
+### 🧠 1. Smart Memory Guard (Part-by-Part Scanning)
+- **Automatic Load Detection**: When scanning large locations (50GB–500GB+ / 20k+ files), the scanner keeps memory and system strain near zero.
+- **Smooth Part-by-Part Pausing**: Automatically pauses after safe intervals (~20,000 files or ~25 GB) so you can review and clean what was scanned first without lag before continuing.
 - **Queue-Based Scanner**: Pauses and resumes seamlessly from directory queues without re-scanning.
 
 ### ⏳ 2. Chronological Time Waves (Year & Age Slicing)

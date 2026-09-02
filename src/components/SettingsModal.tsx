@@ -387,7 +387,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         <td style={{ padding: '7px 14px' }}>
                           <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>{cmdOrCtrl}</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>8</kbd>
                         </td>
-                        <td style={{ padding: '7px 14px', color: 'var(--text-main)' }}>📱 <strong>Apps Uninstaller</strong> (Batch sequential uninstallation)</td>
+                        <td style={{ padding: '7px 14px', color: 'var(--text-main)' }}>💻 <strong>Apps Uninstaller</strong> (Batch sequential uninstallation)</td>
                       </tr>
                     </tbody>
                   </table>
@@ -623,7 +623,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <div style={{ padding: '12px 14px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                       <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)' }}>
-                        📱 8. Apps Uninstaller (<kbd style={{ fontSize: '10px' }}>{cmdOrCtrl}+8</kbd>)
+                        💻 8. Apps Uninstaller (<kbd style={{ fontSize: '10px' }}>{cmdOrCtrl}+8</kbd>)
                       </span>
                       <span style={{ fontSize: '11px', padding: '1px 6px', borderRadius: '3px', background: 'rgba(59, 130, 246, 0.15)', color: 'var(--accent-primary)', fontWeight: 600 }}>Batch Software Removal</span>
                     </div>

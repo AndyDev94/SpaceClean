@@ -15,7 +15,7 @@ import { MediaGallery } from './components/MediaGallery';
 import { AppUninstaller } from './components/AppUninstaller';
 import { DeleteModal } from './components/DeleteModal';
 
-import { Play, Sparkles, AlertCircle, RefreshCw, Zap, Layers } from 'lucide-react';
+import { Play, Sparkles, AlertCircle, RefreshCw, Zap, Layers, CheckCircle2, RotateCw } from 'lucide-react';
 import {
   FileInfo,
   FolderInfo,
@@ -625,58 +625,172 @@ export const App: React.FC = () => {
             />
           )}
 
-          {/* 🧠 Smart Adaptive Memory Guard & Chunk Milestone Banner */}
-          {chunkInfo && chunkInfo.isChunkPaused && ['explorer', 'folders', 'smart_clean'].includes(activeTab) && (
-            <div
-              className="panel"
-              style={{
-                padding: '12px 16px',
-                background: 'rgba(59, 130, 246, 0.08)',
-                border: '1px solid var(--accent-primary)',
-                borderRadius: 'var(--radius-md)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: '16px',
-                flexWrap: 'wrap',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div
-                  style={{
-                    width: '34px',
-                    height: '34px',
-                    borderRadius: 'var(--radius-sm)',
-                    background: 'rgba(59, 130, 246, 0.2)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'var(--accent-primary)',
-                    flexShrink: 0
-                  }}
-                >
-                  <Sparkles size={18} />
+          {/* 🧠 Smart Adaptive RAM Optimizer & Chunk Milestone Banner */}
+          {['explorer', 'folders', 'smart_clean'].includes(activeTab) && (
+            chunkInfo && chunkInfo.isChunkPaused ? (
+              <div
+                className="panel"
+                style={{
+                  padding: '12px 16px',
+                  background: 'rgba(59, 130, 246, 0.08)',
+                  border: '1px solid var(--accent-primary)',
+                  borderRadius: 'var(--radius-md)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '16px',
+                  flexWrap: 'wrap',
+                  boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div
+                    style={{
+                      width: '34px',
+                      height: '34px',
+                      borderRadius: 'var(--radius-sm)',
+                      background: 'rgba(59, 130, 246, 0.2)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'var(--accent-primary)',
+                      flexShrink: 0
+                    }}
+                  >
+                    <Sparkles size={18} />
+                  </div>
+
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-main)' }}>
+                        Scan Part {chunkInfo.chunkNumber} Ready ({chunkInfo.formattedBytes} • {chunkInfo.scannedFiles.toLocaleString()} files)
+                      </span>
+                      <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '3px', background: 'var(--bg-subtle)', color: 'var(--accent-primary)', fontWeight: 600 }}>
+                        RAM Optimizer Active • {chunkInfo.remainingQueueCount} subfolders queued
+                      </span>
+                    </div>
+                    <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '2px' }}>
+                      Paused here so you can clean what was scanned first without lag. Clean now, or continue scanning.
+                    </p>
+                  </div>
                 </div>
 
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-main)' }}>
-                      Part {chunkInfo.chunkNumber} Ready to Clean ({chunkInfo.formattedBytes} • {chunkInfo.scannedFiles.toLocaleString()} files)
-                    </span>
-                    <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '3px', background: 'var(--bg-subtle)', color: 'var(--accent-primary)', fontWeight: 600 }}>
-                      RAM Optimizer Active • {chunkInfo.remainingQueueCount} subfolders queued
-                    </span>
-                  </div>
-                  <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '2px' }}>
-                    Paused here so you can clean what was scanned first without lag. Clean now, or continue scanning.
-                  </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  {/* Part Switcher Dropdown inside Milestone Banner */}
+                  {availableParts.length > 1 && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>Viewing:</span>
+                      <select
+                        value={selectedPartFilter}
+                        onChange={e => setSelectedPartFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))}
+                        style={{
+                          padding: '4px 8px',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          background: 'var(--bg-panel)',
+                          border: '1px solid var(--accent-primary)',
+                          borderRadius: 'var(--radius-sm)',
+                          color: 'var(--text-main)',
+                          cursor: 'pointer'
+                        }}
+                        title="Cross-check files in Part 1 vs Part 2 vs All Scanned"
+                      >
+                        <option value="all">🌐 All Scanned Parts (1–{availableParts.length}) ({files.length.toLocaleString()} files)</option>
+                        {availableParts.map(p => {
+                          const count = files.filter(f => (f.scanPart || 1) === p).length;
+                          return (
+                            <option key={p} value={p}>
+                              📦 Part {p} Only ({count.toLocaleString()} files)
+                            </option>
+                          );
+                        })}
+                      </select>
+                    </div>
+                  )}
+
+                  {activeTab !== 'smart_clean' && (
+                    <button
+                      className="btn btn-secondary"
+                      style={{ fontSize: '11px', padding: '5px 10px' }}
+                      onClick={() => setActiveTab('smart_clean')}
+                      title="Review and clean this scanned batch in Smart Optimizer"
+                    >
+                      <Layers size={12} style={{ color: 'var(--accent-primary)' }} />
+                      <span>Review in Smart Optimizer</span>
+                    </button>
+                  )}
+
+                  <button
+                    className="btn btn-primary"
+                    style={{ fontSize: '11px', padding: '5px 12px' }}
+                    onClick={() => handleResumeScan(false)}
+                    title="Resume and scan next chunk of directory"
+                  >
+                    <Play size={12} />
+                    <span>Scan Next Part</span>
+                  </button>
+
+                  <button
+                    className="btn btn-secondary"
+                    style={{ fontSize: '11px', padding: '5px 10px' }}
+                    onClick={() => handleResumeScan(true)}
+                    title="Scan all remaining subfolders without pausing"
+                  >
+                    <Zap size={12} />
+                    <span>Scan All Remaining</span>
+                  </button>
                 </div>
               </div>
+            ) : availableParts.length > 1 && !isScanning && files.length > 0 ? (
+              /* All Scan Parts Complete Summary Banner */
+              <div
+                className="panel"
+                style={{
+                  padding: '10px 16px',
+                  background: 'rgba(16, 185, 129, 0.08)',
+                  border: '1px solid rgba(16, 185, 129, 0.3)',
+                  borderRadius: 'var(--radius-md)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '12px',
+                  flexWrap: 'wrap'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div
+                    style={{
+                      width: '30px',
+                      height: '30px',
+                      borderRadius: 'var(--radius-sm)',
+                      background: 'rgba(16, 185, 129, 0.15)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#10b981',
+                      flexShrink: 0
+                    }}
+                  >
+                    <CheckCircle2 size={16} />
+                  </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                {/* Part Switcher Dropdown inside Milestone Banner */}
-                {availableParts.length > 1 && (
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-main)' }}>
+                        All {availableParts.length} Parts Scanned ({files.length.toLocaleString()} files • {formatBytes(files.reduce((s, f) => s + f.size, 0))})
+                      </span>
+                      <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '3px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', fontWeight: 600 }}>
+                        Scan Complete
+                      </span>
+                    </div>
+                    <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '1px' }}>
+                      All subfolders indexed. Use the part switcher to cross-check individual parts or view all files together.
+                    </p>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  {/* Part Switcher Dropdown */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>Viewing:</span>
                     <select
@@ -687,7 +801,7 @@ export const App: React.FC = () => {
                         fontSize: '11px',
                         fontWeight: 600,
                         background: 'var(--bg-panel)',
-                        border: '1px solid var(--accent-primary)',
+                        border: '1px solid #10b981',
                         borderRadius: 'var(--radius-sm)',
                         color: 'var(--text-main)',
                         cursor: 'pointer'
@@ -705,41 +819,31 @@ export const App: React.FC = () => {
                       })}
                     </select>
                   </div>
-                )}
 
-                {activeTab !== 'smart_clean' && (
+                  {activeTab !== 'smart_clean' && (
+                    <button
+                      className="btn btn-secondary"
+                      style={{ fontSize: '11px', padding: '4px 10px' }}
+                      onClick={() => setActiveTab('smart_clean')}
+                      title="Review findings in Smart Optimizer"
+                    >
+                      <Layers size={12} style={{ color: 'var(--accent-primary)' }} />
+                      <span>Review in Smart Optimizer</span>
+                    </button>
+                  )}
+
                   <button
                     className="btn btn-secondary"
-                    style={{ fontSize: '11px', padding: '5px 10px' }}
-                    onClick={() => setActiveTab('smart_clean')}
-                    title="Review and clean this scanned batch in Smart Optimizer"
+                    style={{ fontSize: '11px', padding: '4px 10px' }}
+                    onClick={() => handleStartScan(selectedPath)}
+                    title="Rescan this folder from the beginning"
                   >
-                    <Layers size={12} style={{ color: 'var(--accent-primary)' }} />
-                    <span>Review in Smart Optimizer</span>
+                    <RotateCw size={12} />
+                    <span>Rescan Folder</span>
                   </button>
-                )}
-
-                <button
-                  className="btn btn-primary"
-                  style={{ fontSize: '11px', padding: '5px 12px' }}
-                  onClick={() => handleResumeScan(false)}
-                  title="Resume and scan next chunk of directory"
-                >
-                  <Play size={12} />
-                  <span>Scan Next Part</span>
-                </button>
-
-                <button
-                  className="btn btn-secondary"
-                  style={{ fontSize: '11px', padding: '5px 10px' }}
-                  onClick={() => handleResumeScan(true)}
-                  title="Scan all remaining subfolders without pausing"
-                >
-                  <Zap size={12} />
-                  <span>Scan All Remaining</span>
-                </button>
+                </div>
               </div>
-            </div>
+            ) : null
           )}
 
           {/* Tab 1: Storage Explorer & File Filter Table */}

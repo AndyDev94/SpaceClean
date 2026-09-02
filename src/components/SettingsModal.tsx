@@ -635,15 +635,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
               </div>
 
-              {/* Safety & RAM Optimizer Explanations */}
-              <div style={{ background: 'rgba(16, 185, 129, 0.08)', borderRadius: 'var(--radius-md)', padding: '14px', border: '1px solid rgba(16, 185, 129, 0.25)' }}>
-                <h4 style={{ fontSize: '13px', fontWeight: 700, color: '#10b981', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <ShieldCheck size={16} />
-                  <span>100% {trashName} Safety & RAM Optimizer Architecture</span>
+              {/* RAM Optimizer Architecture Explanation */}
+              <div style={{ background: 'rgba(59, 130, 246, 0.08)', borderRadius: 'var(--radius-md)', padding: '14px', border: '1px solid rgba(59, 130, 246, 0.25)' }}>
+                <h4 style={{ fontSize: '13px', fontWeight: 700, color: 'var(--accent-primary)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Cpu size={16} />
+                  <span>RAM Optimizer (Chunked Scanning) Architecture</span>
                 </h4>
                 <p style={{ fontSize: '12px', color: 'var(--text-main)', lineHeight: 1.6, margin: 0 }}>
-                  • <strong>Zero Risk of Accidental Loss:</strong> All deleted files are sent to your system {trashName} by default, allowing instant 1-click restore.
-                  <br />• <strong>RAM Optimizer Parts:</strong> When scanning 500GB+ drives, SpaceClean scans in smooth 5,000-file parts. Use the <strong>Part Navigator</strong> at the top to navigate between Part 1, Part 2, or All Scanned files anytime. Deleted files will never reappear when navigating back to previous parts.
+                  When scanning massive 500GB+ drives or folders, SpaceClean scans in smooth 5,000-file parts to prevent system lag. Use the <strong>Part Navigator</strong> dropdown at the top to jump between Part 1, Part 2, or All Scanned files at any time. Any files deleted in previous parts will never reappear when navigating back.
                 </p>
               </div>
             </div>

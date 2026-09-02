@@ -11,12 +11,13 @@ import { SmartFolderCleanup } from './components/SmartFolderCleanup';
 import { JunkCleaner } from './components/JunkCleaner';
 import { DuplicateFinder } from './components/DuplicateFinder';
 import { LargeFilesView } from './components/LargeFilesView';
+import { ThreatDetector } from './components/ThreatDetector';
 import { MediaGallery } from './components/MediaGallery';
 import { AppUninstaller } from './components/AppUninstaller';
 import { DeleteModal } from './components/DeleteModal';
 import { SettingsModal } from './components/SettingsModal';
 
-import { Play, Sparkles, AlertCircle, RefreshCw, Zap, Layers, CheckCircle2, RotateCw } from 'lucide-react';
+import { Play, Sparkles, AlertCircle, RefreshCw, Zap, Layers, CheckCircle2, RotateCw, ShieldAlert } from 'lucide-react';
 import {
   FileInfo,
   FolderInfo,
@@ -28,9 +29,11 @@ import {
   ScanResult,
   ScanProgress,
   ScanChunkInfo,
-  ThemePreset
+  ThemePreset,
+  ThreatItem
 } from './types';
 import { filterFiles, sortFiles, formatBytes } from './utils/filterUtils';
+import { scanFilesForThreats } from './utils/threatScanner';
 import { subDays, isBefore } from 'date-fns';
 
 const INITIAL_FILTER: FilterState = {
@@ -93,6 +96,47 @@ export const App: React.FC = () => {
 
   const [duplicates, setDuplicates] = useState<DuplicateGroup[]>([]);
   const [isDuplicatesScanning, setIsDuplicatesScanning] = useState(false);
+
+  // Threat Detection State & Whitelist Management
+  const [ignoredThreatIds, setIgnoredThreatIds] = useState<Set<string>>(() => {
+    try {
+      const raw = localStorage.getItem('spaceclean_ignored_threats');
+      return raw ? new Set(JSON.parse(raw)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
+
+  const rawThreats = useMemo(() => {
+    return scanFilesForThreats(files);
+  }, [files]);
+
+  const threats = useMemo(() => {
+    return rawThreats.map(t => ({
+      ...t,
+      isIgnored: ignoredThreatIds.has(t.id)
+    }));
+  }, [rawThreats, ignoredThreatIds]);
+
+  const activeThreatsCount = useMemo(() => {
+    return threats.filter(t => !t.isIgnored).length;
+  }, [threats]);
+
+  const handleToggleTrustThreat = (threatId: string, isTrusted: boolean) => {
+    const next = new Set(ignoredThreatIds);
+    if (isTrusted) {
+      next.add(threatId);
+    } else {
+      next.delete(threatId);
+    }
+    setIgnoredThreatIds(next);
+    localStorage.setItem('spaceclean_ignored_threats', JSON.stringify(Array.from(next)));
+  };
+
+  const handleDeleteThreats = (threatsToDelete: ThreatItem[]) => {
+    const paths = threatsToDelete.map(t => t.file.path);
+    handleOpenDeleteModalForPaths(paths);
+  };
 
   // Deletion Modal & Settings Modal
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -440,7 +484,7 @@ export const App: React.FC = () => {
       // If user is currently typing in a text field, avoid intercepting text keys
       if (isInputFocused) return;
 
-      // Tab switcher shortcuts (Ctrl+1 to Ctrl+8 or Alt+1 to Alt+8)
+      // Tab switcher shortcuts (Ctrl+1 to Ctrl+9 or Alt+1 to Alt+9)
       const tabMap: Record<string, AppTab> = {
         '1': 'explorer',
         '2': 'folders',
@@ -448,8 +492,9 @@ export const App: React.FC = () => {
         '4': 'duplicates',
         '5': 'large_files',
         '6': 'junk',
-        '7': 'media',
-        '8': 'uninstall'
+        '7': 'threats',
+        '8': 'media',
+        '9': 'uninstall'
       };
 
       if ((e.ctrlKey || e.metaKey || e.altKey) && tabMap[e.key]) {
@@ -634,6 +679,7 @@ export const App: React.FC = () => {
         scannedFilesCount={files.length}
         junkCount={junkItems.filter(j => j.totalBytes > 0).length}
         duplicatesCount={duplicates.length}
+        threatsCount={activeThreatsCount}
         isJunkIgnored={isJunkIgnored}
       />
 
@@ -990,6 +1036,20 @@ export const App: React.FC = () => {
               onOpenDeleteModal={handleOpenDeleteModal}
               onPreviewFile={setPreviewFile}
               previewedFilePath={previewFile?.path}
+            />
+          )}
+
+          {/* Tab 6: Threat Detection & Security Guard */}
+          {activeTab === 'threats' && (
+            <ThreatDetector
+              threats={threats}
+              scannedFilesCount={files.length}
+              isLoading={isScanning}
+              onRefresh={() => handleStartScan(selectedPath)}
+              onDeleteThreats={handleDeleteThreats}
+              onToggleTrustThreat={handleToggleTrustThreat}
+              onPreviewFile={setPreviewFile}
+              onShowInFolder={path => window.electronAPI?.showItemInFolder(path)}
             />
           )}
 

@@ -12,12 +12,13 @@ import {
   BarChart3,
   FolderTree,
   Film,
-  AppWindow
+  AppWindow,
+  ShieldAlert
 } from 'lucide-react';
 import { DriveInfo } from '../types';
 import { formatBytes } from '../utils/filterUtils';
 
-export type AppTab = 'explorer' | 'folders' | 'media' | 'smart_clean' | 'junk' | 'duplicates' | 'large_files' | 'uninstall';
+export type AppTab = 'explorer' | 'folders' | 'smart_clean' | 'duplicates' | 'large_files' | 'junk' | 'threats' | 'media' | 'uninstall';
 
 interface NavbarProps {
   drives: DriveInfo[];
@@ -32,6 +33,7 @@ interface NavbarProps {
   scannedFilesCount: number;
   junkCount: number;
   duplicatesCount: number;
+  threatsCount?: number;
   isJunkIgnored?: boolean;
 }
 
@@ -48,6 +50,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   scannedFilesCount,
   junkCount,
   duplicatesCount,
+  threatsCount = 0,
   isJunkIgnored = false,
 }) => {
   return (
@@ -146,7 +149,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <span>Largest Files</span>
         </button>
 
-        {/* 6. Junk / Trash (Third Last) */}
+        {/* 6. Junk / Trash */}
         <button
           className={`tab-btn ${activeTab === 'junk' ? 'active' : ''}`}
           onClick={() => onTabChange('junk')}
@@ -160,7 +163,22 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </button>
 
-        {/* 7. Media (Second Last) */}
+        {/* 7. Threats (Directly After Junk) */}
+        <button
+          className={`tab-btn ${activeTab === 'threats' ? 'active' : ''}`}
+          onClick={() => onTabChange('threats')}
+          title="Detect camouflaged executables, ransomware signatures, and suspicious script payloads"
+        >
+          <ShieldAlert size={14} style={{ color: (threatsCount || 0) > 0 ? '#ef4444' : undefined }} />
+          <span>Threats</span>
+          {(threatsCount || 0) > 0 && (
+            <span style={{ fontSize: '10px', background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', padding: '1px 5px', borderRadius: '10px', fontWeight: 700 }}>
+              {threatsCount}
+            </span>
+          )}
+        </button>
+
+        {/* 8. Media (Second Last) */}
         <button
           className={`tab-btn ${activeTab === 'media' ? 'active' : ''}`}
           onClick={() => onTabChange('media')}
@@ -170,7 +188,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <span>Media</span>
         </button>
 
-        {/* 8. Apps (Last) */}
+        {/* 9. Apps (Last) */}
         <button
           className={`tab-btn ${activeTab === 'uninstall' ? 'active' : ''}`}
           onClick={() => onTabChange('uninstall')}

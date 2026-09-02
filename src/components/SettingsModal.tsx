@@ -534,11 +534,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         <td style={{ padding: '7px 14px' }}>
                           <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>{cmdOrCtrl}</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>7</kbd>
                         </td>
+                        <td style={{ padding: '7px 14px', color: 'var(--text-main)' }}>🛡️ <strong>Threat Detection</strong> (Camouflage executables, rogue binaries, scripts)</td>
+                      </tr>
+                      <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                        <td style={{ padding: '7px 14px' }}>
+                          <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>{cmdOrCtrl}</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>8</kbd>
+                        </td>
                         <td style={{ padding: '7px 14px', color: 'var(--text-main)' }}>🖼️ <strong>Media Gallery</strong> (Visual Photos & Videos zoom grid)</td>
                       </tr>
                       <tr>
                         <td style={{ padding: '7px 14px' }}>
-                          <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>{cmdOrCtrl}</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>8</kbd>
+                          <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>{cmdOrCtrl}</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>9</kbd>
                         </td>
                         <td style={{ padding: '7px 14px', color: 'var(--text-main)' }}>💻 <strong>Apps Uninstaller</strong> (Batch sequential uninstallation)</td>
                       </tr>
@@ -758,11 +764,26 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </p>
                   </div>
 
-                  {/* Mode 7: Media Gallery */}
+                  {/* Mode 7: Threat Detection / Security Guard */}
                   <div style={{ padding: '12px 14px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                       <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)' }}>
-                        🖼️ 7. Media Gallery (<kbd style={{ fontSize: '10px' }}>{cmdOrCtrl}+7</kbd>)
+                        🛡️ 7. Threat Detection & Security Guard (<kbd style={{ fontSize: '10px' }}>{cmdOrCtrl}+7</kbd>)
+                      </span>
+                      <span style={{ fontSize: '11px', padding: '1px 6px', borderRadius: '3px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', fontWeight: 600 }}>Heuristic Malware Guard</span>
+                    </div>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
+                      <strong>Best For:</strong> Detecting camouflaged malware, double-extension executables, and rogue payloads.
+                      <br />• <strong>Detection Capabilities:</strong> Catches double-extension disguise (<code>.pdf.exe</code>, <code>.jpg.vbs</code>), rogue executables in Temp/AppData, system binary impersonation outside System32, and ransomware locking patterns.
+                      <br />• <strong>Controls:</strong> Review danger triggers and danger rationale. Use <strong>Quarantine / Delete</strong> or <strong>Trust File (Whitelist)</strong>.
+                    </p>
+                  </div>
+
+                  {/* Mode 8: Media Gallery */}
+                  <div style={{ padding: '12px 14px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)' }}>
+                        🖼️ 8. Media Gallery (<kbd style={{ fontSize: '10px' }}>{cmdOrCtrl}+8</kbd>)
                       </span>
                       <span style={{ fontSize: '11px', padding: '1px 6px', borderRadius: '3px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', fontWeight: 600 }}>Visual Manager</span>
                     </div>
@@ -772,11 +793,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </p>
                   </div>
 
-                  {/* Mode 8: Apps Uninstaller */}
+                  {/* Mode 9: Apps Uninstaller */}
                   <div style={{ padding: '12px 14px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                       <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)' }}>
-                        💻 8. Apps Uninstaller (<kbd style={{ fontSize: '10px' }}>{cmdOrCtrl}+8</kbd>)
+                        💻 9. Apps Uninstaller (<kbd style={{ fontSize: '10px' }}>{cmdOrCtrl}+9</kbd>)
                       </span>
                       <span style={{ fontSize: '11px', padding: '1px 6px', borderRadius: '3px', background: 'rgba(59, 130, 246, 0.15)', color: 'var(--accent-primary)', fontWeight: 600 }}>Batch Software Removal</span>
                     </div>

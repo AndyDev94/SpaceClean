@@ -167,3 +167,16 @@ export interface InstalledApp {
   isSystemProtected?: boolean;
 }
 
+export type ThreatRiskLevel = 'high' | 'suspicious' | 'warning';
+
+export interface ThreatItem {
+  id: string;
+  file: FileInfo;
+  riskLevel: ThreatRiskLevel;
+  ruleName: string;
+  category: string;
+  description: string;
+  recommendation: string;
+  isIgnored?: boolean;
+}
+

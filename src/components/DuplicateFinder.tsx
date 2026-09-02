@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Copy,
   Trash2,
@@ -7,7 +7,10 @@ import {
   RotateCw,
   Sparkles,
   CheckCircle,
-  FileText
+  FileText,
+  Layers,
+  ArrowDown,
+  ArrowUp
 } from 'lucide-react';
 import { DuplicateGroup, FileInfo } from '../types';
 import { formatBytes } from '../utils/filterUtils';
@@ -39,7 +42,7 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
     const next = new Set<string>();
     duplicates.forEach(group => {
       // Sort newest first
-      const sorted = [...group.files].sort((a, b) => b.modifiedAt - a.modifiedAt);
+      const sorted = [...group.files].sort((a, b) => (b.modifiedAt || 0) - (a.modifiedAt || 0));
       // Keep first (newest), select remaining
       for (let i = 1; i < sorted.length; i++) {
         next.add(sorted[i].path);
@@ -52,7 +55,7 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
     const next = new Set<string>();
     duplicates.forEach(group => {
       // Sort oldest first
-      const sorted = [...group.files].sort((a, b) => a.modifiedAt - b.modifiedAt);
+      const sorted = [...group.files].sort((a, b) => (a.modifiedAt || 0) - (b.modifiedAt || 0));
       // Keep first (oldest), select remaining
       for (let i = 1; i < sorted.length; i++) {
         next.add(sorted[i].path);
@@ -81,15 +84,15 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
 
   return (
     <div className="glass-panel" style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '20px', overflow: 'hidden' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+      {/* Top Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Copy size={20} style={{ color: 'var(--accent-violet)' }} />
+          <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Copy size={20} style={{ color: '#a855f7' }} />
             Duplicate File Finder
           </h2>
           <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
-            Found {duplicates.length} duplicate groups consuming {formatBytes(totalWastedBytes)} redundant space.
+            Found {duplicates.length.toLocaleString()} duplicate groups consuming {formatBytes(totalWastedBytes)} redundant space.
           </p>
         </div>
 
@@ -98,6 +101,7 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
             className="btn btn-secondary"
             onClick={onScanDuplicates}
             disabled={isScanning}
+            title="Scan current indexed files for duplicates"
           >
             <RotateCw size={14} className={isScanning ? 'animate-spin' : ''} />
             <span>Rescan Duplicates</span>
@@ -107,6 +111,7 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
             <button
               className="btn btn-danger"
               onClick={onOpenDeleteModal}
+              style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}
             >
               <Trash2 size={16} />
               <span>Delete {selectedCount} Duplicates ({formatBytes(selectedBytes)})</span>
@@ -117,9 +122,9 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
 
       {/* Smart Select Action Toolbar */}
       {duplicates.length > 0 && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', padding: '8px 12px', background: 'rgba(15, 23, 42, 0.6)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 500 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', padding: '8px 12px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', flexWrap: 'wrap', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '12px', color: 'var(--text-main)', fontWeight: 600 }}>
               Smart Mark:
             </span>
             <button className="btn btn-secondary" style={{ padding: '4px 10px', fontSize: '12px' }} onClick={handleKeepNewest}>
@@ -133,49 +138,65 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
             </button>
           </div>
 
-          <span style={{ fontSize: '12px', color: '#c084fc', fontWeight: 600 }}>
-            {selectedCount} copies selected
+          <span style={{ fontSize: '12px', color: '#a855f7', fontWeight: 700 }}>
+            {selectedCount} copies selected ({formatBytes(selectedBytes)})
           </span>
         </div>
       )}
 
       {/* Duplicate Groups List */}
-      <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '14px', paddingBottom: '16px' }}>
         {isScanning ? (
           <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
-            <RotateCw size={36} className="animate-spin" style={{ margin: '0 auto 12px', opacity: 0.7, color: '#c084fc' }} />
-            <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>Scanning for duplicate files...</p>
-            <p style={{ fontSize: '12px', marginTop: '4px' }}>Computing fast cryptographic MD5 hashes across matching file sizes</p>
+            <RotateCw size={36} className="animate-spin" style={{ margin: '0 auto 12px', opacity: 0.8, color: '#a855f7' }} />
+            <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-main)' }}>Scanning for duplicate files...</p>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
+              Computing fast cryptographic MD5 hashes across matching file sizes
+            </p>
           </div>
         ) : duplicates.length === 0 ? (
           <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
-            <CheckCircle size={40} style={{ margin: '0 auto 12px', opacity: 0.4, color: '#34d399' }} />
-            <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--text-primary)' }}>No duplicate files found</p>
-            <p style={{ fontSize: '12px', marginTop: '4px' }}>Scan files first or click "Rescan Duplicates" above.</p>
+            <CheckCircle size={40} style={{ margin: '0 auto 12px', opacity: 0.6, color: '#10b981' }} />
+            <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-main)' }}>No duplicate files found</p>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
+              All indexed files in this folder appear to be unique.
+            </p>
           </div>
         ) : (
           duplicates.map((group, gIdx) => (
             <div
               key={group.id}
-              className="glass-panel"
+              className="panel"
               style={{
-                border: '1px solid rgba(168, 85, 247, 0.25)',
+                border: '1px solid var(--border-color)',
                 borderRadius: 'var(--radius-md)',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                background: 'var(--bg-panel)'
               }}
             >
               {/* Group Header */}
-              <div style={{ padding: '10px 14px', background: 'rgba(168, 85, 247, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+              <div
+                style={{
+                  padding: '10px 14px',
+                  background: 'var(--bg-subtle)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  borderBottom: '1px solid var(--border-color)',
+                  flexWrap: 'wrap',
+                  gap: '8px'
+                }}
+              >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '12px', fontWeight: 600, color: '#d8b4fe' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#a855f7', background: 'rgba(168, 85, 247, 0.15)', padding: '2px 8px', borderRadius: '4px' }}>
                     Group #{gIdx + 1}
                   </span>
-                  <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                    • {group.files.length} clones ({group.formattedSize} each)
+                  <span style={{ fontSize: '12px', color: 'var(--text-main)', fontWeight: 600 }}>
+                    {group.files.length} Identical Copies ({group.formattedSize} each)
                   </span>
                 </div>
-                <div style={{ fontSize: '12px', color: '#ff6b81', fontWeight: 600 }}>
-                  Wasted: {formatBytes(group.wastedBytes)}
+                <div style={{ fontSize: '12px', color: '#ef4444', fontWeight: 700 }}>
+                  Wasted Space: {formatBytes(group.wastedBytes)}
                 </div>
               </div>
 
@@ -190,45 +211,67 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        padding: '8px 14px',
-                        borderBottom: '1px solid rgba(255,255,255,0.03)',
-                        background: isSelected ? 'rgba(255, 71, 87, 0.08)' : undefined,
-                        cursor: 'pointer'
+                        padding: '10px 14px',
+                        borderBottom: '1px solid var(--border-subtle)',
+                        background: isSelected ? 'rgba(239, 68, 68, 0.1)' : undefined,
+                        cursor: 'pointer',
+                        transition: 'background-color 0.15s ease'
                       }}
                       onClick={() => onToggleSelect(file.path)}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
                         <input
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => onToggleSelect(file.path)}
                           onClick={e => e.stopPropagation()}
-                          style={{ cursor: 'pointer' }}
+                          style={{ cursor: 'pointer', width: '16px', height: '16px' }}
                         />
                         <div style={{ minWidth: 0 }}>
-                          <div style={{ fontSize: '13px', fontWeight: 500, color: isSelected ? '#ff6b81' : 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <div
+                            style={{
+                              fontSize: '13px',
+                              fontWeight: 600,
+                              color: isSelected ? '#ef4444' : 'var(--text-main)',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap'
+                            }}
+                            title={file.name}
+                          >
                             {file.name}
                           </div>
-                          <div style={{ fontSize: '11px', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={file.path}>
+                          <div
+                            style={{
+                              fontSize: '11px',
+                              color: 'var(--text-muted)',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              marginTop: '2px'
+                            }}
+                            title={file.path}
+                          >
                             {file.path}
                           </div>
                         </div>
                       </div>
 
                       <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexShrink: 0 }}>
-                        <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
-                          {format(new Date(file.modifiedAt), 'yyyy-MM-dd HH:mm')}
+                        <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>
+                          {format(new Date(file.modifiedAt || file.createdAt), 'yyyy-MM-dd HH:mm')}
                         </span>
                         <button
                           className="btn btn-secondary"
-                          style={{ padding: '3px 6px', fontSize: '11px' }}
-                          title="Show in File Explorer"
+                          style={{ padding: '4px 8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                          title="Show file location in Explorer"
                           onClick={e => {
                             e.stopPropagation();
                             handleShowInExplorer(file.path);
                           }}
                         >
                           <FolderOpen size={12} />
+                          <span>Open</span>
                         </button>
                       </div>
                     </div>

@@ -17,7 +17,9 @@
   --accent-warning: #f59e0b;
 
   --text-main: #f3f4f6;
+  --text-primary: var(--text-main);
   --text-muted: #9ca3af;
+  --text-secondary: var(--text-muted);
   --text-dim: #6b7280;
 
   --radius-sm: 4px;

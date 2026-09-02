@@ -11,7 +11,9 @@ import {
   Layers,
   AlertCircle,
   CheckCircle2,
-  FolderOpen
+  FolderOpen,
+  Flame,
+  Filter
 } from 'lucide-react';
 import { InstalledApp } from '../types';
 import { formatBytes } from '../utils/filterUtils';
@@ -50,6 +52,14 @@ export const AppUninstaller: React.FC = () => {
   const totalAppBytes = useMemo(() => {
     return apps.reduce((acc, app) => acc + (app.sizeBytes || 0), 0);
   }, [apps]);
+
+  const heavyApps = useMemo(() => {
+    return apps.filter(app => (app.sizeBytes || 0) >= 500 * 1024 * 1024);
+  }, [apps]);
+
+  const heavyAppsBytes = useMemo(() => {
+    return heavyApps.reduce((acc, app) => acc + (app.sizeBytes || 0), 0);
+  }, [heavyApps]);
 
   const filteredApps = useMemo(() => {
     return apps
@@ -182,26 +192,80 @@ export const AppUninstaller: React.FC = () => {
         </div>
       </div>
 
-      {/* Status Alert Banner */}
-      {statusMessage && (
-        <div
-          style={{
-            padding: '10px 14px',
-            borderRadius: 'var(--radius-md)',
-            marginBottom: '14px',
-            fontSize: '13px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            background: statusMessage.type === 'success' ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
-            border: `1px solid ${statusMessage.type === 'success' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
-            color: statusMessage.type === 'success' ? '#34d399' : '#f87171'
-          }}
-        >
-          {statusMessage.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
-          <span>{statusMessage.text}</span>
+      {/* Dedicated App Summary Metric Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '16px' }}>
+        {/* Card 1: Total Applications */}
+        <div className="panel" style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-app)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)' }}>
+          <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(59, 130, 246, 0.15)', color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <AppWindow size={18} />
+          </div>
+          <div>
+            <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Installed Apps
+            </div>
+            <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-main)', marginTop: '2px' }}>
+              {isLoading ? '...' : `${apps.length.toLocaleString()} Apps`}
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+              Whole System (Computer)
+            </div>
+          </div>
         </div>
-      )}
+
+        {/* Card 2: Total Disk Space Consumed */}
+        <div className="panel" style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-app)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)' }}>
+          <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <HardDrive size={18} />
+          </div>
+          <div>
+            <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              App Disk Space
+            </div>
+            <div style={{ fontSize: '16px', fontWeight: 700, color: '#10b981', marginTop: '2px' }}>
+              {isLoading ? '...' : formatBytes(totalAppBytes)}
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+              Total disk consumption
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: Large Apps > 500 MB */}
+        <div className="panel" style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-app)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)' }}>
+          <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Flame size={18} />
+          </div>
+          <div>
+            <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Large Apps (&gt;500 MB)
+            </div>
+            <div style={{ fontSize: '16px', fontWeight: 700, color: '#ef4444', marginTop: '2px' }}>
+              {isLoading ? '...' : `${heavyApps.length} Apps (${formatBytes(heavyAppsBytes)})`}
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+              Candidates for reclaim
+            </div>
+          </div>
+        </div>
+
+        {/* Card 4: Filter / Search Results */}
+        <div className="panel" style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-app)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)' }}>
+          <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(168, 85, 247, 0.15)', color: '#a855f7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Filter size={18} />
+          </div>
+          <div>
+            <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Matching Search
+            </div>
+            <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-main)', marginTop: '2px' }}>
+              {isLoading ? '...' : `${filteredApps.length} Apps`}
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+              {searchQuery.trim() ? `Filter: "${searchQuery}"` : 'All displayed'}
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Filter & Sort Bar */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '14px', flexWrap: 'wrap' }}>

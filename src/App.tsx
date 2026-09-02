@@ -575,26 +575,30 @@ export const App: React.FC = () => {
       {/* Main App Workspace */}
       <div style={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
         <div className="main-content" style={{ flex: 1, minWidth: 0 }}>
-          {/* Metric Summary Cards */}
-          <StatsOverview
-            files={files}
-            filteredFiles={filteredFiles}
-            selectedFilePaths={selectedPaths}
-            duplicates={duplicates}
-            junkItems={junkItems}
-            isScanning={isScanning}
-            scanProgress={scanProgress}
-          />
+          {/* Metric Summary Cards (Hidden in Apps mode as apps are system-wide) */}
+          {activeTab !== 'uninstall' && (
+            <StatsOverview
+              files={files}
+              filteredFiles={filteredFiles}
+              selectedFilePaths={selectedPaths}
+              duplicates={duplicates}
+              junkItems={junkItems}
+              isScanning={isScanning}
+              scanProgress={scanProgress}
+            />
+          )}
 
           {/* Live Scan Progress & Percentage Loading Bar */}
-          <ScanProgressIndicator
-            progress={scanProgress}
-            isScanning={isScanning}
-            onCancelScan={handleCancelScan}
-          />
+          {activeTab !== 'uninstall' && (
+            <ScanProgressIndicator
+              progress={scanProgress}
+              isScanning={isScanning}
+              onCancelScan={handleCancelScan}
+            />
+          )}
 
           {/* 🧠 Smart Adaptive Memory Guard & Chunk Milestone Banner */}
-          {chunkInfo && chunkInfo.isChunkPaused && (
+          {activeTab !== 'uninstall' && chunkInfo && chunkInfo.isChunkPaused && (
             <div
               className="panel"
               style={{

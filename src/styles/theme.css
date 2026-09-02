@@ -290,6 +290,36 @@ select {
   transition: border-color 0.15s ease;
 }
 
+select option {
+  background: var(--bg-panel);
+  color: var(--text-main);
+  padding: 6px 10px;
+}
+
+input[type="date"] {
+  color-scheme: dark;
+}
+
+[data-theme="clean-white"] input[type="date"],
+[data-theme="warm-sand"] input[type="date"],
+[data-theme="arctic"] input[type="date"],
+[data-theme="sage-light"] input[type="date"] {
+  color-scheme: light;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.85;
+  filter: invert(0.85);
+}
+
+[data-theme="clean-white"] input[type="date"]::-webkit-calendar-picker-indicator,
+[data-theme="warm-sand"] input[type="date"]::-webkit-calendar-picker-indicator,
+[data-theme="arctic"] input[type="date"]::-webkit-calendar-picker-indicator,
+[data-theme="sage-light"] input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.2);
+}
+
 input[type="text"]:focus,
 input[type="date"]:focus,
 select:focus {

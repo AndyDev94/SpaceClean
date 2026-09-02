@@ -577,16 +577,25 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
       </div>
 
       {/* Control Bar: Row 2 - Date Preset + Custom Date Range, Minimum Size, Format, Sort */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '14px', flexWrap: 'wrap', padding: '8px 12px', background: 'rgba(15, 23, 42, 0.4)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '14px', flexWrap: 'wrap', padding: '8px 12px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           {/* Date / Time Filter Dropdown */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <Calendar size={13} style={{ color: 'var(--text-muted)' }} />
-            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Date:</span>
+            <Calendar size={13} style={{ color: 'var(--accent-primary)' }} />
+            <span style={{ fontSize: '11px', color: 'var(--text-main)', fontWeight: 600 }}>Date:</span>
             <select
               value={datePreset}
               onChange={e => setDatePreset(e.target.value as DateFilterPreset)}
-              style={{ padding: '3px 8px', fontSize: '11px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '4px', color: 'var(--text-main)' }}
+              style={{
+                padding: '4px 8px',
+                fontSize: '11px',
+                fontWeight: 500,
+                background: 'var(--bg-input)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '4px',
+                color: 'var(--text-main)',
+                cursor: 'pointer'
+              }}
             >
               <option value="all">All Dates</option>
               <option value="today">Today</option>
@@ -602,20 +611,47 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
 
           {/* Custom Date Range Picker */}
           {datePreset === 'custom' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'var(--bg-card)', padding: '2px 8px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
-              <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>From:</span>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'var(--bg-panel)',
+                padding: '3px 8px',
+                borderRadius: '4px',
+                border: '1px solid var(--accent-primary)',
+                boxShadow: '0 0 8px rgba(59, 130, 246, 0.2)'
+              }}
+            >
+              <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-main)' }}>From:</span>
               <input
                 type="date"
                 value={customStartDate}
                 onChange={e => setCustomStartDate(e.target.value)}
-                style={{ background: 'transparent', border: 'none', color: 'var(--text-main)', fontSize: '11px', outline: 'none' }}
+                style={{
+                  background: 'var(--bg-input)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '3px',
+                  color: 'var(--text-main)',
+                  fontSize: '11px',
+                  padding: '2px 5px',
+                  outline: 'none'
+                }}
               />
-              <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>To:</span>
+              <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-main)' }}>To:</span>
               <input
                 type="date"
                 value={customEndDate}
                 onChange={e => setCustomEndDate(e.target.value)}
-                style={{ background: 'transparent', border: 'none', color: 'var(--text-main)', fontSize: '11px', outline: 'none' }}
+                style={{
+                  background: 'var(--bg-input)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '3px',
+                  color: 'var(--text-main)',
+                  fontSize: '11px',
+                  padding: '2px 5px',
+                  outline: 'none'
+                }}
               />
             </div>
           )}
@@ -805,7 +841,7 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                       <td style={{ padding: '8px 10px', textAlign: 'right', fontWeight: 600, color: file.size > 1024 * 1024 * 100 ? '#ff6b81' : 'var(--text-main)' }}>
                         {file.formattedSize}
                       </td>
-                      <td style={{ padding: '8px 10px', fontSize: '11px', color: 'var(--text-dim)' }}>
+                      <td style={{ padding: '8px 10px', fontSize: '11px', color: 'var(--text-muted)' }}>
                         {format(new Date(file.modifiedAt || file.createdAt), 'yyyy-MM-dd')}
                       </td>
                       <td style={{ padding: '8px 10px', textAlign: 'center' }} onClick={e => e.stopPropagation()}>
@@ -1068,11 +1104,13 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                     >
                       {file.name}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-dim)', marginTop: '2px' }}>
-                      <span style={{ fontWeight: 700, color: file.size > 1024 * 1024 * 100 ? '#ff6b81' : undefined }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                      <span style={{ fontWeight: 700, color: file.size > 1024 * 1024 * 100 ? '#ff6b81' : 'var(--text-main)' }}>
                         {file.formattedSize}
                       </span>
-                      <span>{format(new Date(file.modifiedAt || file.createdAt), 'yyyy-MM-dd')}</span>
+                      <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>
+                        {format(new Date(file.modifiedAt || file.createdAt), 'yyyy-MM-dd')}
+                      </span>
                     </div>
                   </div>
                 </div>

@@ -476,46 +476,173 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           {/* 4. DETAILED GUIDE TAB */}
           {activeTab === 'guide' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={{ padding: '12px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 700, color: 'var(--accent-primary)', marginBottom: '6px' }}>
-                  <Cpu size={16} />
-                  <span>1. RAM Optimizer (Chunked Scanning)</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {/* Step-by-Step Workflow */}
+              <div style={{ background: 'var(--bg-subtle)', borderRadius: 'var(--radius-md)', padding: '16px', border: '1px solid var(--border-color)' }}>
+                <h4 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-main)', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Sparkles size={16} style={{ color: 'var(--accent-primary)' }} />
+                  <span>3-Step Quick Start Workflow</span>
+                </h4>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
+                  <div style={{ padding: '10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--accent-primary)', marginBottom: '4px' }}>STEP 1: SELECT & SCAN</div>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
+                      Select a drive from the top bar or click <strong>Browse Folder</strong> (<kbd style={{ fontSize: '10px' }}>Ctrl+O</kbd>). Click <strong>Start Scan</strong>.
+                    </p>
+                  </div>
+
+                  <div style={{ padding: '10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: '#a855f7', marginBottom: '4px' }}>STEP 2: PICK A CLEANUP TOOL</div>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
+                      Switch between 8 specialized modes (<kbd style={{ fontSize: '10px' }}>Ctrl+1..8</kbd>) tailored for duplicates, heavy files, apps, or junk.
+                    </p>
+                  </div>
+
+                  <div style={{ padding: '10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: '#10b981', marginBottom: '4px' }}>STEP 3: PREVIEW & SAFE DELETE</div>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
+                      Inspect files with Live Preview (<kbd style={{ fontSize: '10px' }}>Enter</kbd>), select items, and delete safely to Windows Recycle Bin.
+                    </p>
+                  </div>
                 </div>
-                <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.6, margin: 0 }}>
-                  Scanning massive hard drives (500 GB to 4 TB) with hundreds of thousands of files usually freezes Windows. SpaceClean's <strong>RAM Optimizer</strong> scans in safe batches of 5,000 files, pausing at manageable checkpoints so you can clean what was scanned first without lag. You can seamlessly click <strong>"Scan Next Part"</strong> or jump between <strong>Part 1</strong>, <strong>Part 2</strong>, etc. at any time.
-                </p>
               </div>
 
-              <div style={{ padding: '12px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 700, color: 'var(--accent-primary)', marginBottom: '6px' }}>
-                  <Sparkles size={16} />
-                  <span>2. Smart Optimizer & Findings</span>
+              {/* Comprehensive Tool & Mode Guide */}
+              <div>
+                <h4 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-main)', marginBottom: '12px' }}>
+                  🛠️ Guide to Each Cleaning Mode & Tool
+                </h4>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {/* Mode 1: Files Explorer */}
+                  <div style={{ padding: '12px 14px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)' }}>
+                        📄 1. Storage Files Explorer (<kbd style={{ fontSize: '10px' }}>Ctrl+1</kbd>)
+                      </span>
+                      <span style={{ fontSize: '11px', padding: '1px 6px', borderRadius: '3px', background: 'rgba(59, 130, 246, 0.15)', color: 'var(--accent-primary)', fontWeight: 600 }}>Master Inventory</span>
+                    </div>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
+                      <strong>Best For:</strong> Filtering, searching, and sorting thousands of files.
+                      <br />• <strong>Features:</strong> Filter by date ranges (Today, Past 6 Months, Custom), categories (Videos, Archives, Code), and file size thresholds.
+                      <br />• <strong>Usage:</strong> Click column headers (Size, Modified, Name) to sort, press <kbd style={{ fontSize: '10px' }}>Space</kbd> to toggle checkboxes, and click <strong>Delete</strong> (<kbd style={{ fontSize: '10px' }}>Del</kbd>).
+                    </p>
+                  </div>
+
+                  {/* Mode 2: Folder Explorer */}
+                  <div style={{ padding: '12px 14px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)' }}>
+                        📁 2. Folder Explorer (<kbd style={{ fontSize: '10px' }}>Ctrl+2</kbd>)
+                      </span>
+                      <span style={{ fontSize: '11px', padding: '1px 6px', borderRadius: '3px', background: 'rgba(59, 130, 246, 0.15)', color: 'var(--accent-primary)', fontWeight: 600 }}>Tree & Size Breakdown</span>
+                    </div>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
+                      <strong>Best For:</strong> Pinpointing which large folders (e.g. <code>Downloads</code>, <code>Games</code>, <code>node_modules</code>) are consuming all your disk space.
+                      <br />• <strong>Features:</strong> Expandable directory tree with percentage consumption bars and file counts.
+                      <br />• <strong>Usage:</strong> Drill down into nested subfolders to immediately see where gigabytes are clustered.
+                    </p>
+                  </div>
+
+                  {/* Mode 3: Smart Optimizer */}
+                  <div style={{ padding: '12px 14px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)' }}>
+                        ⚡ 3. Smart Optimizer (<kbd style={{ fontSize: '10px' }}>Ctrl+3</kbd>)
+                      </span>
+                      <span style={{ fontSize: '11px', padding: '1px 6px', borderRadius: '3px', background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', fontWeight: 600 }}>Guided Findings</span>
+                    </div>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
+                      <strong>Best For:</strong> Cleanups guided by age and safety without manual sorting.
+                      <br />• <strong>Year Findings:</strong> Groups files into <code>Finding 1: Year 2022 Files</code>, <code>Finding 2: Year 2023 Files</code> so you can purge forgotten older archives first.
+                      <br />• <strong>Safety Findings:</strong> One-click safety categories (<code>Safe to Delete Cache</code>, <code>Large Files &gt;200MB</code>, <code>Stale Files</code>).
+                    </p>
+                  </div>
+
+                  {/* Mode 4: Duplicate Finder */}
+                  <div style={{ padding: '12px 14px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)' }}>
+                        🔍 4. Duplicate Finder (<kbd style={{ fontSize: '10px' }}>Ctrl+4</kbd>)
+                      </span>
+                      <span style={{ fontSize: '11px', padding: '1px 6px', borderRadius: '3px', background: 'rgba(168, 85, 247, 0.15)', color: '#a855f7', fontWeight: 600 }}>MD5 Checksums</span>
+                    </div>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
+                      <strong>Best For:</strong> Finding redundant clone files regardless of renamed file names.
+                      <br />• <strong>Features:</strong> Cryptographic MD5 checksum verification, real-time search, date range filters, and live media side-preview.
+                      <br />• <strong>Usage:</strong> Click <strong>Keep Newest</strong> / <strong>Keep Oldest</strong> to auto-mark copies. Click <strong>Keep Both (Important)</strong> on intentional backups to lock and protect them permanently.
+                    </p>
+                  </div>
+
+                  {/* Mode 5: Largest Files */}
+                  <div style={{ padding: '12px 14px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)' }}>
+                        📊 5. Largest Files (<kbd style={{ fontSize: '10px' }}>Ctrl+5</kbd>)
+                      </span>
+                      <span style={{ fontSize: '11px', padding: '1px 6px', borderRadius: '3px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', fontWeight: 600 }}>Fast Space Reclamation</span>
+                    </div>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
+                      <strong>Best For:</strong> Freeing 50 GB to 200 GB in seconds.
+                      <br />• <strong>Features:</strong> Ranks the top 100 heaviest files (large video screen captures, ISO disk images, virtual machines).
+                      <br />• <strong>Usage:</strong> Inspect each large file with the live preview drawer and delete heavy space hogs.
+                    </p>
+                  </div>
+
+                  {/* Mode 6: Junk Cleaner */}
+                  <div style={{ padding: '12px 14px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)' }}>
+                        🗑️ 6. System Junk & Recycle Bin (<kbd style={{ fontSize: '10px' }}>Ctrl+6</kbd>)
+                      </span>
+                      <span style={{ fontSize: '11px', padding: '1px 6px', borderRadius: '3px', background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', fontWeight: 600 }}>Windows Maintenance</span>
+                    </div>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
+                      <strong>Best For:</strong> Cleaning temporary OS caches, error logs, and emptying the Windows Recycle Bin.
+                      <br />• <strong>Features:</strong> Target individual cache locations, click <strong>Select All Safe Targets</strong>, or click <strong>Ignore All (Keep All)</strong> to hide notification dots and preserve logs.
+                    </p>
+                  </div>
+
+                  {/* Mode 7: Media Gallery */}
+                  <div style={{ padding: '12px 14px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)' }}>
+                        🖼️ 7. Media Gallery (<kbd style={{ fontSize: '10px' }}>Ctrl+7</kbd>)
+                      </span>
+                      <span style={{ fontSize: '11px', padding: '1px 6px', borderRadius: '3px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', fontWeight: 600 }}>Visual Manager</span>
+                    </div>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
+                      <strong>Best For:</strong> Visual inspection and cleanup of photos, screenshots, and video clips.
+                      <br />• <strong>Features:</strong> Responsive thumbnail size zoom slider, hover duration metadata, and quick multi-select cards.
+                    </p>
+                  </div>
+
+                  {/* Mode 8: Apps Uninstaller */}
+                  <div style={{ padding: '12px 14px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)' }}>
+                        📱 8. Apps Uninstaller (<kbd style={{ fontSize: '10px' }}>Ctrl+8</kbd>)
+                      </span>
+                      <span style={{ fontSize: '11px', padding: '1px 6px', borderRadius: '3px', background: 'rgba(59, 130, 246, 0.15)', color: 'var(--accent-primary)', fontWeight: 600 }}>Batch Software Removal</span>
+                    </div>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
+                      <strong>Best For:</strong> Removing unwanted programs and games without uninstalling one-by-one.
+                      <br />• <strong>Features:</strong> Check multiple software cards (or click <strong>Select Heavy &gt;500MB</strong>). Uninstalls run sequentially in a managed queue to prevent Windows Installer Error 1618.
+                    </p>
+                  </div>
                 </div>
-                <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.6, margin: 0 }}>
-                  Organizes files into two intelligent cleanup modes:
-                  <br />• <strong>Chronological Year Findings</strong> (e.g. <code>Finding 1: Year 2022 Files</code>, <code>Finding 2: Year 2023 Files</code>) to review and purge older forgotten files first.
-                  <br />• <strong>Categorized Safety Findings</strong> (<code>Safe to Delete</code>, <code>Large Files &gt;200MB</code>, <code>Stale Files</code>) for 1-click batch cleanup.
-                </p>
               </div>
 
-              <div style={{ padding: '12px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 700, color: '#a855f7', marginBottom: '6px' }}>
-                  <Copy size={16} />
-                  <span>3. Duplicate Finder & Protection</span>
-                </div>
-                <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.6, margin: 0 }}>
-                  Uses cryptographic <strong>MD5 hashing</strong> to find exact identical files regardless of file names. Click <strong>"Keep Both (Important)"</strong> to mark intentional duplicates safe so automated batch tools will never touch them.
-                </p>
-              </div>
-
-              <div style={{ padding: '12px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 700, color: '#10b981', marginBottom: '6px' }}>
+              {/* Safety & RAM Optimizer Explanations */}
+              <div style={{ background: 'rgba(16, 185, 129, 0.08)', borderRadius: 'var(--radius-md)', padding: '14px', border: '1px solid rgba(16, 185, 129, 0.25)' }}>
+                <h4 style={{ fontSize: '13px', fontWeight: 700, color: '#10b981', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <ShieldCheck size={16} />
-                  <span>4. 100% Safe Trash & Recycle Bin</span>
-                </div>
-                <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.6, margin: 0 }}>
-                  By default, deleted files are safely moved into the <strong>Windows Recycle Bin</strong>. If you ever make a mistake, you can instantly restore your files with 1 click directly from the Recycle Bin.
+                  <span>100% Recycle Bin Safety & RAM Optimizer Architecture</span>
+                </h4>
+                <p style={{ fontSize: '12px', color: 'var(--text-main)', lineHeight: 1.6, margin: 0 }}>
+                  • <strong>Zero Risk of Accidental Loss:</strong> All deleted files are sent to the Windows Recycle Bin by default, allowing instant 1-click restore.
+                  <br />• <strong>RAM Optimizer Parts:</strong> When scanning 500GB+ drives, SpaceClean scans in smooth 5,000-file parts. Use the <strong>Part Navigator</strong> at the top to navigate between Part 1, Part 2, or All Scanned files anytime. Deleted files will never reappear when navigating back to previous parts.
                 </p>
               </div>
             </div>

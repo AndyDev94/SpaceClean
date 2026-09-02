@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { InstalledApp } from '../types';
 import { formatBytes } from '../utils/filterUtils';
+import { osName } from '../utils/platform';
 
 export const AppUninstaller: React.FC = () => {
   const [apps, setApps] = useState<InstalledApp[]>([]);
@@ -793,7 +794,7 @@ export const AppUninstaller: React.FC = () => {
 
             {/* Execution Warning / Note */}
             <div style={{ fontSize: '11px', color: 'var(--text-muted)', background: 'var(--bg-app)', padding: '10px 12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', lineHeight: 1.5 }}>
-              💡 <strong>Sequential Execution:</strong> Windows runs each uninstaller in sequence. Please complete the setup prompt for each application as it appears on your screen.
+              💡 <strong>Sequential Execution:</strong> {osName} runs each uninstaller in sequence. Please complete the setup prompt for each application as it appears on your screen.
             </div>
 
             {/* Live Progress Indicator if running */}

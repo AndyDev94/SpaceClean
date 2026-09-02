@@ -19,6 +19,7 @@ import {
   Heart
 } from 'lucide-react';
 import { StorageLogo } from './StorageLogo';
+import { osName, cmdOrCtrl, trashName, fileManagerName } from '../utils/platform';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -211,7 +212,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </span>
                   </div>
                   <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '4px' }}>
-                    Next-Gen Memory-Optimized Windows Disk Storage Analyzer & Deep Cleaner
+                    Next-Gen Memory-Optimized {osName} Disk Storage Analyzer & Deep Cleaner
                   </p>
                 </div>
               </div>
@@ -246,7 +247,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <ShieldCheck size={16} />
                   <span>Safe & Private</span>
                 </div>
-                SpaceClean processes all files locally on your computer with zero telemetry, zero data collection, and 100% Recycle Bin safety.
+                SpaceClean processes all files locally on your {osName} device with zero telemetry, zero cloud tracking, and 100% {trashName} safety.
               </div>
             </div>
           )}
@@ -272,7 +273,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     Current Version: <strong style={{ color: 'var(--accent-primary)' }}>v1.0.1</strong>
                   </div>
                   <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '2px' }}>
-                    Automatic update checking via GitHub Releases.
+                    Automatic update checking via GitHub Releases for {osName}.
                   </p>
                 </div>
 
@@ -334,7 +335,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   🌐 Tab & Mode Quick-Switch Shortcuts
                 </h4>
                 <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '8px' }}>
-                  Switch between cleaning modes instantly using <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '3px', padding: '1px 5px', fontSize: '10px', color: 'var(--accent-primary)', fontWeight: 600 }}>Ctrl</kbd> or <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '3px', padding: '1px 5px', fontSize: '10px', color: 'var(--accent-primary)', fontWeight: 600 }}>Alt</kbd> + Number:
+                  Switch between cleaning modes instantly using <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '3px', padding: '1px 5px', fontSize: '10px', color: 'var(--accent-primary)', fontWeight: 600 }}>{cmdOrCtrl}</kbd> or <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '3px', padding: '1px 5px', fontSize: '10px', color: 'var(--accent-primary)', fontWeight: 600 }}>Alt</kbd> + Number:
                 </p>
 
                 <div style={{ background: 'var(--bg-subtle)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', overflow: 'hidden' }}>
@@ -342,49 +343,49 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <tbody>
                       <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                         <td style={{ padding: '7px 14px', width: '170px' }}>
-                          <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>Ctrl</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>1</kbd>
+                          <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>{cmdOrCtrl}</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>1</kbd>
                         </td>
                         <td style={{ padding: '7px 14px', color: 'var(--text-main)' }}>📄 <strong>Files Explorer</strong> (Table view, filters, search)</td>
                       </tr>
                       <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                         <td style={{ padding: '7px 14px' }}>
-                          <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>Ctrl</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>2</kbd>
+                          <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>{cmdOrCtrl}</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>2</kbd>
                         </td>
                         <td style={{ padding: '7px 14px', color: 'var(--text-main)' }}>📁 <strong>Folder Explorer</strong> (Directory tree & largest folder consumers)</td>
                       </tr>
                       <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                         <td style={{ padding: '7px 14px' }}>
-                          <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>Ctrl</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>3</kbd>
+                          <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>{cmdOrCtrl}</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>3</kbd>
                         </td>
                         <td style={{ padding: '7px 14px', color: 'var(--text-main)' }}>⚡ <strong>Smart Optimizer</strong> (Findings 1, 2... & Year Batches)</td>
                       </tr>
                       <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                         <td style={{ padding: '7px 14px' }}>
-                          <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>Ctrl</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>4</kbd>
+                          <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>{cmdOrCtrl}</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>4</kbd>
                         </td>
                         <td style={{ padding: '7px 14px', color: 'var(--text-main)' }}>🔍 <strong>Duplicate Finder</strong> (MD5 Redundant Clones & Keep Both)</td>
                       </tr>
                       <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                         <td style={{ padding: '7px 14px' }}>
-                          <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>Ctrl</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>5</kbd>
+                          <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>{cmdOrCtrl}</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>5</kbd>
                         </td>
                         <td style={{ padding: '7px 14px', color: 'var(--text-main)' }}>📊 <strong>Largest Files</strong> (Heavy video captures, ISOs, containers)</td>
                       </tr>
                       <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                         <td style={{ padding: '7px 14px' }}>
-                          <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>Ctrl</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>6</kbd>
+                          <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>{cmdOrCtrl}</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>6</kbd>
                         </td>
-                        <td style={{ padding: '7px 14px', color: 'var(--text-main)' }}>🗑️ <strong>Junk Cleaner</strong> (Windows caches, error logs, Recycle Bin)</td>
+                        <td style={{ padding: '7px 14px', color: 'var(--text-main)' }}>🗑️ <strong>Junk Cleaner</strong> ({osName} caches, error logs, {trashName})</td>
                       </tr>
                       <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                         <td style={{ padding: '7px 14px' }}>
-                          <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>Ctrl</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>7</kbd>
+                          <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>{cmdOrCtrl}</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>7</kbd>
                         </td>
                         <td style={{ padding: '7px 14px', color: 'var(--text-main)' }}>🖼️ <strong>Media Gallery</strong> (Visual Photos & Videos zoom grid)</td>
                       </tr>
                       <tr>
                         <td style={{ padding: '7px 14px' }}>
-                          <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>Ctrl</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>8</kbd>
+                          <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>{cmdOrCtrl}</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>8</kbd>
                         </td>
                         <td style={{ padding: '7px 14px', color: 'var(--text-main)' }}>📱 <strong>Apps Uninstaller</strong> (Batch sequential uninstallation)</td>
                       </tr>
@@ -403,31 +404,31 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <tbody>
                       <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                         <td style={{ padding: '7px 14px', width: '170px' }}>
-                          <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>Ctrl</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>F</kbd> or <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>/</kbd>
+                          <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>{cmdOrCtrl}</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>F</kbd> or <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>/</kbd>
                         </td>
                         <td style={{ padding: '7px 14px', color: 'var(--text-main)' }}>Focus search & filter input</td>
                       </tr>
                       <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                         <td style={{ padding: '7px 14px' }}>
-                          <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>Ctrl</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>A</kbd>
+                          <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>{cmdOrCtrl}</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>A</kbd>
                         </td>
                         <td style={{ padding: '7px 14px', color: 'var(--text-main)' }}>Select all currently filtered files</td>
                       </tr>
                       <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                         <td style={{ padding: '7px 14px' }}>
-                          <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>Ctrl</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>D</kbd>
+                          <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>{cmdOrCtrl}</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>D</kbd>
                         </td>
                         <td style={{ padding: '7px 14px', color: 'var(--text-main)' }}>Deselect all files</td>
                       </tr>
                       <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                         <td style={{ padding: '7px 14px' }}>
-                          <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>Ctrl</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>O</kbd>
+                          <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>{cmdOrCtrl}</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>O</kbd>
                         </td>
                         <td style={{ padding: '7px 14px', color: 'var(--text-main)' }}>Browse Folder (Open native directory picker)</td>
                       </tr>
                       <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                         <td style={{ padding: '7px 14px' }}>
-                          <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>Ctrl</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>S</kbd> / <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>Enter</kbd>
+                          <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>{cmdOrCtrl}</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>S</kbd> / <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>Enter</kbd>
                         </td>
                         <td style={{ padding: '7px 14px', color: 'var(--text-main)' }}>Start scan or rescan current target</td>
                       </tr>
@@ -447,11 +448,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         <td style={{ padding: '7px 14px' }}>
                           <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>Delete</kbd>
                         </td>
-                        <td style={{ padding: '7px 14px', color: 'var(--text-main)' }}>Open Safe Delete & Recycle Bin confirmation dialog</td>
+                        <td style={{ padding: '7px 14px', color: 'var(--text-main)' }}>Open Safe Delete & {trashName} confirmation dialog</td>
                       </tr>
                       <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                         <td style={{ padding: '7px 14px' }}>
-                          <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>Ctrl</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>,</kbd>
+                          <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>{cmdOrCtrl}</kbd> + <kbd style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)' }}>,</kbd>
                         </td>
                         <td style={{ padding: '7px 14px', color: 'var(--text-main)' }}>Open Settings & Help Guide dialog</td>
                       </tr>
@@ -488,21 +489,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <div style={{ padding: '10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
                     <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--accent-primary)', marginBottom: '4px' }}>STEP 1: SELECT & SCAN</div>
                     <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
-                      Select a drive from the top bar or click <strong>Browse Folder</strong> (<kbd style={{ fontSize: '10px' }}>Ctrl+O</kbd>). Click <strong>Start Scan</strong>.
+                      Select a drive from the top bar or click <strong>Browse Folder</strong> (<kbd style={{ fontSize: '10px' }}>{cmdOrCtrl}+O</kbd>). Click <strong>Start Scan</strong>.
                     </p>
                   </div>
 
                   <div style={{ padding: '10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
                     <div style={{ fontSize: '11px', fontWeight: 700, color: '#a855f7', marginBottom: '4px' }}>STEP 2: PICK A CLEANUP TOOL</div>
                     <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
-                      Switch between 8 specialized modes (<kbd style={{ fontSize: '10px' }}>Ctrl+1..8</kbd>) tailored for duplicates, heavy files, apps, or junk.
+                      Switch between 8 specialized modes (<kbd style={{ fontSize: '10px' }}>{cmdOrCtrl}+1..8</kbd>) tailored for duplicates, heavy files, apps, or junk.
                     </p>
                   </div>
 
                   <div style={{ padding: '10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
                     <div style={{ fontSize: '11px', fontWeight: 700, color: '#10b981', marginBottom: '4px' }}>STEP 3: PREVIEW & SAFE DELETE</div>
                     <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
-                      Inspect files with Live Preview (<kbd style={{ fontSize: '10px' }}>Enter</kbd>), select items, and delete safely to Windows Recycle Bin.
+                      Inspect files with Live Preview (<kbd style={{ fontSize: '10px' }}>Enter</kbd>), select items, and delete safely to {trashName}.
                     </p>
                   </div>
                 </div>
@@ -519,7 +520,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <div style={{ padding: '12px 14px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                       <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)' }}>
-                        📄 1. Storage Files Explorer (<kbd style={{ fontSize: '10px' }}>Ctrl+1</kbd>)
+                        📄 1. Storage Files Explorer (<kbd style={{ fontSize: '10px' }}>{cmdOrCtrl}+1</kbd>)
                       </span>
                       <span style={{ fontSize: '11px', padding: '1px 6px', borderRadius: '3px', background: 'rgba(59, 130, 246, 0.15)', color: 'var(--accent-primary)', fontWeight: 600 }}>Master Inventory</span>
                     </div>
@@ -534,7 +535,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <div style={{ padding: '12px 14px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                       <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)' }}>
-                        📁 2. Folder Explorer (<kbd style={{ fontSize: '10px' }}>Ctrl+2</kbd>)
+                        📁 2. Folder Explorer (<kbd style={{ fontSize: '10px' }}>{cmdOrCtrl}+2</kbd>)
                       </span>
                       <span style={{ fontSize: '11px', padding: '1px 6px', borderRadius: '3px', background: 'rgba(59, 130, 246, 0.15)', color: 'var(--accent-primary)', fontWeight: 600 }}>Tree & Size Breakdown</span>
                     </div>
@@ -549,7 +550,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <div style={{ padding: '12px 14px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                       <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)' }}>
-                        ⚡ 3. Smart Optimizer (<kbd style={{ fontSize: '10px' }}>Ctrl+3</kbd>)
+                        ⚡ 3. Smart Optimizer (<kbd style={{ fontSize: '10px' }}>{cmdOrCtrl}+3</kbd>)
                       </span>
                       <span style={{ fontSize: '11px', padding: '1px 6px', borderRadius: '3px', background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', fontWeight: 600 }}>Guided Findings</span>
                     </div>
@@ -564,7 +565,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <div style={{ padding: '12px 14px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                       <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)' }}>
-                        🔍 4. Duplicate Finder (<kbd style={{ fontSize: '10px' }}>Ctrl+4</kbd>)
+                        🔍 4. Duplicate Finder (<kbd style={{ fontSize: '10px' }}>{cmdOrCtrl}+4</kbd>)
                       </span>
                       <span style={{ fontSize: '11px', padding: '1px 6px', borderRadius: '3px', background: 'rgba(168, 85, 247, 0.15)', color: '#a855f7', fontWeight: 600 }}>MD5 Checksums</span>
                     </div>
@@ -579,7 +580,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <div style={{ padding: '12px 14px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                       <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)' }}>
-                        📊 5. Largest Files (<kbd style={{ fontSize: '10px' }}>Ctrl+5</kbd>)
+                        📊 5. Largest Files (<kbd style={{ fontSize: '10px' }}>{cmdOrCtrl}+5</kbd>)
                       </span>
                       <span style={{ fontSize: '11px', padding: '1px 6px', borderRadius: '3px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', fontWeight: 600 }}>Fast Space Reclamation</span>
                     </div>
@@ -594,12 +595,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <div style={{ padding: '12px 14px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                       <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)' }}>
-                        🗑️ 6. System Junk & Recycle Bin (<kbd style={{ fontSize: '10px' }}>Ctrl+6</kbd>)
+                        🗑️ 6. System Junk & {trashName} (<kbd style={{ fontSize: '10px' }}>{cmdOrCtrl}+6</kbd>)
                       </span>
-                      <span style={{ fontSize: '11px', padding: '1px 6px', borderRadius: '3px', background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', fontWeight: 600 }}>Windows Maintenance</span>
+                      <span style={{ fontSize: '11px', padding: '1px 6px', borderRadius: '3px', background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', fontWeight: 600 }}>OS Maintenance</span>
                     </div>
                     <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
-                      <strong>Best For:</strong> Cleaning temporary OS caches, error logs, and emptying the Windows Recycle Bin.
+                      <strong>Best For:</strong> Cleaning temporary OS caches, error logs, and emptying the {trashName}.
                       <br />• <strong>Features:</strong> Target individual cache locations, click <strong>Select All Safe Targets</strong>, or click <strong>Ignore All (Keep All)</strong> to hide notification dots and preserve logs.
                     </p>
                   </div>
@@ -608,7 +609,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <div style={{ padding: '12px 14px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                       <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)' }}>
-                        🖼️ 7. Media Gallery (<kbd style={{ fontSize: '10px' }}>Ctrl+7</kbd>)
+                        🖼️ 7. Media Gallery (<kbd style={{ fontSize: '10px' }}>{cmdOrCtrl}+7</kbd>)
                       </span>
                       <span style={{ fontSize: '11px', padding: '1px 6px', borderRadius: '3px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', fontWeight: 600 }}>Visual Manager</span>
                     </div>
@@ -622,13 +623,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <div style={{ padding: '12px 14px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                       <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)' }}>
-                        📱 8. Apps Uninstaller (<kbd style={{ fontSize: '10px' }}>Ctrl+8</kbd>)
+                        📱 8. Apps Uninstaller (<kbd style={{ fontSize: '10px' }}>{cmdOrCtrl}+8</kbd>)
                       </span>
                       <span style={{ fontSize: '11px', padding: '1px 6px', borderRadius: '3px', background: 'rgba(59, 130, 246, 0.15)', color: 'var(--accent-primary)', fontWeight: 600 }}>Batch Software Removal</span>
                     </div>
                     <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
                       <strong>Best For:</strong> Removing unwanted programs and games without uninstalling one-by-one.
-                      <br />• <strong>Features:</strong> Check multiple software cards (or click <strong>Select Heavy &gt;500MB</strong>). Uninstalls run sequentially in a managed queue to prevent Windows Installer Error 1618.
+                      <br />• <strong>Features:</strong> Check multiple software cards (or click <strong>Select Heavy &gt;500MB</strong>). Uninstalls run sequentially in a managed queue to prevent OS installer conflicts.
                     </p>
                   </div>
                 </div>
@@ -638,10 +639,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <div style={{ background: 'rgba(16, 185, 129, 0.08)', borderRadius: 'var(--radius-md)', padding: '14px', border: '1px solid rgba(16, 185, 129, 0.25)' }}>
                 <h4 style={{ fontSize: '13px', fontWeight: 700, color: '#10b981', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <ShieldCheck size={16} />
-                  <span>100% Recycle Bin Safety & RAM Optimizer Architecture</span>
+                  <span>100% {trashName} Safety & RAM Optimizer Architecture</span>
                 </h4>
                 <p style={{ fontSize: '12px', color: 'var(--text-main)', lineHeight: 1.6, margin: 0 }}>
-                  • <strong>Zero Risk of Accidental Loss:</strong> All deleted files are sent to the Windows Recycle Bin by default, allowing instant 1-click restore.
+                  • <strong>Zero Risk of Accidental Loss:</strong> All deleted files are sent to your system {trashName} by default, allowing instant 1-click restore.
                   <br />• <strong>RAM Optimizer Parts:</strong> When scanning 500GB+ drives, SpaceClean scans in smooth 5,000-file parts. Use the <strong>Part Navigator</strong> at the top to navigate between Part 1, Part 2, or All Scanned files anytime. Deleted files will never reappear when navigating back to previous parts.
                 </p>
               </div>

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { JunkItem } from '../types';
 import { formatBytes } from '../utils/filterUtils';
+import { osName, trashName, fileManagerName } from '../utils/platform';
 
 interface JunkCleanerProps {
   junkItems: JunkItem[];
@@ -81,10 +82,10 @@ export const JunkCleaner: React.FC<JunkCleanerProps> = ({
     }
   };
 
-  // Handle direct 1-click empty of Recycle Bin
+  // Handle direct 1-click empty of Recycle Bin / Trash
   const handleEmptyRecycleBinDirect = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!window.confirm('Are you sure you want to permanently empty all items in the Windows Recycle Bin?')) return;
+    if (!window.confirm(`Are you sure you want to permanently empty all items in the ${trashName}?`)) return;
     setIsActionLoading('recycle_bin');
     try {
       if (window.electronAPI?.emptyRecycleBin) {
@@ -92,7 +93,7 @@ export const JunkCleaner: React.FC<JunkCleanerProps> = ({
       }
       onRefresh();
     } catch (err) {
-      console.error('Failed to empty recycle bin:', err);
+      console.error('Failed to empty trash:', err);
     } finally {
       setIsActionLoading(null);
     }
@@ -105,10 +106,10 @@ export const JunkCleaner: React.FC<JunkCleanerProps> = ({
         <div>
           <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Zap size={20} style={{ color: 'var(--accent-amber)' }} />
-            Windows System Junk, Cache & Recycle Bin
+            {osName} System Junk, Cache & {trashName}
           </h2>
           <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
-            Safely remove temporary caches, error reports, abandoned logs, and empty the Windows Recycle Bin.
+            Safely remove temporary caches, error reports, abandoned logs, and empty the {trashName}.
           </p>
         </div>
 
@@ -255,15 +256,15 @@ export const JunkCleaner: React.FC<JunkCleanerProps> = ({
 
                 {/* Card Actions */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  {/* View / Open Folder or Windows Recycle Bin */}
+                  {/* View / Open Folder or Recycle Bin / Trash */}
                   <button
                     className="btn btn-secondary"
                     style={{ padding: '3px 8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}
                     onClick={(e) => handleOpenFolder(item, e)}
-                    title={isRecycleBin ? 'Open Windows Recycle Bin to view deleted files' : 'Open folder in File Explorer'}
+                    title={isRecycleBin ? `Open ${trashName} to view deleted files` : `Open folder in ${fileManagerName}`}
                   >
                     <ExternalLink size={11} />
-                    <span>{isRecycleBin ? 'View Trash' : 'Open'}</span>
+                    <span>{isRecycleBin ? `View ${trashName}` : 'Open'}</span>
                   </button>
 
                   {/* 1-Click Empty Recycle Bin Button */}
@@ -273,7 +274,7 @@ export const JunkCleaner: React.FC<JunkCleanerProps> = ({
                       style={{ padding: '3px 8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}
                       onClick={handleEmptyRecycleBinDirect}
                       disabled={isActionLoading === 'recycle_bin'}
-                      title="Permanently empty Windows Recycle Bin now"
+                      title={`Permanently empty ${trashName} now`}
                     >
                       <Trash2 size={11} className={isActionLoading === 'recycle_bin' ? 'animate-spin' : ''} />
                       <span>Empty</span>

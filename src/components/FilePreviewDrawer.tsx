@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { FileInfo } from '../types';
 import { formatBytes } from '../utils/filterUtils';
+import { osName, fileManagerName } from '../utils/platform';
 import { format } from 'date-fns';
 
 interface FilePreviewDrawerProps {
@@ -378,16 +379,16 @@ export const FilePreviewDrawer: React.FC<FilePreviewDrawerProps> = ({
             className="btn btn-secondary"
             style={{ padding: '5px 10px', fontSize: '11px' }}
             onClick={handleShowInExplorer}
-            title="Reveal in Windows File Explorer"
+            title={`Reveal in ${fileManagerName}`}
           >
             <FolderOpen size={13} />
-            <span>Explorer</span>
+            <span>{fileManagerName}</span>
           </button>
           <button
             className="btn btn-secondary"
             style={{ padding: '5px 10px', fontSize: '11px' }}
             onClick={handleOpenFile}
-            title="Open with default Windows application"
+            title={`Open with default ${osName} application`}
           >
             <ExternalLink size={13} />
             <span>Open</span>

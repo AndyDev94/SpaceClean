@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { FileInfo, FilterState, FileCategory } from '../types';
 import { formatBytes } from '../utils/filterUtils';
+import { osProtectedFileLabel } from '../utils/platform';
 import { format } from 'date-fns';
 
 interface FileTableProps {
@@ -453,7 +454,7 @@ export const FileTable: React.FC<FileTableProps> = ({
                         onChange={() => onToggleSelect(file.path)}
                         onClick={e => e.stopPropagation()}
                         style={{ cursor: isProtected ? 'not-allowed' : 'pointer' }}
-                        title={isProtected ? 'Windows OS Protected File (Safety Lock)' : 'Select for deletion'}
+                        title={isProtected ? osProtectedFileLabel : 'Select for deletion'}
                       />
                     </td>
 

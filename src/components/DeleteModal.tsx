@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { FileInfo, DeleteResult } from '../types';
 import { formatBytes } from '../utils/filterUtils';
+import { trashName } from '../utils/platform';
 
 interface DeleteModalProps {
   files: FileInfo[];
@@ -209,7 +210,7 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({
                 <div className="progress-bar-fill" style={{ width: `${deletionProgress}%` }} />
               </div>
               <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-                {toRecycleBin ? 'Moving files to Windows Recycle Bin...' : 'Permanently deleting files...'}
+                {toRecycleBin ? `Moving files to ${trashName}...` : 'Permanently deleting files...'}
               </p>
             </div>
           ) : (
@@ -222,7 +223,7 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({
                 </label>
 
                 <div className="delete-mode-cards">
-                  {/* Option 1: Recycle Bin */}
+                  {/* Option 1: Recycle Bin / Trash */}
                   <div
                     className={`delete-mode-card ${toRecycleBin ? 'selected recycle' : ''}`}
                     onClick={() => setToRecycleBin(true)}
@@ -230,12 +231,12 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#10b981', fontWeight: 600, fontSize: '13px' }}>
                         <Recycle size={16} />
-                        <span>Move to Recycle Bin (Recommended)</span>
+                        <span>Move to {trashName} (Recommended)</span>
                       </div>
                       {toRecycleBin && <Check size={15} style={{ color: '#10b981' }} />}
                     </div>
                     <p style={{ fontSize: '11px', color: 'var(--text-dim)', lineHeight: '1.4' }}>
-                      <strong>Safe & recoverable.</strong> Files are sent to your OS Recycle Bin and can be restored if needed.
+                      <strong>Safe & recoverable.</strong> Files are sent to your {trashName} and can be restored if needed.
                     </p>
                   </div>
 
@@ -252,7 +253,7 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({
                       {!toRecycleBin && <Check size={15} style={{ color: '#ef4444' }} />}
                     </div>
                     <p style={{ fontSize: '11px', color: 'var(--text-dim)', lineHeight: '1.4' }}>
-                      <strong>Instant space recovery.</strong> Bypasses the Recycle Bin. Files cannot be restored!
+                      <strong>Instant space recovery.</strong> Bypasses the {trashName}. Files cannot be restored!
                     </p>
                   </div>
                 </div>

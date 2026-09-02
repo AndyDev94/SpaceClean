@@ -11,6 +11,8 @@ import { SmartFolderCleanup } from './components/SmartFolderCleanup';
 import { JunkCleaner } from './components/JunkCleaner';
 import { DuplicateFinder } from './components/DuplicateFinder';
 import { LargeFilesView } from './components/LargeFilesView';
+import { MediaGallery } from './components/MediaGallery';
+import { AppUninstaller } from './components/AppUninstaller';
 import { DeleteModal } from './components/DeleteModal';
 
 import { Play, Sparkles, AlertCircle, RefreshCw, Zap, Layers } from 'lucide-react';
@@ -315,18 +317,50 @@ export const App: React.FC = () => {
     }
   };
 
-  // Clean Junk Items
-  const handleCleanJunkItems = (items: JunkItem[]) => {
-    const paths = items.map(j => j.path);
+  // Release Media Locks & Open Delete Modal
+  const handleOpenDeleteModalForPaths = (paths: string[]) => {
+    try {
+      const mediaEls = document.querySelectorAll('video, audio');
+      mediaEls.forEach((el) => {
+        try {
+          (el as HTMLMediaElement).pause();
+          (el as HTMLMediaElement).removeAttribute('src');
+          (el as HTMLMediaElement).load();
+        } catch {}
+      });
+    } catch {}
+    setPreviewFile(null);
     setSelectedPaths(new Set(paths));
     setIsDeleteModalOpen(true);
   };
 
-  // Open modal with specific targets
-  const handleOpenDeleteModalForPaths = (paths: string[]) => {
-    setSelectedPaths(new Set(paths));
+  const handleOpenDeleteModal = () => {
+    try {
+      const mediaEls = document.querySelectorAll('video, audio');
+      mediaEls.forEach((el) => {
+        try {
+          (el as HTMLMediaElement).pause();
+          (el as HTMLMediaElement).removeAttribute('src');
+          (el as HTMLMediaElement).load();
+        } catch {}
+      });
+    } catch {}
+    setPreviewFile(null);
     setIsDeleteModalOpen(true);
   };
+
+  // Clean Junk Items
+  const handleCleanJunkItems = (items: JunkItem[]) => {
+    const paths = items.map(j => j.path);
+    handleOpenDeleteModalForPaths(paths);
+  };
+
+  // Auto-trigger duplicate scan when switching to duplicate tab
+  useEffect(() => {
+    if (activeTab === 'duplicates' && files.length > 0 && duplicates.length === 0 && !isDuplicatesScanning) {
+      handleScanDuplicates();
+    }
+  }, [activeTab, files.length]);
 
   // Computed Filtered & Sorted Files
   const filteredFiles = useMemo(() => {
@@ -334,7 +368,7 @@ export const App: React.FC = () => {
     return sortFiles(filtered, filter.sortBy, filter.sortOrder);
   }, [files, filter]);
 
-  // Global Keyboard Controls (Arrows, Spacebar, Enter, Delete, Esc, Ctrl+A/D/F, 1-6 Tabs)
+  // Global Keyboard Controls (Arrows, Spacebar, Enter, Delete, Esc, Ctrl+A/D/F, 1-8 Tabs)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
@@ -362,14 +396,16 @@ export const App: React.FC = () => {
       // If user is currently typing in a text field, avoid intercepting text keys
       if (isInputFocused) return;
 
-      // Tab switcher shortcuts (Alt+1 to Alt+6 or simple 1 to 6 when browsing)
+      // Tab switcher shortcuts (Alt+1 to Alt+8)
       const tabMap: Record<string, AppTab> = {
         '1': 'explorer',
         '2': 'folders',
-        '3': 'smart_clean',
-        '4': 'junk',
-        '5': 'duplicates',
-        '6': 'large_files'
+        '3': 'media',
+        '4': 'smart_clean',
+        '5': 'junk',
+        '6': 'duplicates',
+        '7': 'large_files',
+        '8': 'uninstall'
       };
 
       if ((e.altKey || (!e.ctrlKey && !e.metaKey && !e.shiftKey)) && tabMap[e.key]) {
@@ -677,7 +713,19 @@ export const App: React.FC = () => {
             />
           )}
 
-          {/* Tab 3: Smart Part-by-Part Folder Optimizer */}
+          {/* Tab 3: Media Gallery & Visual Photo/Video Manager */}
+          {activeTab === 'media' && (
+            <MediaGallery
+              files={files}
+              selectedPaths={selectedPaths}
+              onToggleSelect={handleToggleSelect}
+              onSetSelectedPaths={setSelectedPaths}
+              onSelectPreview={setPreviewFile}
+              onOpenDeleteModal={handleOpenDeleteModal}
+            />
+          )}
+
+          {/* Tab 4: Smart Part-by-Part Folder Optimizer */}
           {activeTab === 'smart_clean' && (
             <SmartFolderCleanup
               files={files}
@@ -693,7 +741,7 @@ export const App: React.FC = () => {
             />
           )}
 
-          {/* Tab 4: Windows System Junk & Cache */}
+          {/* Tab 5: Windows System Junk & Cache */}
           {activeTab === 'junk' && (
             <JunkCleaner
               junkItems={junkItems}
@@ -703,7 +751,7 @@ export const App: React.FC = () => {
             />
           )}
 
-          {/* Tab 4: Duplicate Finder */}
+          {/* Tab 6: Duplicate Finder */}
           {activeTab === 'duplicates' && (
             <DuplicateFinder
               duplicates={duplicates}
@@ -712,20 +760,25 @@ export const App: React.FC = () => {
               selectedPaths={selectedPaths}
               onToggleSelect={handleToggleSelect}
               onSetSelectedPaths={setSelectedPaths}
-              onOpenDeleteModal={() => setIsDeleteModalOpen(true)}
+              onOpenDeleteModal={handleOpenDeleteModal}
             />
           )}
 
-          {/* Tab 5: Top 100 Space Hogs */}
+          {/* Tab 7: Top 100 Space Hogs */}
           {activeTab === 'large_files' && (
             <LargeFilesView
               files={files}
               selectedPaths={selectedPaths}
               onToggleSelect={handleToggleSelect}
-              onOpenDeleteModal={() => setIsDeleteModalOpen(true)}
+              onOpenDeleteModal={handleOpenDeleteModal}
               onPreviewFile={setPreviewFile}
               previewedFilePath={previewFile?.path}
             />
+          )}
+
+          {/* Tab 8: Installed Applications & Software Uninstaller */}
+          {activeTab === 'uninstall' && (
+            <AppUninstaller />
           )}
         </div>
 

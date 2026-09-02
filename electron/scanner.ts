@@ -2,9 +2,9 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import os from 'os';
-import { exec } from 'child_process';
+import { exec, spawn } from 'child_process';
 import { promisify } from 'util';
-import { FileCategory, FileInfo, FolderInfo, DriveInfo, JunkItem, DuplicateGroup, ScanResult, ScanChunkInfo } from '../src/types';
+import { FileCategory, FileInfo, FolderInfo, DriveInfo, JunkItem, DuplicateGroup, ScanResult, ScanChunkInfo, InstalledApp } from '../src/types';
 
 const execAsync = promisify(exec);
 
@@ -651,7 +651,7 @@ export async function findDuplicateFiles(
 ): Promise<DuplicateGroup[]> {
   const sizeBuckets = new Map<number, FileInfo[]>();
   for (const f of files) {
-    if (f.size >= 10240 && !f.isProtected) {
+    if (f.size > 0 && !f.isProtected) {
       const list = sizeBuckets.get(f.size) || [];
       list.push(f);
       sizeBuckets.set(f.size, list);
@@ -660,8 +660,7 @@ export async function findDuplicateFiles(
 
   const candidateBuckets = Array.from(sizeBuckets.entries())
     .filter(([_, list]) => list.length > 1)
-    .sort((a, b) => (b[0] * b[1].length) - (a[0] * a[1].length))
-    .slice(0, 300);
+    .sort((a, b) => (b[0] * b[1].length) - (a[0] * a[1].length));
 
   const hashBuckets = new Map<string, FileInfo[]>();
   let processed = 0;
@@ -693,7 +692,7 @@ export async function findDuplicateFiles(
     }
 
     processed += group.length;
-    if (processed % 20 === 0) {
+    if (processed % 10 === 0) {
       options.onProgress?.(processed, 0, group[0].path, 0);
     }
   }
@@ -738,10 +737,168 @@ async function calculateSampleHash(filePath: string): Promise<string> {
 async function calculateFileHash(filePath: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const hash = crypto.createHash('md5');
-    const stream = fs.createReadStream(filePath, { start: 0, end: 1024 * 1024 * 5 });
+    const stream = fs.createReadStream(filePath, { start: 0, end: 1024 * 1024 * 20 });
     stream.on('data', chunk => hash.update(chunk));
     stream.on('end', () => resolve(hash.digest('hex')));
     stream.on('error', err => reject(err));
+  });
+}
+
+// 📦 Cross-Platform Installed Application Scanner (Windows Registry, macOS /Applications, Linux .desktop)
+export async function getInstalledApplications(): Promise<InstalledApp[]> {
+  const isWindows = process.platform === 'win32';
+  const isMac = process.platform === 'darwin';
+  const isLinux = process.platform === 'linux';
+
+  const apps: InstalledApp[] = [];
+
+  if (isWindows) {
+    try {
+      const psCommand = `
+        $paths = @(
+          'HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*',
+          'HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*',
+          'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*'
+        )
+        Get-ItemProperty $paths -ErrorAction SilentlyContinue |
+          Where-Object { $_.DisplayName -and !$_.SystemComponent -and !$_.ParentKeyName } |
+          Select-Object DisplayName, DisplayVersion, Publisher, InstallDate, EstimatedSize, InstallLocation, UninstallString, QuietUninstallString, DisplayIcon |
+          ConvertTo-Json -Compress
+      `;
+
+      const { stdout } = await execAsync(`powershell -NoProfile -Command "${psCommand.replace(/\r?\n/g, ' ')}"`, { maxBuffer: 1024 * 1024 * 15 });
+      if (stdout.trim()) {
+        const raw = JSON.parse(stdout);
+        const list = Array.isArray(raw) ? raw : [raw];
+        const seenNames = new Set<string>();
+
+        let idx = 1;
+        for (const item of list) {
+          const name = (item.DisplayName || '').trim();
+          if (!name || seenNames.has(name.toLowerCase())) continue;
+          seenNames.add(name.toLowerCase());
+
+          const sizeKb = typeof item.EstimatedSize === 'number' ? item.EstimatedSize : parseInt(item.EstimatedSize, 10) || 0;
+          const sizeBytes = sizeKb > 0 ? sizeKb * 1024 : 0;
+
+          apps.push({
+            id: `app_${idx++}`,
+            name,
+            publisher: (item.Publisher || '').trim() || undefined,
+            version: (item.DisplayVersion || '').trim() || undefined,
+            installDate: (item.InstallDate || '').trim() || undefined,
+            sizeBytes: sizeBytes > 0 ? sizeBytes : undefined,
+            formattedSize: sizeBytes > 0 ? formatBytes(sizeBytes) : undefined,
+            installLocation: (item.InstallLocation || '').trim() || undefined,
+            uninstallString: (item.QuietUninstallString || item.UninstallString || '').trim() || undefined,
+            quietUninstallString: (item.QuietUninstallString || '').trim() || undefined,
+            icon: (item.DisplayIcon || '').trim() || undefined
+          });
+        }
+      }
+    } catch (e) {
+      console.error('Error fetching Windows apps:', e);
+    }
+  } else if (isMac) {
+    const appDirs = ['/Applications', path.join(os.homedir(), 'Applications')];
+    let idx = 1;
+    for (const dir of appDirs) {
+      if (!fs.existsSync(dir)) continue;
+      try {
+        const entries = await fs.promises.readdir(dir, { withFileTypes: true });
+        for (const entry of entries) {
+          if (entry.isDirectory() && entry.name.endsWith('.app')) {
+            const appPath = path.join(dir, entry.name);
+            const appName = entry.name.replace(/\.app$/, '');
+            let version = undefined;
+            let publisher = undefined;
+
+            try {
+              const infoPlistPath = path.join(appPath, 'Contents', 'Info.plist');
+              if (fs.existsSync(infoPlistPath)) {
+                const plistContent = await fs.promises.readFile(infoPlistPath, 'utf-8');
+                const vMatch = plistContent.match(/<key>CFBundleShortVersionString<\/key>\s*<string>([^<]+)<\/string>/i);
+                if (vMatch) version = vMatch[1];
+                const pMatch = plistContent.match(/<key>CFBundleIdentifier<\/key>\s*<string>([^<]+)<\/string>/i);
+                if (pMatch) publisher = pMatch[1];
+              }
+            } catch {}
+
+            apps.push({
+              id: `mac_app_${idx++}`,
+              name: appName,
+              publisher,
+              version,
+              installLocation: appPath,
+              uninstallString: appPath,
+              isSystemProtected: appPath.startsWith('/System') || appName === 'Safari' || appName === 'Finder'
+            });
+          }
+        }
+      } catch {}
+    }
+  } else if (isLinux) {
+    const desktopDirs = ['/usr/share/applications', path.join(os.homedir(), '.local/share/applications')];
+    let idx = 1;
+    for (const dir of desktopDirs) {
+      if (!fs.existsSync(dir)) continue;
+      try {
+        const files = await fs.promises.readdir(dir);
+        for (const f of files) {
+          if (f.endsWith('.desktop')) {
+            const fullPath = path.join(dir, f);
+            try {
+              const content = await fs.promises.readFile(fullPath, 'utf-8');
+              const nameMatch = content.match(/^Name=(.+)$/m);
+              const execMatch = content.match(/^Exec=(.+)$/m);
+              const iconMatch = content.match(/^Icon=(.+)$/m);
+              if (nameMatch) {
+                apps.push({
+                  id: `linux_app_${idx++}`,
+                  name: nameMatch[1].trim(),
+                  installLocation: fullPath,
+                  uninstallString: execMatch ? execMatch[1].trim() : undefined,
+                  icon: iconMatch ? iconMatch[1].trim() : undefined
+                });
+              }
+            } catch {}
+          }
+        }
+      } catch {}
+    }
+  }
+
+  return apps.sort((a, b) => (b.sizeBytes || 0) - (a.sizeBytes || 0) || a.name.localeCompare(b.name));
+}
+
+export async function executeAppUninstall(
+  uninstallString: string,
+  installLocation?: string
+): Promise<{ success: boolean; error?: string }> {
+  if (!uninstallString && !installLocation) {
+    return { success: false, error: 'No uninstall target specified.' };
+  }
+
+  const isMac = process.platform === 'darwin';
+
+  if (isMac && installLocation && installLocation.endsWith('.app')) {
+    try {
+      const { shell } = await import('electron');
+      await shell.trashItem(installLocation);
+      return { success: true };
+    } catch (e: any) {
+      return { success: false, error: e.message };
+    }
+  }
+
+  return new Promise((resolve) => {
+    try {
+      const cmd = uninstallString.trim();
+      spawn(cmd, { shell: true, detached: true, stdio: 'ignore' }).unref();
+      resolve({ success: true });
+    } catch (err: any) {
+      resolve({ success: false, error: err?.message || 'Failed to trigger uninstaller' });
+    }
   });
 }
 

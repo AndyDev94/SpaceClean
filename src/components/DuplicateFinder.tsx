@@ -141,11 +141,17 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
 
       {/* Duplicate Groups List */}
       <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-        {duplicates.length === 0 ? (
+        {isScanning ? (
+          <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
+            <RotateCw size={36} className="animate-spin" style={{ margin: '0 auto 12px', opacity: 0.7, color: '#c084fc' }} />
+            <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>Scanning for duplicate files...</p>
+            <p style={{ fontSize: '12px', marginTop: '4px' }}>Computing fast cryptographic MD5 hashes across matching file sizes</p>
+          </div>
+        ) : duplicates.length === 0 ? (
           <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
             <CheckCircle size={40} style={{ margin: '0 auto 12px', opacity: 0.4, color: '#34d399' }} />
             <p style={{ fontSize: '15px', fontWeight: 500, color: 'var(--text-primary)' }}>No duplicate files found</p>
-            <p style={{ fontSize: '12px', marginTop: '4px' }}>Scan files first or choose a broader directory.</p>
+            <p style={{ fontSize: '12px', marginTop: '4px' }}>Scan files first or click "Rescan Duplicates" above.</p>
           </div>
         ) : (
           duplicates.map((group, gIdx) => (

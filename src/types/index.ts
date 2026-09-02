@@ -150,3 +150,19 @@ export interface ThemeDefinition {
   previewCard: string;
   previewAccent: string;
 }
+
+export interface InstalledApp {
+  id: string;
+  name: string;
+  publisher?: string;
+  version?: string;
+  installDate?: string;
+  sizeBytes?: number;
+  formattedSize?: string;
+  installLocation?: string;
+  uninstallString?: string;
+  quietUninstallString?: string;
+  icon?: string;
+  isSystemProtected?: boolean;
+}
+

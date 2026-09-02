@@ -9,6 +9,8 @@ import {
   getImmediateFolderContents,
   scanSystemJunk,
   findDuplicateFiles,
+  getInstalledApplications,
+  executeAppUninstall,
   isSystemProtectedPath
 } from './scanner';
 import { FileInfo, DeleteResult, ScanResult, ScanChunkInfo } from '../src/types';
@@ -202,7 +204,17 @@ ipcMain.handle('scan-duplicates', async (event, files: FileInfo[]) => {
   });
 });
 
-// Delete files & folders with OS System Safety Guard & Recycle Bin support
+// Scan installed applications (Windows Registry, macOS /Applications, Linux .desktop)
+ipcMain.handle('get-installed-apps', async () => {
+  return await getInstalledApplications();
+});
+
+// Trigger application uninstaller
+ipcMain.handle('uninstall-app', async (_event, uninstallString: string, installLocation?: string) => {
+  return await executeAppUninstall(uninstallString, installLocation);
+});
+
+// Delete files & folders with OS System Safety Guard, file-lock release retry & Recycle Bin support
 ipcMain.handle('delete-items', async (_event, paths: string[], toRecycleBin: boolean): Promise<DeleteResult> => {
   let successCount = 0;
   let failedCount = 0;
@@ -216,34 +228,48 @@ ipcMain.handle('delete-items', async (_event, paths: string[], toRecycleBin: boo
       failedCount++;
       errors.push({
         path: itemPath,
-        error: 'Blocked by Windows OS Protection Engine: Crucial operating system file/folder cannot be deleted.'
+        error: 'Blocked by OS Protection Engine: Crucial operating system file/folder cannot be deleted.'
       });
       continue;
     }
 
+    let fileSize = 0;
     try {
-      let fileSize = 0;
+      const stats = await fs.promises.stat(itemPath);
+      fileSize = stats.size;
+    } catch {}
+
+    let deleted = false;
+    let lastErrorMsg = '';
+
+    // Retry loop (up to 3 attempts with exponential backoff to handle media stream release)
+    for (let attempt = 0; attempt < 3; attempt++) {
       try {
-        const stats = await fs.promises.stat(itemPath);
-        fileSize = stats.size;
-      } catch {}
-
-      if (toRecycleBin) {
-        // Safe: Send to OS Recycle Bin
-        await shell.trashItem(itemPath);
-      } else {
-        // Permanent delete
-        await fs.promises.rm(itemPath, { recursive: true, force: true });
+        if (toRecycleBin) {
+          // Safe: Send to OS Recycle Bin
+          await shell.trashItem(itemPath);
+        } else {
+          // Permanent delete
+          await fs.promises.rm(itemPath, { recursive: true, force: true });
+        }
+        deleted = true;
+        break;
+      } catch (err: any) {
+        lastErrorMsg = err?.message || 'File is currently in use or locked by another process';
+        // Give 80ms for OS file handles / media previews to release
+        await new Promise(r => setTimeout(r, 80 * (attempt + 1)));
       }
+    }
 
+    if (deleted) {
       successCount++;
       freedBytes += fileSize;
       deletedPaths.push(itemPath);
-    } catch (err: any) {
+    } else {
       failedCount++;
       errors.push({
         path: itemPath,
-        error: err?.message || 'Failed to delete file/folder'
+        error: lastErrorMsg || 'Failed to delete item'
       });
     }
   }

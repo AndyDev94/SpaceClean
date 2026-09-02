@@ -10,12 +10,14 @@ import {
   Trash2,
   Copy,
   BarChart3,
-  FolderTree
+  FolderTree,
+  Film,
+  AppWindow
 } from 'lucide-react';
 import { DriveInfo } from '../types';
 import { formatBytes } from '../utils/filterUtils';
 
-export type AppTab = 'explorer' | 'folders' | 'smart_clean' | 'junk' | 'duplicates' | 'large_files';
+export type AppTab = 'explorer' | 'folders' | 'media' | 'smart_clean' | 'junk' | 'duplicates' | 'large_files' | 'uninstall';
 
 interface NavbarProps {
   drives: DriveInfo[];
@@ -96,7 +98,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           onClick={() => onTabChange('explorer')}
         >
           <Files size={14} />
-          <span>Files View</span>
+          <span>Files</span>
         </button>
 
         <button
@@ -104,7 +106,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           onClick={() => onTabChange('folders')}
         >
           <FolderTree size={14} />
-          <span>Folder Sizes</span>
+          <span>Folders</span>
+        </button>
+
+        <button
+          className={`tab-btn ${activeTab === 'media' ? 'active' : ''}`}
+          onClick={() => onTabChange('media')}
+          title="Photos & Videos visual management gallery with adjustable grid"
+        >
+          <Film size={14} />
+          <span>Media</span>
         </button>
 
         <button
@@ -113,7 +124,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           title="Part-by-part chronological cleanup wizard for any size folder (GB / TB)"
         >
           <Sparkles size={14} style={{ color: activeTab === 'smart_clean' ? 'var(--accent-primary)' : undefined }} />
-          <span>Smart Optimizer</span>
+          <span>Optimizer</span>
         </button>
 
         <button
@@ -121,7 +132,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           onClick={() => onTabChange('junk')}
         >
           <Trash2 size={14} />
-          <span>Junk Cleaner</span>
+          <span>Junk</span>
           {junkCount > 0 && (
             <span style={{ fontSize: '10px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', padding: '1px 5px', borderRadius: '10px', fontWeight: 600 }}>
               {junkCount}
@@ -134,7 +145,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           onClick={() => onTabChange('duplicates')}
         >
           <Copy size={14} />
-          <span>Duplicate Finder</span>
+          <span>Duplicates</span>
           {duplicatesCount > 0 && (
             <span style={{ fontSize: '10px', background: 'rgba(168, 85, 247, 0.15)', color: '#c084fc', padding: '1px 5px', borderRadius: '10px', fontWeight: 600 }}>
               {duplicatesCount}
@@ -149,7 +160,17 @@ export const Navbar: React.FC<NavbarProps> = ({
           <BarChart3 size={14} />
           <span>Space Hogs</span>
         </button>
+
+        <button
+          className={`tab-btn ${activeTab === 'uninstall' ? 'active' : ''}`}
+          onClick={() => onTabChange('uninstall')}
+          title="View and uninstall installed software and applications"
+        >
+          <AppWindow size={14} />
+          <span>Apps</span>
+        </button>
       </div>
     </div>
   );
 };
+

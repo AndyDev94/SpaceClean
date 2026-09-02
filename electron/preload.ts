@@ -10,6 +10,8 @@ export interface IElectronAPI {
   cancelScan: () => Promise<void>;
   scanJunk: () => Promise<JunkItem[]>;
   scanDuplicates: (files: FileInfo[]) => Promise<DuplicateGroup[]>;
+  getInstalledApps: () => Promise<import('../src/types').InstalledApp[]>;
+  uninstallApp: (uninstallString: string, installLocation?: string) => Promise<{ success: boolean; error?: string }>;
   deleteItems: (paths: string[], toRecycleBin: boolean) => Promise<DeleteResult>;
   showItemInFolder: (path: string) => Promise<void>;
   openFile: (path: string) => Promise<void>;
@@ -30,6 +32,8 @@ const api: IElectronAPI = {
   cancelScan: () => ipcRenderer.invoke('cancel-scan'),
   scanJunk: () => ipcRenderer.invoke('scan-junk'),
   scanDuplicates: (files: FileInfo[]) => ipcRenderer.invoke('scan-duplicates', files),
+  getInstalledApps: () => ipcRenderer.invoke('get-installed-apps'),
+  uninstallApp: (uninstallString: string, installLocation?: string) => ipcRenderer.invoke('uninstall-app', uninstallString, installLocation),
   deleteItems: (paths: string[], toRecycleBin: boolean) => ipcRenderer.invoke('delete-items', paths, toRecycleBin),
   showItemInFolder: (path: string) => ipcRenderer.invoke('show-item-in-folder', path),
   openFile: (path: string) => ipcRenderer.invoke('open-file', path),

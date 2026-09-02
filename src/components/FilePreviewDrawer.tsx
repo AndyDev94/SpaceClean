@@ -96,8 +96,22 @@ export const FilePreviewDrawer: React.FC<FilePreviewDrawerProps> = ({
     }
 
     loadPreview();
+
     return () => {
       isMounted = false;
+      // 🛡️ Release OS file handle locks on video/audio immediately
+      try {
+        const mediaEls = document.querySelectorAll('video, audio');
+        mediaEls.forEach((el) => {
+          try {
+            (el as HTMLMediaElement).pause();
+            (el as HTMLMediaElement).removeAttribute('src');
+            (el as HTMLMediaElement).load();
+          } catch {}
+        });
+      } catch {}
+      setMediaUrl(null);
+      setTextContent(null);
     };
   }, [file]);
 

@@ -608,7 +608,7 @@ export const App: React.FC = () => {
           )}
 
           {/* 🧠 Smart Adaptive Memory Guard & Chunk Milestone Banner */}
-          {activeTab !== 'uninstall' && activeTab !== 'media' && activeTab !== 'junk' && chunkInfo && chunkInfo.isChunkPaused && (
+          {chunkInfo && chunkInfo.isChunkPaused && ['explorer', 'folders', 'smart_clean'].includes(activeTab) && (
             <div
               className="panel"
               style={{

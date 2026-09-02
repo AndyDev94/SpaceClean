@@ -754,19 +754,21 @@ export async function getInstalledApplications(): Promise<InstalledApp[]> {
 
   if (isWindows) {
     try {
-      const psCommand = `
+      const psScript = `
         $paths = @(
           'HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*',
           'HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*',
           'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*'
         )
-        Get-ItemProperty $paths -ErrorAction SilentlyContinue |
+        $items = Get-ItemProperty -Path $paths -ErrorAction SilentlyContinue |
           Where-Object { $_.DisplayName -and !$_.SystemComponent -and !$_.ParentKeyName } |
-          Select-Object DisplayName, DisplayVersion, Publisher, InstallDate, EstimatedSize, InstallLocation, UninstallString, QuietUninstallString, DisplayIcon |
-          ConvertTo-Json -Compress
+          Select-Object DisplayName, DisplayVersion, Publisher, InstallDate, EstimatedSize, InstallLocation, UninstallString, QuietUninstallString, DisplayIcon
+        
+        $items | ConvertTo-Json -Compress
       `;
 
-      const { stdout } = await execAsync(`powershell -NoProfile -Command "${psCommand.replace(/\r?\n/g, ' ')}"`, { maxBuffer: 1024 * 1024 * 15 });
+      const encoded = Buffer.from(psScript, 'utf16le').toString('base64');
+      const { stdout } = await execAsync(`powershell.exe -NoProfile -NonInteractive -EncodedCommand ${encoded}`, { maxBuffer: 1024 * 1024 * 30 });
       if (stdout.trim()) {
         const raw = JSON.parse(stdout);
         const list = Array.isArray(raw) ? raw : [raw];

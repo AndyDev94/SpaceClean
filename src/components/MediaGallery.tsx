@@ -60,6 +60,7 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
   const [minSizeBytes, setMinSizeBytes] = useState<number>(0);
   const [selectedExtension, setSelectedExtension] = useState<string>('all');
   const [sortBy, setSortBy] = useState<SortOption>('size_desc');
+  const [focusedIndex, setFocusedIndex] = useState<number>(0);
 
   // Discover all distinct media extensions in current scan
   const mediaExtensions = useMemo(() => {
@@ -199,6 +200,54 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
     if (gridSize === 'large') return '285px';
     return '205px';
   };
+
+  // Keyboard navigation listener (Arrow keys, Spacebar toggle, Enter preview)
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT')) {
+        return;
+      }
+      if (filteredMediaFiles.length === 0) return;
+
+      const cols = gridSize === 'list' ? 1 : gridSize === 'compact' ? 6 : gridSize === 'large' ? 3 : 4;
+
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        setFocusedIndex(prev => Math.min(filteredMediaFiles.length - 1, prev + 1));
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        setFocusedIndex(prev => Math.max(0, prev - 1));
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setFocusedIndex(prev => Math.min(filteredMediaFiles.length - 1, prev + (gridSize === 'list' ? 1 : cols)));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setFocusedIndex(prev => Math.max(0, prev - (gridSize === 'list' ? 1 : cols)));
+      } else if (e.key === ' ') {
+        e.preventDefault();
+        if (filteredMediaFiles[focusedIndex]) {
+          onToggleSelect(filteredMediaFiles[focusedIndex].path);
+        }
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (filteredMediaFiles[focusedIndex]) {
+          onSelectPreview(filteredMediaFiles[focusedIndex]);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [filteredMediaFiles, focusedIndex, gridSize, onToggleSelect, onSelectPreview]);
+
+  // Ensure focused item is scrolled into view smoothly
+  React.useEffect(() => {
+    const activeEl = document.querySelector(`[data-media-index="${focusedIndex}"]`) as HTMLElement;
+    if (activeEl) {
+      activeEl.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    }
+  }, [focusedIndex]);
 
   return (
     <div className="glass-panel" style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '16px 20px', overflow: 'hidden' }}>
@@ -486,26 +535,39 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                 </tr>
               </thead>
               <tbody>
-                {filteredMediaFiles.map((file) => {
+                {filteredMediaFiles.map((file, idx) => {
                   const isSelected = selectedPaths.has(file.path);
+                  const isFocused = focusedIndex === idx;
                   const isVideo = file.category === 'video';
 
                   return (
                     <tr
                       key={file.path}
-                      onClick={() => onToggleSelect(file.path)}
+                      data-media-index={idx}
+                      onClick={() => {
+                        setFocusedIndex(idx);
+                        onToggleSelect(file.path);
+                      }}
                       style={{
                         cursor: 'pointer',
-                        background: isSelected ? 'rgba(239, 68, 68, 0.08)' : undefined,
+                        background: isSelected
+                          ? 'rgba(239, 68, 68, 0.12)'
+                          : isFocused
+                          ? 'rgba(59, 130, 246, 0.12)'
+                          : undefined,
+                        borderLeft: isFocused ? '3px solid var(--accent-primary)' : '3px solid transparent',
                         borderBottom: '1px solid var(--border-subtle)'
                       }}
-                      className={isSelected ? 'selected' : ''}
+                      className={`${isSelected ? 'selected' : ''} ${isFocused ? 'focused' : ''}`}
                     >
                       <td style={{ textAlign: 'center', padding: '8px 10px' }} onClick={e => e.stopPropagation()}>
                         <input
                           type="checkbox"
                           checked={isSelected}
-                          onChange={() => onToggleSelect(file.path)}
+                          onChange={() => {
+                            setFocusedIndex(idx);
+                            onToggleSelect(file.path);
+                          }}
                           style={{ cursor: 'pointer' }}
                         />
                       </td>
@@ -536,7 +598,10 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                         <button
                           className="btn btn-secondary"
                           style={{ padding: '3px 8px', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '3px' }}
-                          onClick={() => onSelectPreview(file)}
+                          onClick={() => {
+                            setFocusedIndex(idx);
+                            onSelectPreview(file);
+                          }}
                           title="Open Live Preview"
                         >
                           <Eye size={12} />
@@ -559,13 +624,15 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
               paddingBottom: '20px'
             }}
           >
-            {filteredMediaFiles.map((file) => {
+            {filteredMediaFiles.map((file, idx) => {
               const isSelected = selectedPaths.has(file.path);
+              const isFocused = focusedIndex === idx;
               const isVideo = file.category === 'video';
 
               return (
                 <div
                   key={file.path}
+                  data-media-index={idx}
                   className="glass-panel"
                   style={{
                     height: getTileHeight(),
@@ -574,12 +641,20 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                     position: 'relative',
                     display: 'flex',
                     flexDirection: 'column',
-                    border: isSelected ? '2px solid #ef4444' : '1px solid var(--border-color)',
+                    border: isFocused
+                      ? '2px solid var(--accent-primary)'
+                      : isSelected
+                      ? '2px solid #ef4444'
+                      : '1px solid var(--border-color)',
+                    boxShadow: isFocused ? '0 0 12px rgba(59, 130, 246, 0.4)' : undefined,
                     background: isSelected ? 'rgba(239, 68, 68, 0.08)' : 'var(--bg-card)',
                     cursor: 'pointer',
-                    transition: 'all 0.2s ease'
+                    transition: 'all 0.15s ease'
                   }}
-                  onClick={() => onToggleSelect(file.path)}
+                  onClick={() => {
+                    setFocusedIndex(idx);
+                    onToggleSelect(file.path);
+                  }}
                 >
                   {/* Thumbnail / Media Container */}
                   <div

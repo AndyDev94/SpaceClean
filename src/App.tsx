@@ -453,45 +453,47 @@ export const App: React.FC = () => {
         }
       }
 
-      // Arrow navigation across files
-      const activeList = activeTab === 'large_files'
-        ? [...files].sort((a, b) => b.size - a.size).slice(0, 100)
-        : filteredFiles;
+      // Arrow navigation across files for Explorer and Largest Files
+      if (activeTab === 'explorer' || activeTab === 'large_files') {
+        const activeList = activeTab === 'large_files'
+          ? [...files].sort((a, b) => b.size - a.size).slice(0, 100)
+          : filteredFiles;
 
-      if (activeList.length > 0) {
-        const currentIndex = previewFile ? activeList.findIndex(f => f.path === previewFile.path) : -1;
+        if (activeList.length > 0) {
+          const currentIndex = previewFile ? activeList.findIndex(f => f.path === previewFile.path) : -1;
 
-        if (e.key === 'ArrowDown') {
-          e.preventDefault();
-          const nextIndex = currentIndex < activeList.length - 1 ? currentIndex + 1 : 0;
-          setPreviewFile(activeList[nextIndex]);
-          return;
-        }
-
-        if (e.key === 'ArrowUp') {
-          e.preventDefault();
-          const prevIndex = currentIndex > 0 ? currentIndex - 1 : activeList.length - 1;
-          setPreviewFile(activeList[prevIndex]);
-          return;
-        }
-
-        // Spacebar: Toggle selection of currently previewed/highlighted file
-        if (e.key === ' ') {
-          e.preventDefault();
-          if (previewFile) {
-            handleToggleSelect(previewFile.path);
-          } else if (activeList.length > 0) {
-            handleToggleSelect(activeList[0].path);
-            setPreviewFile(activeList[0]);
-          }
-          return;
-        }
-
-        // Enter: Open file with default application (or inspect)
-        if (e.key === 'Enter') {
-          if (previewFile && window.electronAPI?.openFile) {
+          if (e.key === 'ArrowDown') {
             e.preventDefault();
-            window.electronAPI.openFile(previewFile.path);
+            const nextIndex = currentIndex < activeList.length - 1 ? currentIndex + 1 : 0;
+            setPreviewFile(activeList[nextIndex]);
+            return;
+          }
+
+          if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            const prevIndex = currentIndex > 0 ? currentIndex - 1 : activeList.length - 1;
+            setPreviewFile(activeList[prevIndex]);
+            return;
+          }
+
+          // Spacebar: Toggle selection of currently previewed/highlighted file
+          if (e.key === ' ') {
+            e.preventDefault();
+            if (previewFile) {
+              handleToggleSelect(previewFile.path);
+            } else if (activeList.length > 0) {
+              handleToggleSelect(activeList[0].path);
+              setPreviewFile(activeList[0]);
+            }
+            return;
+          }
+
+          // Enter: Open file with default application (or inspect)
+          if (e.key === 'Enter') {
+            if (previewFile && window.electronAPI?.openFile) {
+              e.preventDefault();
+              window.electronAPI.openFile(previewFile.path);
+            }
           }
         }
       }

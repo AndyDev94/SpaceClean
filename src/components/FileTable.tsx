@@ -94,6 +94,29 @@ export const FileTable: React.FC<FileTableProps> = ({
     }
   };
 
+  // Sync current page when navigating with Arrow keys
+  React.useEffect(() => {
+    if (previewedFilePath && pageSize !== 'all') {
+      const index = files.findIndex(f => f.path === previewedFilePath);
+      if (index !== -1) {
+        const targetPage = Math.floor(index / numericPageSize) + 1;
+        if (targetPage !== currentPage) {
+          setCurrentPage(targetPage);
+        }
+      }
+    }
+  }, [previewedFilePath, files, pageSize, numericPageSize]);
+
+  // Scroll active preview row into view
+  React.useEffect(() => {
+    if (previewedFilePath) {
+      const activeEl = document.querySelector('.file-table tr.preview-active') as HTMLElement;
+      if (activeEl) {
+        activeEl.scrollIntoView({ block: 'nearest' });
+      }
+    }
+  }, [previewedFilePath, currentPage]);
+
   const isAllSelected = files.length > 0 && files.filter(f => !f.isProtected).every(f => selectedPaths.has(f.path));
   const isSomeSelected = files.some(f => selectedPaths.has(f.path)) && !isAllSelected;
 

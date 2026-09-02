@@ -45,6 +45,7 @@ export const FolderExplorer: React.FC<FolderExplorerProps> = ({
   const [sortBy, setSortBy] = useState<FolderSortBy>('size');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedFolderPaths, setSelectedFolderPaths] = useState<Set<string>>(new Set());
+  const [focusedIndex, setFocusedIndex] = useState<number>(0);
 
   // Breadcrumb segments
   const breadcrumbs = useMemo(() => {
@@ -103,9 +104,55 @@ export const FolderExplorer: React.FC<FolderExplorerProps> = ({
       if (comp === 0) {
         comp = (a.name || '').localeCompare(b.name || '');
       }
-      return sortOrder === 'desc' ? -comp : comp;
+      return sortOrder === 'asc' ? comp : -comp;
     });
   }, [folders, currentRootPath, searchQuery, sortBy, sortOrder]);
+
+  // Keyboard navigation for Folder Explorer (Arrow Up/Down, Enter/Right drill, Left/Backspace up, Space select)
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT')) {
+        return;
+      }
+
+      if (e.key === 'ArrowDown') {
+        if (filteredFolders.length === 0) return;
+        e.preventDefault();
+        setFocusedIndex(prev => Math.min(filteredFolders.length - 1, prev + 1));
+      } else if (e.key === 'ArrowUp') {
+        if (filteredFolders.length === 0) return;
+        e.preventDefault();
+        setFocusedIndex(prev => Math.max(0, prev - 1));
+      } else if (e.key === 'Enter' || e.key === 'ArrowRight') {
+        if (filteredFolders.length > 0 && filteredFolders[focusedIndex]) {
+          e.preventDefault();
+          onNavigateToFolder(filteredFolders[focusedIndex].path);
+        }
+      } else if (e.key === 'ArrowLeft' || e.key === 'Backspace') {
+        if (breadcrumbs.length > 1) {
+          e.preventDefault();
+          handleUpLevel();
+        }
+      } else if (e.key === ' ') {
+        if (filteredFolders.length > 0 && filteredFolders[focusedIndex]) {
+          e.preventDefault();
+          handleToggleSelect(filteredFolders[focusedIndex].path, filteredFolders[focusedIndex].isProtected);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [filteredFolders, focusedIndex, breadcrumbs, onNavigateToFolder]);
+
+  // Scroll active folder into view
+  React.useEffect(() => {
+    const activeEl = document.querySelector(`[data-folder-index="${focusedIndex}"]`) as HTMLElement;
+    if (activeEl) {
+      activeEl.scrollIntoView({ block: 'nearest' });
+    }
+  }, [focusedIndex]);
 
   const maxFolderSize = filteredFolders.length > 0 ? filteredFolders[0].size : 1;
 
@@ -278,20 +325,37 @@ export const FolderExplorer: React.FC<FolderExplorerProps> = ({
         ) : (
           filteredFolders.map((folder, idx) => {
             const isSelected = selectedFolderPaths.has(folder.path);
+            const isFocused = focusedIndex === idx;
             const percentage = maxFolderSize > 0 ? Math.max(3, (folder.size / maxFolderSize) * 100) : 0;
 
             return (
               <div
                 key={folder.path}
+                data-folder-index={idx}
                 className="panel"
+                onClick={() => setFocusedIndex(idx)}
                 style={{
                   padding: '10px 14px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   gap: '16px',
-                  borderColor: isSelected ? 'var(--accent-danger)' : folder.isProtected ? 'rgba(59, 130, 246, 0.3)' : undefined,
-                  background: isSelected ? 'var(--bg-subtle)' : folder.isProtected ? 'rgba(59, 130, 246, 0.04)' : undefined,
+                  borderColor: isFocused
+                    ? 'var(--accent-primary)'
+                    : isSelected
+                    ? 'var(--accent-danger)'
+                    : folder.isProtected
+                    ? 'rgba(59, 130, 246, 0.3)'
+                    : undefined,
+                  boxShadow: isFocused ? '0 0 10px rgba(59, 130, 246, 0.35)' : undefined,
+                  background: isFocused
+                    ? 'rgba(59, 130, 246, 0.08)'
+                    : isSelected
+                    ? 'var(--bg-subtle)'
+                    : folder.isProtected
+                    ? 'rgba(59, 130, 246, 0.04)'
+                    : undefined,
+                  cursor: 'pointer',
                   transition: 'all 0.15s ease'
                 }}
               >

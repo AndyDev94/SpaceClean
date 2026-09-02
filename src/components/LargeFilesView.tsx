@@ -50,6 +50,16 @@ export const LargeFilesView: React.FC<LargeFilesViewProps> = ({
     .filter(f => selectedPaths.has(f.path))
     .reduce((acc, f) => acc + f.size, 0);
 
+  // Auto-scroll active preview row into view when navigating with Arrow keys
+  React.useEffect(() => {
+    if (previewedFilePath) {
+      const activeEl = document.querySelector(`[data-large-file="${CSS.escape(previewedFilePath)}"]`) as HTMLElement;
+      if (activeEl) {
+        activeEl.scrollIntoView({ block: 'nearest' });
+      }
+    }
+  }, [previewedFilePath]);
+
   return (
     <div className="glass-panel" style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '20px', overflow: 'hidden' }}>
       {/* Header */}
@@ -92,6 +102,7 @@ export const LargeFilesView: React.FC<LargeFilesViewProps> = ({
             return (
               <div
                 key={file.path}
+                data-large-file={file.path}
                 className="panel"
                 style={{
                   padding: '10px 14px',
@@ -103,7 +114,10 @@ export const LargeFilesView: React.FC<LargeFilesViewProps> = ({
                   borderColor: isPreviewActive ? 'var(--accent-primary)' : isSelected ? 'rgba(255, 71, 87, 0.4)' : undefined,
                   background: isPreviewActive ? 'var(--bg-subtle)' : isSelected ? 'rgba(255, 71, 87, 0.08)' : undefined,
                 }}
-                onClick={() => onToggleSelect(file.path)}
+                onClick={() => {
+                  onPreviewFile?.(file);
+                  onToggleSelect(file.path);
+                }}
               >
                 {/* Left section: Rank & Checkbox & Name */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>

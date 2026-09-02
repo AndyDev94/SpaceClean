@@ -23,6 +23,7 @@ export const AppUninstaller: React.FC = () => {
   const [sortBy, setSortBy] = useState<'size' | 'name' | 'date'>('size');
   const [uninstallingId, setUninstallingId] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [focusedIndex, setFocusedIndex] = useState<number>(0);
 
   const fetchApps = async () => {
     if (!window.electronAPI?.getInstalledApps) {
@@ -117,6 +118,42 @@ export const AppUninstaller: React.FC = () => {
       await window.electronAPI.showItemInFolder(folderPath);
     } catch {}
   };
+
+  // Keyboard navigation listener (Arrow Up/Down, Enter to uninstall)
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT')) {
+        return;
+      }
+      if (filteredApps.length === 0) return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setFocusedIndex(prev => Math.min(filteredApps.length - 1, prev + 1));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setFocusedIndex(prev => Math.max(0, prev - 1));
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        const currentApp = filteredApps[focusedIndex];
+        if (currentApp && !currentApp.isSystemProtected) {
+          handleUninstall(currentApp);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [filteredApps, focusedIndex]);
+
+  // Scroll active app into view
+  React.useEffect(() => {
+    const activeEl = document.querySelector(`[data-app-index="${focusedIndex}"]`) as HTMLElement;
+    if (activeEl) {
+      activeEl.scrollIntoView({ block: 'nearest' });
+    }
+  }, [focusedIndex]);
 
   return (
     <div className="glass-panel" style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '20px', overflow: 'hidden' }}>
@@ -231,21 +268,29 @@ export const AppUninstaller: React.FC = () => {
             <p style={{ fontSize: '12px', marginTop: '4px' }}>Try a different search query or click refresh.</p>
           </div>
         ) : (
-          filteredApps.map((app) => (
-            <div
-              key={app.id}
-              className="glass-panel"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '12px 16px',
-                borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--border-color)',
-                gap: '16px',
-                transition: 'all 0.2s ease'
-              }}
-            >
+          filteredApps.map((app, idx) => {
+            const isFocused = focusedIndex === idx;
+
+            return (
+              <div
+                key={app.id}
+                data-app-index={idx}
+                className="glass-panel"
+                onClick={() => setFocusedIndex(idx)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '12px 16px',
+                  borderRadius: 'var(--radius-md)',
+                  border: isFocused ? '1.5px solid var(--accent-primary)' : '1px solid var(--border-color)',
+                  boxShadow: isFocused ? '0 0 10px rgba(59, 130, 246, 0.35)' : undefined,
+                  background: isFocused ? 'rgba(59, 130, 246, 0.08)' : undefined,
+                  gap: '16px',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+              >
               {/* App Identity */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: '240px', flex: '1' }}>
                 <div
@@ -344,7 +389,8 @@ export const AppUninstaller: React.FC = () => {
                 </div>
               </div>
             </div>
-          ))
+          );
+        })
         )}
       </div>
     </div>

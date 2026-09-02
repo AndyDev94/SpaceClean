@@ -251,21 +251,29 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--text-dim);
-  margin: 18px auto 22px;
-  letter-spacing: 0.2px;
+  gap: 14px;
+  font-size: 21px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin: 18px auto 26px;
+  letter-spacing: -0.2px;
+  flex-wrap: wrap;
 }
 
 .foss-tagline-accent {
   color: #10b981;
-  font-weight: 600;
+  font-weight: 700;
+  text-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
 }
 
 [data-theme="light"] .foss-tagline-accent {
   color: #059669;
+  text-shadow: none;
+}
+
+.hero-foss-tagline .dot-sep {
+  color: var(--accent-primary);
+  font-weight: 700;
 }
 
 .highlight-box:hover {

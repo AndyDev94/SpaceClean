@@ -93,6 +93,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Right side: Top Horizontal Segmented Mode Selector Tabs */}
       <div className="tab-nav">
+        {/* 1. Files */}
         <button
           className={`tab-btn ${activeTab === 'explorer' ? 'active' : ''}`}
           onClick={() => onTabChange('explorer')}
@@ -101,6 +102,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <span>Files</span>
         </button>
 
+        {/* 2. Folders */}
         <button
           className={`tab-btn ${activeTab === 'folders' ? 'active' : ''}`}
           onClick={() => onTabChange('folders')}
@@ -109,15 +111,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <span>Folders</span>
         </button>
 
-        <button
-          className={`tab-btn ${activeTab === 'media' ? 'active' : ''}`}
-          onClick={() => onTabChange('media')}
-          title="Photos & Videos visual management gallery with adjustable grid"
-        >
-          <Film size={14} />
-          <span>Media</span>
-        </button>
-
+        {/* 3. Smart Optimizer */}
         <button
           className={`tab-btn ${activeTab === 'smart_clean' ? 'active' : ''}`}
           onClick={() => onTabChange('smart_clean')}
@@ -127,19 +121,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <span>Smart Optimizer</span>
         </button>
 
-        <button
-          className={`tab-btn ${activeTab === 'junk' ? 'active' : ''}`}
-          onClick={() => onTabChange('junk')}
-        >
-          <Trash2 size={14} />
-          <span>Junk</span>
-          {junkCount > 0 && (
-            <span style={{ fontSize: '10px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', padding: '1px 5px', borderRadius: '10px', fontWeight: 600 }}>
-              {junkCount}
-            </span>
-          )}
-        </button>
-
+        {/* 4. Duplicates */}
         <button
           className={`tab-btn ${activeTab === 'duplicates' ? 'active' : ''}`}
           onClick={() => onTabChange('duplicates')}
@@ -153,6 +135,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </button>
 
+        {/* 5. Largest Files */}
         <button
           className={`tab-btn ${activeTab === 'large_files' ? 'active' : ''}`}
           onClick={() => onTabChange('large_files')}
@@ -161,6 +144,31 @@ export const Navbar: React.FC<NavbarProps> = ({
           <span>Largest Files</span>
         </button>
 
+        {/* 6. Junk / Trash (Third Last) */}
+        <button
+          className={`tab-btn ${activeTab === 'junk' ? 'active' : ''}`}
+          onClick={() => onTabChange('junk')}
+        >
+          <Trash2 size={14} />
+          <span>Junk</span>
+          {junkCount > 0 && (
+            <span style={{ fontSize: '10px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', padding: '1px 5px', borderRadius: '10px', fontWeight: 600 }}>
+              {junkCount}
+            </span>
+          )}
+        </button>
+
+        {/* 7. Media (Second Last) */}
+        <button
+          className={`tab-btn ${activeTab === 'media' ? 'active' : ''}`}
+          onClick={() => onTabChange('media')}
+          title="Photos & Videos visual management gallery with adjustable grid"
+        >
+          <Film size={14} />
+          <span>Media</span>
+        </button>
+
+        {/* 8. Apps (Last) */}
         <button
           className={`tab-btn ${activeTab === 'uninstall' ? 'active' : ''}`}
           onClick={() => onTabChange('uninstall')}

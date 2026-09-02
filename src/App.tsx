@@ -410,11 +410,11 @@ export const App: React.FC = () => {
       const tabMap: Record<string, AppTab> = {
         '1': 'explorer',
         '2': 'folders',
-        '3': 'media',
-        '4': 'smart_clean',
-        '5': 'junk',
-        '6': 'duplicates',
-        '7': 'large_files',
+        '3': 'smart_clean',
+        '4': 'duplicates',
+        '5': 'large_files',
+        '6': 'junk',
+        '7': 'media',
         '8': 'uninstall'
       };
 

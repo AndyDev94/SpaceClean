@@ -124,7 +124,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           title="Part-by-part chronological cleanup wizard for any size folder (GB / TB)"
         >
           <Sparkles size={14} style={{ color: activeTab === 'smart_clean' ? 'var(--accent-primary)' : undefined }} />
-          <span>Optimizer</span>
+          <span>Smart Optimizer</span>
         </button>
 
         <button

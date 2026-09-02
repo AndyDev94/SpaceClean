@@ -34,7 +34,7 @@ interface MediaGalleryProps {
 }
 
 type MediaFilterType = 'all' | 'video' | 'image';
-type GridSize = 'compact' | 'standard' | 'large';
+type GridSize = 'compact' | 'standard' | 'large' | 'list';
 type DateFilterPreset = 'all' | 'today' | '7days' | '30days' | '90days' | '6months' | '1year' | 'older_1year';
 type SortOption =
   | 'size_desc'
@@ -308,9 +308,9 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
           </button>
         </div>
 
-        {/* Grid Size Zoom Controls */}
+        {/* Grid Size & View Mode Controls */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--bg-card)', padding: '3px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
-          <span style={{ fontSize: '11px', color: 'var(--text-muted)', padding: '0 6px' }}>Grid:</span>
+          <span style={{ fontSize: '11px', color: 'var(--text-muted)', padding: '0 6px' }}>View:</span>
           <button
             className={`btn btn-secondary ${gridSize === 'compact' ? 'active' : ''}`}
             style={{ padding: '3px 8px', fontSize: '11px', background: gridSize === 'compact' ? 'var(--accent-primary)' : 'transparent', color: gridSize === 'compact' ? '#fff' : undefined }}
@@ -334,6 +334,14 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
             title="Large detailed preview tiles"
           >
             Large
+          </button>
+          <button
+            className={`btn btn-secondary ${gridSize === 'list' ? 'active' : ''}`}
+            style={{ padding: '3px 8px', fontSize: '11px', background: gridSize === 'list' ? 'var(--accent-primary)' : 'transparent', color: gridSize === 'list' ? '#fff' : undefined }}
+            onClick={() => setGridSize('list')}
+            title="Detailed table list view without tiles"
+          >
+            List
           </button>
         </div>
       </div>
@@ -433,7 +441,7 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
         </div>
       </div>
 
-      {/* Media Tiles Grid */}
+      {/* Media Display Area (List vs Tiles) */}
       <div style={{ flex: 1, overflowY: 'auto' }}>
         {filteredMediaFiles.length === 0 ? (
           <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
@@ -452,7 +460,97 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
               </button>
             )}
           </div>
+        ) : gridSize === 'list' ? (
+          /* List View without Tiles */
+          <div className="table-wrapper" style={{ border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
+            <table className="data-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+              <thead>
+                <tr style={{ background: 'var(--bg-app)', borderBottom: '1px solid var(--border-color)', textAlign: 'left' }}>
+                  <th style={{ width: '38px', padding: '8px 10px', textAlign: 'center' }}>
+                    <input
+                      type="checkbox"
+                      checked={filteredMediaFiles.length > 0 && filteredMediaFiles.every(f => selectedPaths.has(f.path))}
+                      onChange={e => {
+                        if (e.target.checked) handleSelectAllFiltered();
+                        else handleDeselectFiltered();
+                      }}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  </th>
+                  <th style={{ width: '50px', padding: '8px 10px' }}>Type</th>
+                  <th style={{ padding: '8px 10px' }}>File Name</th>
+                  <th style={{ padding: '8px 10px' }}>Folder Location</th>
+                  <th style={{ width: '110px', padding: '8px 10px', textAlign: 'right' }}>Size</th>
+                  <th style={{ width: '110px', padding: '8px 10px' }}>Modified</th>
+                  <th style={{ width: '80px', padding: '8px 10px', textAlign: 'center' }}>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredMediaFiles.map((file) => {
+                  const isSelected = selectedPaths.has(file.path);
+                  const isVideo = file.category === 'video';
+
+                  return (
+                    <tr
+                      key={file.path}
+                      onClick={() => onToggleSelect(file.path)}
+                      style={{
+                        cursor: 'pointer',
+                        background: isSelected ? 'rgba(239, 68, 68, 0.08)' : undefined,
+                        borderBottom: '1px solid var(--border-subtle)'
+                      }}
+                      className={isSelected ? 'selected' : ''}
+                    >
+                      <td style={{ textAlign: 'center', padding: '8px 10px' }} onClick={e => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => onToggleSelect(file.path)}
+                          style={{ cursor: 'pointer' }}
+                        />
+                      </td>
+                      <td style={{ padding: '8px 10px' }}>
+                        {isVideo ? (
+                          <span style={{ padding: '2px 5px', borderRadius: '4px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', fontSize: '10px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                            <Film size={10} /> VID
+                          </span>
+                        ) : (
+                          <span style={{ padding: '2px 5px', borderRadius: '4px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', fontSize: '10px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                            <ImageIcon size={10} /> PIC
+                          </span>
+                        )}
+                      </td>
+                      <td style={{ padding: '8px 10px', fontWeight: 500, color: isSelected ? '#f87171' : 'var(--text-main)', maxWidth: '260px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={file.name}>
+                        {file.name}
+                      </td>
+                      <td style={{ padding: '8px 10px', fontSize: '11px', color: 'var(--text-dim)', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={file.path}>
+                        {file.path}
+                      </td>
+                      <td style={{ padding: '8px 10px', textAlign: 'right', fontWeight: 600, color: file.size > 1024 * 1024 * 500 ? '#ff6b81' : 'var(--text-main)' }}>
+                        {file.formattedSize}
+                      </td>
+                      <td style={{ padding: '8px 10px', fontSize: '11px', color: 'var(--text-dim)' }}>
+                        {format(new Date(file.modifiedAt || file.createdAt), 'yyyy-MM-dd')}
+                      </td>
+                      <td style={{ padding: '8px 10px', textAlign: 'center' }} onClick={e => e.stopPropagation()}>
+                        <button
+                          className="btn btn-secondary"
+                          style={{ padding: '3px 8px', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '3px' }}
+                          onClick={() => onSelectPreview(file)}
+                          title="Open Live Preview"
+                        >
+                          <Eye size={12} />
+                          <span>View</span>
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         ) : (
+          /* Grid Tiles View */
           <div
             style={{
               display: 'grid',

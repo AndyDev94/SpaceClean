@@ -1082,48 +1082,71 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
         )}
       </div>
 
-      {/* Floating Bottom Action Bar When Items Are Selected */}
+      {/* Docked Bottom Action Bar When Items Are Selected */}
       {selectedMediaCount > 0 && (
         <div
           style={{
-            position: 'absolute',
-            bottom: '24px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            background: 'rgba(15, 23, 42, 0.95)',
-            border: '1px solid rgba(239, 68, 68, 0.4)',
-            boxShadow: '0 8px 30px rgba(0,0,0,0.5)',
-            borderRadius: '30px',
-            padding: '8px 18px',
+            marginTop: '12px',
+            padding: '10px 16px',
+            background: 'var(--bg-app)',
+            border: '1.5px solid rgba(239, 68, 68, 0.4)',
+            borderRadius: 'var(--radius-md)',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
             display: 'flex',
             alignItems: 'center',
+            justifyContent: 'space-between',
             gap: '16px',
-            zIndex: 10,
-            backdropFilter: 'blur(10px)'
+            flexWrap: 'wrap',
+            zIndex: 5
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-main)', fontSize: '13px' }}>
-            <span style={{ fontWeight: 700, color: '#f87171' }}>{selectedMediaCount} Selected</span>
-            <span style={{ opacity: 0.4 }}>•</span>
-            <span style={{ fontWeight: 600 }}>{formatBytes(selectedMediaBytes)}</span>
+          {/* Left: Clear Selection summary */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div
+              style={{
+                width: '30px',
+                height: '30px',
+                borderRadius: '6px',
+                background: 'rgba(239, 68, 68, 0.15)',
+                color: '#ef4444',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
+              }}
+            >
+              <Trash2 size={15} />
+            </div>
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span>{selectedMediaCount.toLocaleString()} {selectedMediaCount === 1 ? 'file' : 'files'} selected</span>
+                <span style={{ color: '#ff6b81', fontWeight: 700 }}>• {formatBytes(selectedMediaBytes)}</span>
+              </div>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                Ready to move to Recycle Bin or permanently delete
+              </div>
+            </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {/* Right: Cancel button & Clean Selected with Size Visible */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <button
-              className="btn btn-danger"
-              style={{ padding: '6px 14px', fontSize: '12px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '6px' }}
-              onClick={onOpenDeleteModal}
+              className="btn btn-secondary"
+              style={{ padding: '6px 14px', fontSize: '12px' }}
+              onClick={handleDeselectFiltered}
+              title="Deselect all selected media items"
             >
-              <Trash2 size={13} />
-              <span>Clean Selected</span>
+              Cancel
             </button>
 
             <button
-              className="btn btn-secondary"
-              style={{ padding: '6px 12px', fontSize: '12px', borderRadius: '20px' }}
-              onClick={handleDeselectFiltered}
+              className="btn btn-danger"
+              style={{ padding: '6px 16px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}
+              onClick={onOpenDeleteModal}
+              title="Delete all selected media items"
             >
-              Cancel
+              <Trash2 size={14} />
+              <span>Clean Selected ({formatBytes(selectedMediaBytes)})</span>
             </button>
           </div>
         </div>

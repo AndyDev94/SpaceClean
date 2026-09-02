@@ -777,6 +777,8 @@ export const App: React.FC = () => {
               onToggleSelect={handleToggleSelect}
               onSetSelectedPaths={setSelectedPaths}
               onOpenDeleteModal={handleOpenDeleteModal}
+              onPreviewFile={setPreviewFile}
+              previewedFilePath={previewFile?.path}
             />
           )}
 

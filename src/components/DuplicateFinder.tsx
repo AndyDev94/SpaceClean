@@ -21,6 +21,8 @@ interface DuplicateFinderProps {
   onToggleSelect: (path: string) => void;
   onSetSelectedPaths: (paths: Set<string>) => void;
   onOpenDeleteModal: () => void;
+  onPreviewFile?: (file: FileInfo) => void;
+  previewedFilePath?: string;
 }
 
 export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
@@ -31,6 +33,8 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
   onToggleSelect,
   onSetSelectedPaths,
   onOpenDeleteModal,
+  onPreviewFile,
+  previewedFilePath,
 }) => {
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
 
@@ -307,6 +311,7 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                     {group.files.map((file, fIdx) => {
                       const isSelected = selectedPaths.has(file.path);
+                      const isPreviewed = previewedFilePath === file.path;
                       const fileDate = file.modifiedAt || file.createdAt;
                       const formattedDate = fileDate ? format(new Date(fileDate), 'yyyy-MM-dd HH:mm') : '—';
 
@@ -320,11 +325,18 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
                             justifyContent: 'space-between',
                             padding: '10px 14px',
                             borderBottom: fIdx < group.files.length - 1 ? '1px solid var(--border-subtle)' : 'none',
-                            background: isSelected ? 'rgba(239, 68, 68, 0.08)' : undefined,
+                            borderLeft: isPreviewed ? '3px solid var(--accent-primary)' : '3px solid transparent',
+                            background: isSelected
+                              ? 'rgba(239, 68, 68, 0.08)'
+                              : isPreviewed
+                              ? 'var(--bg-subtle)'
+                              : undefined,
                             cursor: 'pointer',
                             transition: 'background-color 0.15s ease'
                           }}
-                          onClick={() => onToggleSelect(file.path)}
+                          onClick={() => {
+                            onPreviewFile?.(file);
+                          }}
                         >
                           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
                             <input
@@ -366,14 +378,29 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
                             </div>
                           </div>
 
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexShrink: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
                             <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>
                               {formattedDate}
                             </span>
 
+                            {/* View / Preview button */}
                             <button
                               className="btn btn-secondary"
-                              style={{ padding: '4px 8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                              style={{ padding: '3px 8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                              title="Inspect in Live Preview Drawer"
+                              onClick={e => {
+                                e.stopPropagation();
+                                onPreviewFile?.(file);
+                              }}
+                            >
+                              <Eye size={12} />
+                              <span>View</span>
+                            </button>
+
+                            {/* Open in File Explorer button */}
+                            <button
+                              className="btn btn-secondary"
+                              style={{ padding: '3px 8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}
                               title="Show file location in Explorer"
                               onClick={e => {
                                 e.stopPropagation();

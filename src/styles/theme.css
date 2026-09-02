@@ -1,0 +1,303 @@
+:root {
+  /* Default: Obsidian Slate Dark */
+  --bg-app: #0d0f14;
+  --bg-panel: #13161f;
+  --bg-panel-hover: #181c27;
+  --bg-subtle: #1c202c;
+  --bg-input: #151822;
+
+  --border-color: #222634;
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-hover: #32384a;
+
+  --accent-primary: #3b82f6;
+  --accent-primary-hover: #2563eb;
+  --accent-danger: #ef4444;
+  --accent-success: #10b981;
+  --accent-warning: #f59e0b;
+
+  --text-main: #f3f4f6;
+  --text-muted: #9ca3af;
+  --text-dim: #6b7280;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-full: 9999px;
+
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ================= DARK THEME PRESETS ================= */
+
+/* 1. Midnight OLED (True Black) */
+[data-theme="midnight"] {
+  --bg-app: #000000;
+  --bg-panel: #0a0a0c;
+  --bg-panel-hover: #121216;
+  --bg-subtle: #16161b;
+  --bg-input: #0e0e12;
+  --border-color: #1f1f26;
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-hover: #2e2e38;
+  --accent-primary: #38bdf8;
+  --accent-primary-hover: #0284c7;
+  --text-main: #ffffff;
+  --text-muted: #a1a1aa;
+  --text-dim: #71717a;
+}
+
+/* 2. Nordic Forest Dark */
+[data-theme="nordic"] {
+  --bg-app: #090e0c;
+  --bg-panel: #0e1714;
+  --bg-panel-hover: #14201c;
+  --bg-subtle: #1a2924;
+  --bg-input: #101a16;
+  --border-color: #1b2e27;
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-hover: #29463c;
+  --accent-primary: #10b981;
+  --accent-primary-hover: #059669;
+  --text-main: #edf5f1;
+  --text-muted: #94a89e;
+  --text-dim: #607369;
+}
+
+/* 3. Tokyo Night Charcoal */
+[data-theme="tokyo"] {
+  --bg-app: #0e0d16;
+  --bg-panel: #141320;
+  --bg-panel-hover: #1b192b;
+  --bg-subtle: #222036;
+  --bg-input: #161524;
+  --border-color: #27243d;
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-hover: #3b375c;
+  --accent-primary: #a855f7;
+  --accent-primary-hover: #9333ea;
+  --text-main: #f5f3ff;
+  --text-muted: #a7a2bd;
+  --text-dim: #6e6985;
+}
+
+/* 4. Deep Ocean Navy */
+[data-theme="ocean"] {
+  --bg-app: #070d18;
+  --bg-panel: #0d1627;
+  --bg-panel-hover: #121e35;
+  --bg-subtle: #182845;
+  --bg-input: #0f192d;
+  --border-color: #1a2c4d;
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-hover: #26406e;
+  --accent-primary: #0284c7;
+  --accent-primary-hover: #0369a1;
+  --text-main: #f0f7ff;
+  --text-muted: #93a9c7;
+  --text-dim: #5c7494;
+}
+
+/* ================= LIGHT THEME PRESETS ================= */
+
+/* 5. Clean Minimalist Light */
+[data-theme="clean-white"] {
+  --bg-app: #f4f5f8;
+  --bg-panel: #ffffff;
+  --bg-panel-hover: #f8fafc;
+  --bg-subtle: #eef2f6;
+  --bg-input: #ffffff;
+  --border-color: #e2e8f0;
+  --border-subtle: rgba(0, 0, 0, 0.05);
+  --border-hover: #cbd5e1;
+  --accent-primary: #2563eb;
+  --accent-primary-hover: #1d4ed8;
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-dim: #94a3b8;
+}
+
+/* 6. Warm Sand / Paper Light */
+[data-theme="warm-sand"] {
+  --bg-app: #f7f5f0;
+  --bg-panel: #ffffff;
+  --bg-panel-hover: #faf8f5;
+  --bg-subtle: #eee9e0;
+  --bg-input: #ffffff;
+  --border-color: #e4ded3;
+  --border-subtle: rgba(0, 0, 0, 0.05);
+  --border-hover: #d2c8b8;
+  --accent-primary: #d97706;
+  --accent-primary-hover: #b45309;
+  --text-main: #292524;
+  --text-muted: #57534e;
+  --text-dim: #a8a29e;
+}
+
+/* 7. Arctic Ice Light */
+[data-theme="arctic"] {
+  --bg-app: #edf3f8;
+  --bg-panel: #ffffff;
+  --bg-panel-hover: #f5f9fc;
+  --bg-subtle: #e2ecf5;
+  --bg-input: #ffffff;
+  --border-color: #d1dfed;
+  --border-subtle: rgba(0, 0, 0, 0.05);
+  --border-hover: #b8cde2;
+  --accent-primary: #0284c7;
+  --accent-primary-hover: #0369a1;
+  --text-main: #0c1929;
+  --text-muted: #40566e;
+  --text-dim: #849cb5;
+}
+
+/* 8. Sage Minimal Light */
+[data-theme="sage-light"] {
+  --bg-app: #eff5f1;
+  --bg-panel: #ffffff;
+  --bg-panel-hover: #f7faf8;
+  --bg-subtle: #e1ede5;
+  --bg-input: #ffffff;
+  --border-color: #d1e2d7;
+  --border-subtle: rgba(0, 0, 0, 0.05);
+  --border-hover: #b5cebd;
+  --accent-primary: #059669;
+  --accent-primary-hover: #047857;
+  --text-main: #132219;
+  --text-muted: #3d5648;
+  --text-dim: #7f998a;
+}
+
+/* Base resets & typography */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: var(--font-family) !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  overflow: hidden;
+  user-select: none;
+  height: 100vh;
+  width: 100vw;
+  font-size: 13px;
+  line-height: 1.5;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Minimal Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-hover);
+}
+
+/* Panel */
+.panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+/* Clean Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  border: 1px solid transparent;
+  outline: none;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--accent-primary);
+  color: #ffffff;
+  border-color: var(--accent-primary-hover);
+}
+
+.btn-primary:hover {
+  background: var(--accent-primary-hover);
+}
+
+.btn-secondary {
+  background: var(--bg-subtle);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  background: var(--bg-panel-hover);
+  border-color: var(--border-hover);
+}
+
+.btn-danger {
+  background: var(--accent-danger);
+  color: #ffffff;
+  border-color: #dc2626;
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+}
+
+/* Clean Minimalist Category Badges */
+.badge-category {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 500;
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
+}
+
+/* Input Fields */
+input[type="text"],
+input[type="date"],
+select {
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  border-radius: var(--radius-md);
+  padding: 6px 10px;
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+input[type="text"]:focus,
+input[type="date"]:focus,
+select:focus {
+  border-color: var(--accent-primary);
+}
+
+input[type="checkbox"] {
+  accent-color: var(--accent-primary);
+  width: 14px;
+  height: 14px;
+}

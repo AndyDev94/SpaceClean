@@ -220,7 +220,7 @@ export const SmartFolderCleanup: React.FC<SmartFolderCleanupProps> = ({
     return [
       {
         id: 'stage_quick_wins',
-        title: 'Stage 1: Safe to Delete (Cache & Temp Files)',
+        title: 'Finding 1: Safe to Delete (Cache & Temp Files)',
         subtitle: 'Temporary installer leftovers, crash logs, and obsolete cache files',
         icon: <Zap size={16} className="text-amber-400" />,
         safetyLevel: 'safe',
@@ -230,7 +230,7 @@ export const SmartFolderCleanup: React.FC<SmartFolderCleanupProps> = ({
       },
       {
         id: 'stage_space_hogs',
-        title: 'Stage 2: Very Large Files (over 200 MB)',
+        title: 'Finding 2: Very Large Files (over 200 MB)',
         subtitle: 'Large video captures, disk images (.iso), large installers, or VM containers',
         icon: <Archive size={16} className="text-red-400" />,
         safetyLevel: 'review',
@@ -240,7 +240,7 @@ export const SmartFolderCleanup: React.FC<SmartFolderCleanupProps> = ({
       },
       {
         id: 'stage_stale_files',
-        title: 'Stage 3: Forgotten Files (Unopened in 6+ Months)',
+        title: 'Finding 3: Forgotten Files (Unopened in 6+ Months)',
         subtitle: 'Files untouched for over 180 days that occupy valuable disk storage',
         icon: <Clock size={16} className="text-blue-400" />,
         safetyLevel: 'recommended',
@@ -250,7 +250,7 @@ export const SmartFolderCleanup: React.FC<SmartFolderCleanupProps> = ({
       },
       {
         id: 'stage_duplicates',
-        title: 'Stage 4: Exact Duplicate Copies',
+        title: 'Finding 4: Exact Duplicate Copies',
         subtitle: 'Verified redundant copies taking up unnecessary storage space',
         icon: <Shield size={16} className="text-purple-400" />,
         safetyLevel: 'safe',
@@ -396,19 +396,19 @@ export const SmartFolderCleanup: React.FC<SmartFolderCleanupProps> = ({
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <h2 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-main)' }}>
-                  Smart Part-by-Part Folder Optimizer
+                  Smart Optimizer
                 </h2>
                 <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', background: 'var(--bg-subtle)', color: 'var(--accent-primary)', fontWeight: 600, border: '1px solid var(--border-color)' }}>
                   Any Folder Size (GB / TB)
                 </span>
                 {chunkInfo && chunkInfo.isChunkPaused && (
                   <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', background: 'rgba(59, 130, 246, 0.15)', color: 'var(--accent-primary)', fontWeight: 600, border: '1px solid var(--accent-primary)' }}>
-                    Part {chunkInfo.chunkNumber} Ready
+                    Scan Part {chunkInfo.chunkNumber} Ready
                   </span>
                 )}
               </div>
               <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '4px' }}>
-                Organizes any folder into chronological years and age groups. Click column headers (Size, Name, Type, Date) to sort files inside any year.
+                Organizes any folder into chronological year findings and categorized safety recommendations.
               </p>
             </div>
           </div>
@@ -423,7 +423,7 @@ export const SmartFolderCleanup: React.FC<SmartFolderCleanupProps> = ({
                 title="Review files partitioned by Year & Age (Oldest to Newest)"
               >
                 <Calendar size={13} />
-                <span>Chronological Year & Age</span>
+                <span>Chronological Year Findings</span>
               </button>
               <button
                 className={`tab-btn ${optimizerMode === 'safety_stages' ? 'active' : ''}`}
@@ -432,7 +432,7 @@ export const SmartFolderCleanup: React.FC<SmartFolderCleanupProps> = ({
                 title="Review by Safety Category (Safe to Delete, Large Files, Forgotten)"
               >
                 <Layers size={13} />
-                <span>Safety Categories</span>
+                <span>Categorized Safety Findings</span>
               </button>
             </div>
           </div>
@@ -468,12 +468,12 @@ export const SmartFolderCleanup: React.FC<SmartFolderCleanupProps> = ({
           {optimizerMode === 'chronological' ? (
             <>
               <Calendar size={14} style={{ color: 'var(--accent-primary)' }} />
-              <span>Year & Age Groups ({timeWaves.length} Years)</span>
+              <span>Year Findings ({timeWaves.length} Years)</span>
             </>
           ) : (
             <>
               <Layers size={14} style={{ color: 'var(--accent-primary)' }} />
-              <span>Categorized Safety Groups</span>
+              <span>Categorized Safety Findings ({safetyStages.length} Findings)</span>
             </>
           )}
         </div>
@@ -622,7 +622,7 @@ export const SmartFolderCleanup: React.FC<SmartFolderCleanupProps> = ({
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                           <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-main)' }}>
-                            Part {waveIdx + 1}: {wave.label}
+                            Finding {waveIdx + 1}: {wave.label}
                           </span>
 
                           {waveIdx === 0 && timeSortOrder === 'oldest_first' && (
@@ -848,7 +848,7 @@ export const SmartFolderCleanup: React.FC<SmartFolderCleanupProps> = ({
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Layers size={14} style={{ color: 'var(--accent-primary)' }} />
-            <span>Categorized Safety Waves</span>
+            <span>Categorized Safety Findings</span>
           </div>
 
           {safetyStages.map(stage => {

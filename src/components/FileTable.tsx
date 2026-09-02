@@ -27,7 +27,8 @@ import {
   Sparkles,
   HardDrive,
   Play,
-  ShieldCheck
+  ShieldCheck,
+  Layers
 } from 'lucide-react';
 import { FileInfo, FilterState, FileCategory } from '../types';
 import { formatBytes } from '../utils/filterUtils';
@@ -374,11 +375,11 @@ export const FileTable: React.FC<FileTableProps> = ({
 
                 <div style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', padding: '12px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 600, color: 'var(--text-main)', marginBottom: '4px' }}>
-                    <ShieldCheck size={14} style={{ color: '#10b981' }} />
-                    <span>Safe Recycle Bin</span>
+                    <Layers size={14} style={{ color: '#f59e0b' }} />
+                    <span>Smart Findings</span>
                   </div>
                   <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
-                    100% safe file recovery with 1-click restore.
+                    Chronological year waves and safety groups for guided cleaning.
                   </p>
                 </div>
               </div>

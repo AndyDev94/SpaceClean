@@ -20,9 +20,10 @@ import {
   Layers,
   X,
   Zap,
-  ChevronDown,
-  Activity,
-  ImagePlay
+  ImagePlay,
+  Clock,
+  Camera,
+  Scissors
 } from 'lucide-react';
 import { FileInfo } from '../types';
 import { formatBytes } from '../utils/filterUtils';
@@ -37,7 +38,7 @@ interface MediaGalleryProps {
   onOpenDeleteModal: () => void;
 }
 
-type MediaFilterType = 'all' | 'video' | 'image' | 'gif';
+type MediaFilterType = 'all' | 'video' | 'image' | 'gif' | 'screenshot' | 'heavy';
 type GridSize = 'compact' | 'standard' | 'large' | 'list';
 type DateFilterPreset =
   | 'all'
@@ -59,7 +60,7 @@ type SortOption =
   | 'name_desc'
   | 'type_asc';
 
-const INITIAL_BATCH_SIZE = 120;
+const BATCH_SIZE = 150;
 
 export const MediaGallery: React.FC<MediaGalleryProps> = ({
   files,
@@ -80,15 +81,28 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
   const [sortBy, setSortBy] = useState<SortOption>('size_desc');
   const [focusedIndex, setFocusedIndex] = useState<number>(0);
 
-  // Smooth Media Scan state (Progressive chunking for zero lag)
-  const [visibleCount, setVisibleCount] = useState<number>(INITIAL_BATCH_SIZE);
-  const [isSmoothScanMode, setIsSmoothScanMode] = useState<boolean>(true);
+  // Auto-Smooth Infinite Scrolling (Auto progressive batches on scroll)
+  const [visibleCount, setVisibleCount] = useState<number>(BATCH_SIZE);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Helper to determine precise media kind (video, gif, photo)
-  const getMediaSubtype = (file: FileInfo): 'video' | 'gif' | 'photo' => {
+  // Helper to determine precise media kind (video, gif, screenshot, photo)
+  const isScreenshotFile = (name: string): boolean => {
+    const lower = name.toLowerCase();
+    return (
+      lower.includes('screenshot') ||
+      lower.includes('screen shot') ||
+      lower.includes('capture') ||
+      lower.includes('snip') ||
+      lower.includes('screen_') ||
+      lower.includes('rec_')
+    );
+  };
+
+  const getMediaSubtype = (file: FileInfo): 'video' | 'gif' | 'screenshot' | 'photo' => {
     const ext = (file.extension || '').toLowerCase();
     if (ext === 'gif') return 'gif';
     if (file.category === 'video') return 'video';
+    if (isScreenshotFile(file.name)) return 'screenshot';
     return 'photo';
   };
 
@@ -104,48 +118,66 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
     return Array.from(extMap.entries()).sort((a, b) => b[1] - a[1]);
   }, [files]);
 
-  // Counts for each subtype
-  const counts = useMemo(() => {
+  // Counts for each smart filter category
+  const smartCounts = useMemo(() => {
     let video = 0;
     let gif = 0;
     let photo = 0;
+    let screenshot = 0;
+    let heavy = 0;
+
     files.forEach(f => {
-      if (f.category === 'video') video++;
-      else if (f.category === 'image') {
-        if (f.extension.toLowerCase() === 'gif') gif++;
+      if (f.category === 'image' || f.category === 'video') {
+        const ext = (f.extension || '').toLowerCase();
+        if (f.category === 'video') video++;
+        else if (ext === 'gif') gif++;
+        else if (isScreenshotFile(f.name)) screenshot++;
         else photo++;
+
+        if (f.size >= 100 * 1024 * 1024) heavy++;
       }
     });
-    return { all: video + gif + photo, video, gif, photo };
+
+    return {
+      all: video + gif + photo + screenshot,
+      video,
+      gif,
+      photo: photo + screenshot,
+      screenshot,
+      heavy
+    };
   }, [files]);
 
-  // Filter media files with full date, custom range, size, type, extension, and search
+  // Filter media files
   const allFilteredMediaFiles = useMemo(() => {
     const now = new Date();
 
     return files.filter(f => {
-      // 1. Category and subtype check
       if (f.category !== 'image' && f.category !== 'video') return false;
       const subtype = getMediaSubtype(f);
-      if (mediaType === 'video' && subtype !== 'video') return false;
-      if (mediaType === 'image' && subtype !== 'photo') return false;
-      if (mediaType === 'gif' && subtype !== 'gif') return false;
 
-      // 2. Specific extension filter
+      // Smart preset filtering
+      if (mediaType === 'video' && f.category !== 'video') return false;
+      if (mediaType === 'image' && f.category !== 'image') return false;
+      if (mediaType === 'gif' && subtype !== 'gif') return false;
+      if (mediaType === 'screenshot' && !isScreenshotFile(f.name)) return false;
+      if (mediaType === 'heavy' && f.size < 100 * 1024 * 1024) return false;
+
+      // Specific extension filter
       if (selectedExtension !== 'all' && f.extension.toLowerCase() !== selectedExtension.toLowerCase()) {
         return false;
       }
 
-      // 3. Minimum Size filter
+      // Minimum Size filter
       if (minSizeBytes > 0 && f.size < minSizeBytes) return false;
 
-      // 4. Search Query
+      // Search Query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         if (!f.name.toLowerCase().includes(q) && !f.path.toLowerCase().includes(q)) return false;
       }
 
-      // 5. Date preset & Custom Range filter
+      // Date preset & Custom Range filter
       const fileDate = new Date(f.modifiedAt || f.createdAt);
       if (datePreset === 'today') {
         if (isBefore(fileDate, subDays(now, 1))) return false;
@@ -195,13 +227,20 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
     });
   }, [files, mediaType, selectedExtension, minSizeBytes, searchQuery, datePreset, customStartDate, customEndDate, sortBy]);
 
-  // Sliced items for smooth rendering without DOM freeze
+  // Displayed items with auto-smooth progressive streaming
   const displayedMediaFiles = useMemo(() => {
-    if (!isSmoothScanMode || visibleCount >= allFilteredMediaFiles.length) {
-      return allFilteredMediaFiles;
-    }
     return allFilteredMediaFiles.slice(0, visibleCount);
-  }, [allFilteredMediaFiles, isSmoothScanMode, visibleCount]);
+  }, [allFilteredMediaFiles, visibleCount]);
+
+  // Auto-load next batch on scroll
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    if (scrollHeight - scrollTop - clientHeight < 400) {
+      if (visibleCount < allFilteredMediaFiles.length) {
+        setVisibleCount(prev => Math.min(allFilteredMediaFiles.length, prev + BATCH_SIZE));
+      }
+    }
+  };
 
   const totalMediaBytes = useMemo(() => {
     return allFilteredMediaFiles.reduce((acc, f) => acc + f.size, 0);
@@ -229,9 +268,19 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
     onSetSelectedPaths(next);
   };
 
-  const handleSelectLargeMedia = (minBytes: number) => {
+  const handleSelectHeavyMedia = () => {
     const next = new Set(selectedPaths);
-    allFilteredMediaFiles.filter(f => !f.isProtected && f.size >= minBytes).forEach(f => next.add(f.path));
+    allFilteredMediaFiles
+      .filter(f => !f.isProtected && f.size >= 100 * 1024 * 1024)
+      .forEach(f => next.add(f.path));
+    onSetSelectedPaths(next);
+  };
+
+  const handleSelectScreenshots = () => {
+    const next = new Set(selectedPaths);
+    allFilteredMediaFiles
+      .filter(f => !f.isProtected && isScreenshotFile(f.name))
+      .forEach(f => next.add(f.path));
     onSetSelectedPaths(next);
   };
 
@@ -244,7 +293,7 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
     setCustomEndDate('');
     setSearchQuery('');
     setSortBy('size_desc');
-    setVisibleCount(INITIAL_BATCH_SIZE);
+    setVisibleCount(BATCH_SIZE);
   };
 
   const isFilterApplied =
@@ -283,8 +332,8 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
         e.preventDefault();
         setFocusedIndex(prev => {
           const next = Math.min(displayedMediaFiles.length - 1, prev + 1);
-          if (next >= visibleCount - 10 && visibleCount < allFilteredMediaFiles.length) {
-            setVisibleCount(c => c + INITIAL_BATCH_SIZE);
+          if (next >= visibleCount - 15 && visibleCount < allFilteredMediaFiles.length) {
+            setVisibleCount(c => c + BATCH_SIZE);
           }
           return next;
         });
@@ -295,8 +344,8 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
         e.preventDefault();
         setFocusedIndex(prev => {
           const next = Math.min(displayedMediaFiles.length - 1, prev + (gridSize === 'list' ? 1 : cols));
-          if (next >= visibleCount - 10 && visibleCount < allFilteredMediaFiles.length) {
-            setVisibleCount(c => c + INITIAL_BATCH_SIZE);
+          if (next >= visibleCount - 15 && visibleCount < allFilteredMediaFiles.length) {
+            setVisibleCount(c => c + BATCH_SIZE);
           }
           return next;
         });
@@ -329,17 +378,21 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
   }, [focusedIndex]);
 
   return (
-    <div className="glass-panel" style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '16px 20px', overflow: 'hidden' }}>
+    <div className="glass-panel" style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '16px 20px', overflow: 'hidden', position: 'relative' }}>
       {/* Top Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '12px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '12px' }}>
         <div>
           <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Film size={20} style={{ color: 'var(--accent-primary)' }} />
             Media Gallery & Visual Cleaner
           </h2>
           <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
-            {allFilteredMediaFiles.length} media items ({formatBytes(totalMediaBytes)})
-            {isFilterApplied ? ' matching active filters.' : ' in scanned folder.'}
+            {allFilteredMediaFiles.length.toLocaleString()} media items ({formatBytes(totalMediaBytes)}) in scanned folder
+            {displayedMediaFiles.length < allFilteredMediaFiles.length && (
+              <span style={{ color: 'var(--accent-primary)', marginLeft: '6px' }}>
+                • Auto-streaming ({displayedMediaFiles.length} loaded smoothly)
+              </span>
+            )}
           </p>
         </div>
 
@@ -358,103 +411,78 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
         </div>
       </div>
 
-      {/* Smooth Media Scan Optimizer Banner */}
-      {allFilteredMediaFiles.length > INITIAL_BATCH_SIZE && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '8px 14px',
-            background: 'rgba(59, 130, 246, 0.08)',
-            border: '1px solid rgba(59, 130, 246, 0.25)',
-            borderRadius: 'var(--radius-md)',
-            marginBottom: '12px',
-            fontSize: '12px',
-            gap: '12px',
-            flexWrap: 'wrap'
-          }}
+      {/* Smart Quick-Clean Presets Bar */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+        <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+          Smart Media Views:
+        </span>
+
+        {/* All */}
+        <button
+          className={`btn btn-secondary ${mediaType === 'all' ? 'active' : ''}`}
+          style={{ padding: '4px 10px', fontSize: '12px', background: mediaType === 'all' ? 'var(--accent-primary)' : 'var(--bg-card)', color: mediaType === 'all' ? '#fff' : undefined }}
+          onClick={() => setMediaType('all')}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Sparkles size={15} style={{ color: 'var(--accent-primary)' }} />
-            <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>
-              Smooth Media Scan Optimizer:
-            </span>
-            <span style={{ color: 'var(--text-dim)' }}>
-              Showing Part {Math.ceil(displayedMediaFiles.length / INITIAL_BATCH_SIZE)} ({displayedMediaFiles.length} of {allFilteredMediaFiles.length.toLocaleString()} media loaded without lag)
-            </span>
-          </div>
+          All ({smartCounts.all})
+        </button>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {displayedMediaFiles.length < allFilteredMediaFiles.length ? (
-              <>
-                <button
-                  className="btn btn-primary"
-                  style={{ padding: '3px 10px', fontSize: '11px' }}
-                  onClick={() => setVisibleCount(c => Math.min(allFilteredMediaFiles.length, c + INITIAL_BATCH_SIZE))}
-                >
-                  Load Next Part (+{Math.min(INITIAL_BATCH_SIZE, allFilteredMediaFiles.length - displayedMediaFiles.length)})
-                </button>
-                <button
-                  className="btn btn-secondary"
-                  style={{ padding: '3px 10px', fontSize: '11px' }}
-                  onClick={() => {
-                    setIsSmoothScanMode(false);
-                    setVisibleCount(allFilteredMediaFiles.length);
-                  }}
-                >
-                  Show All ({allFilteredMediaFiles.length.toLocaleString()})
-                </button>
-              </>
-            ) : (
-              <span style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px' }}>
-                <CheckCircle size={13} /> All {allFilteredMediaFiles.length.toLocaleString()} media items loaded
-              </span>
-            )}
-          </div>
-        </div>
-      )}
+        {/* Heavy Videos */}
+        <button
+          className={`btn btn-secondary ${mediaType === 'heavy' ? 'active' : ''}`}
+          style={{ padding: '4px 10px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '5px', background: mediaType === 'heavy' ? '#ef4444' : 'var(--bg-card)', color: mediaType === 'heavy' ? '#fff' : '#f87171' }}
+          onClick={() => setMediaType('heavy')}
+          title="Large videos and media over 100 MB"
+        >
+          <Zap size={13} />
+          <span>Heavy Videos &gt;100MB ({smartCounts.heavy})</span>
+        </button>
 
-      {/* Control Bar: Row 1 - Media Subtype Tabs (Photos, Videos, GIFs), Search, Shortcuts, Grid Mode */}
+        {/* Screenshots */}
+        <button
+          className={`btn btn-secondary ${mediaType === 'screenshot' ? 'active' : ''}`}
+          style={{ padding: '4px 10px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '5px', background: mediaType === 'screenshot' ? 'var(--accent-primary)' : 'var(--bg-card)', color: mediaType === 'screenshot' ? '#fff' : undefined }}
+          onClick={() => setMediaType('screenshot')}
+          title="Screenshots, screen recordings, and snips"
+        >
+          <Scissors size={13} />
+          <span>Screenshots & Clutter ({smartCounts.screenshot})</span>
+        </button>
+
+        {/* Photos */}
+        <button
+          className={`btn btn-secondary ${mediaType === 'image' ? 'active' : ''}`}
+          style={{ padding: '4px 10px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '5px', background: mediaType === 'image' ? 'var(--accent-primary)' : 'var(--bg-card)', color: mediaType === 'image' ? '#fff' : undefined }}
+          onClick={() => setMediaType('image')}
+        >
+          <ImageIcon size={13} />
+          <span>Photos ({smartCounts.photo})</span>
+        </button>
+
+        {/* Videos */}
+        <button
+          className={`btn btn-secondary ${mediaType === 'video' ? 'active' : ''}`}
+          style={{ padding: '4px 10px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '5px', background: mediaType === 'video' ? 'var(--accent-primary)' : 'var(--bg-card)', color: mediaType === 'video' ? '#fff' : undefined }}
+          onClick={() => setMediaType('video')}
+        >
+          <Film size={13} />
+          <span>Videos ({smartCounts.video})</span>
+        </button>
+
+        {/* GIFs */}
+        <button
+          className={`btn btn-secondary ${mediaType === 'gif' ? 'active' : ''}`}
+          style={{ padding: '4px 10px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '5px', background: mediaType === 'gif' ? 'var(--accent-primary)' : 'var(--bg-card)', color: mediaType === 'gif' ? '#fff' : undefined }}
+          onClick={() => setMediaType('gif')}
+        >
+          <ImagePlay size={13} />
+          <span>GIFs ({smartCounts.gif})</span>
+        </button>
+      </div>
+
+      {/* Control Bar: Search, Quick Selection Shortcuts, Grid Controls */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '10px', flexWrap: 'wrap' }}>
-        {/* Media Subtype Tabs */}
-        <div style={{ display: 'flex', alignItems: 'center', background: 'var(--bg-card)', padding: '3px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', gap: '4px' }}>
-          <button
-            className={`btn btn-secondary ${mediaType === 'all' ? 'active' : ''}`}
-            style={{ padding: '4px 10px', fontSize: '12px', background: mediaType === 'all' ? 'var(--accent-primary)' : 'transparent', color: mediaType === 'all' ? '#fff' : undefined }}
-            onClick={() => setMediaType('all')}
-          >
-            All Media ({counts.all})
-          </button>
-          <button
-            className={`btn btn-secondary ${mediaType === 'image' ? 'active' : ''}`}
-            style={{ padding: '4px 10px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px', background: mediaType === 'image' ? 'var(--accent-primary)' : 'transparent', color: mediaType === 'image' ? '#fff' : undefined }}
-            onClick={() => setMediaType('image')}
-          >
-            <ImageIcon size={13} />
-            <span>Photos ({counts.photo})</span>
-          </button>
-          <button
-            className={`btn btn-secondary ${mediaType === 'video' ? 'active' : ''}`}
-            style={{ padding: '4px 10px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px', background: mediaType === 'video' ? 'var(--accent-primary)' : 'transparent', color: mediaType === 'video' ? '#fff' : undefined }}
-            onClick={() => setMediaType('video')}
-          >
-            <Film size={13} />
-            <span>Videos ({counts.video})</span>
-          </button>
-          <button
-            className={`btn btn-secondary ${mediaType === 'gif' ? 'active' : ''}`}
-            style={{ padding: '4px 10px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px', background: mediaType === 'gif' ? 'var(--accent-primary)' : 'transparent', color: mediaType === 'gif' ? '#fff' : undefined }}
-            onClick={() => setMediaType('gif')}
-            title="GIF animated images (Frozen preview with badge to avoid memory lag)"
-          >
-            <ImagePlay size={13} />
-            <span>GIFs ({counts.gif})</span>
-          </button>
-        </div>
-
         {/* Filename / Search Box */}
-        <div style={{ position: 'relative', flex: '1', minWidth: '180px', maxWidth: '280px' }}>
+        <div style={{ position: 'relative', flex: '1', minWidth: '180px', maxWidth: '300px' }}>
           <Search size={13} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
           <input
             type="text"
@@ -474,7 +502,7 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
           />
         </div>
 
-        {/* Selection Shortcuts */}
+        {/* Smart Selection Shortcuts */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <button
             className="btn btn-secondary"
@@ -488,21 +516,29 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
             className="btn btn-secondary"
             style={{ padding: '4px 10px', fontSize: '12px' }}
             onClick={handleDeselectFiltered}
-            title="Deselect all displayed media"
+            title="Deselect all media"
           >
             Deselect
           </button>
           <button
             className="btn btn-secondary"
-            style={{ padding: '4px 10px', fontSize: '12px', color: '#f87171' }}
-            onClick={() => handleSelectLargeMedia(100 * 1024 * 1024)}
-            title="Select media larger than 100 MB"
+            style={{ padding: '4px 10px', fontSize: '12px', color: '#ff6b81' }}
+            onClick={handleSelectHeavyMedia}
+            title="Select all media larger than 100 MB"
           >
             Select &gt;100MB
           </button>
+          <button
+            className="btn btn-secondary"
+            style={{ padding: '4px 10px', fontSize: '12px' }}
+            onClick={handleSelectScreenshots}
+            title="Select all screenshot captures"
+          >
+            Select Screenshots
+          </button>
         </div>
 
-        {/* Grid Size & View Mode Controls */}
+        {/* Grid View Zoom Controls */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--bg-card)', padding: '3px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
           <span style={{ fontSize: '11px', color: 'var(--text-muted)', padding: '0 6px' }}>View:</span>
           <button
@@ -656,8 +692,12 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
         </div>
       </div>
 
-      {/* Media Display Area (List vs Tiles) */}
-      <div style={{ flex: 1, overflowY: 'auto' }}>
+      {/* Media Display Area (List vs Tiles) with Auto-Smooth Stream Scroll */}
+      <div
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        style={{ flex: 1, overflowY: 'auto' }}
+      >
         {displayedMediaFiles.length === 0 ? (
           <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
             <Film size={44} style={{ margin: '0 auto 12px', opacity: 0.4 }} />
@@ -692,7 +732,7 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                       style={{ cursor: 'pointer' }}
                     />
                   </th>
-                  <th style={{ width: '55px', padding: '8px 10px' }}>Type</th>
+                  <th style={{ width: '65px', padding: '8px 10px' }}>Type</th>
                   <th style={{ padding: '8px 10px' }}>File Name</th>
                   <th style={{ padding: '8px 10px' }}>Folder Location</th>
                   <th style={{ width: '110px', padding: '8px 10px', textAlign: 'right' }}>Size</th>
@@ -746,6 +786,10 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                           <span style={{ padding: '2px 5px', borderRadius: '4px', background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', fontSize: '10px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
                             <ImagePlay size={10} /> GIF
                           </span>
+                        ) : subtype === 'screenshot' ? (
+                          <span style={{ padding: '2px 5px', borderRadius: '4px', background: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa', fontSize: '10px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                            <Scissors size={10} /> SNIP
+                          </span>
                         ) : (
                           <span style={{ padding: '2px 5px', borderRadius: '4px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', fontSize: '10px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
                             <ImageIcon size={10} /> PHOTO
@@ -758,7 +802,7 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                       <td style={{ padding: '8px 10px', fontSize: '11px', color: 'var(--text-dim)', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={file.path}>
                         {file.path}
                       </td>
-                      <td style={{ padding: '8px 10px', textAlign: 'right', fontWeight: 600, color: file.size > 1024 * 1024 * 500 ? '#ff6b81' : 'var(--text-main)' }}>
+                      <td style={{ padding: '8px 10px', textAlign: 'right', fontWeight: 600, color: file.size > 1024 * 1024 * 100 ? '#ff6b81' : 'var(--text-main)' }}>
                         {file.formattedSize}
                       </td>
                       <td style={{ padding: '8px 10px', fontSize: '11px', color: 'var(--text-dim)' }}>
@@ -826,7 +870,7 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                     onToggleSelect(file.path);
                   }}
                 >
-                  {/* Thumbnail / Media Container */}
+                  {/* Thumbnail Container (Hardware Friendly & Lazy Loaded) */}
                   <div
                     style={{
                       flex: 1,
@@ -839,17 +883,45 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                     }}
                   >
                     {subtype === 'video' ? (
-                      <video
-                        src={`file:///${file.path.replace(/\\/g, '/')}`}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        preload="none"
-                        muted
-                      />
+                      /* Camera roll video poster */
+                      <div
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: 'linear-gradient(135deg, #111827 0%, #1e1b4b 100%)',
+                          color: '#fff',
+                          gap: '6px'
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '50%',
+                            background: 'rgba(239, 68, 68, 0.2)',
+                            border: '1.5px solid rgba(239, 68, 68, 0.5)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#ef4444'
+                          }}
+                        >
+                          <Play size={18} fill="#ef4444" />
+                        </div>
+                        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.7)', fontWeight: 600, textTransform: 'uppercase' }}>
+                          .{file.extension} Video
+                        </span>
+                      </div>
                     ) : (
                       <img
                         src={`file:///${file.path.replace(/\\/g, '/')}`}
                         alt={file.name}
                         loading="lazy"
+                        decoding="async"
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         onError={(e) => {
                           (e.target as HTMLElement).style.display = 'none';
@@ -880,7 +952,7 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                         style={{ width: '16px', height: '16px', cursor: 'pointer' }}
                       />
 
-                      {/* Precise Media Type Badges: PHOTO, GIF, VIDEO */}
+                      {/* Precise Media Type Badges: PHOTO, GIF, VIDEO, SNIP */}
                       {subtype === 'video' && (
                         <span
                           style={{
@@ -888,7 +960,7 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                             fontWeight: 700,
                             padding: '2px 6px',
                             borderRadius: '4px',
-                            background: 'rgba(239, 68, 68, 0.85)',
+                            background: 'rgba(239, 68, 68, 0.9)',
                             color: '#fff',
                             display: 'flex',
                             alignItems: 'center',
@@ -905,7 +977,7 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                             fontWeight: 700,
                             padding: '2px 6px',
                             borderRadius: '4px',
-                            background: 'rgba(245, 158, 11, 0.9)',
+                            background: 'rgba(245, 158, 11, 0.95)',
                             color: '#fff',
                             display: 'flex',
                             alignItems: 'center',
@@ -915,6 +987,23 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                           <ImagePlay size={10} /> GIF
                         </span>
                       )}
+                      {subtype === 'screenshot' && (
+                        <span
+                          style={{
+                            fontSize: '10px',
+                            fontWeight: 700,
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            background: 'rgba(59, 130, 246, 0.9)',
+                            color: '#fff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '3px'
+                          }}
+                        >
+                          <Scissors size={10} /> SNIP
+                        </span>
+                      )}
                       {subtype === 'photo' && (
                         <span
                           style={{
@@ -922,7 +1011,7 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                             fontWeight: 700,
                             padding: '2px 6px',
                             borderRadius: '4px',
-                            background: 'rgba(16, 185, 129, 0.85)',
+                            background: 'rgba(16, 185, 129, 0.9)',
                             color: '#fff',
                             display: 'flex',
                             alignItems: 'center',
@@ -980,7 +1069,7 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                       {file.name}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-dim)', marginTop: '2px' }}>
-                      <span style={{ fontWeight: 700, color: file.size > 1024 * 1024 * 500 ? '#ff6b81' : undefined }}>
+                      <span style={{ fontWeight: 700, color: file.size > 1024 * 1024 * 100 ? '#ff6b81' : undefined }}>
                         {file.formattedSize}
                       </span>
                       <span>{format(new Date(file.modifiedAt || file.createdAt), 'yyyy-MM-dd')}</span>
@@ -992,6 +1081,53 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
           </div>
         )}
       </div>
+
+      {/* Floating Bottom Action Bar When Items Are Selected */}
+      {selectedMediaCount > 0 && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '24px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: 'rgba(15, 23, 42, 0.95)',
+            border: '1px solid rgba(239, 68, 68, 0.4)',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.5)',
+            borderRadius: '30px',
+            padding: '8px 18px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px',
+            zIndex: 10,
+            backdropFilter: 'blur(10px)'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-main)', fontSize: '13px' }}>
+            <span style={{ fontWeight: 700, color: '#f87171' }}>{selectedMediaCount} Selected</span>
+            <span style={{ opacity: 0.4 }}>•</span>
+            <span style={{ fontWeight: 600 }}>{formatBytes(selectedMediaBytes)}</span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              className="btn btn-danger"
+              style={{ padding: '6px 14px', fontSize: '12px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '6px' }}
+              onClick={onOpenDeleteModal}
+            >
+              <Trash2 size={13} />
+              <span>Clean Selected</span>
+            </button>
+
+            <button
+              className="btn btn-secondary"
+              style={{ padding: '6px 12px', fontSize: '12px', borderRadius: '20px' }}
+              onClick={handleDeselectFiltered}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

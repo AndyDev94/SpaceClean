@@ -349,10 +349,20 @@ export const App: React.FC = () => {
     setIsDeleteModalOpen(true);
   };
 
-  // Clean Junk Items
-  const handleCleanJunkItems = (items: JunkItem[]) => {
-    const paths = items.map(j => j.path);
-    handleOpenDeleteModalForPaths(paths);
+  // Clean Junk Items (including OS Recycle Bin)
+  const handleCleanJunkItems = async (items: JunkItem[]) => {
+    const hasRecycleBin = items.some(j => j.category === 'recycle_bin' || j.id === 'recycle_bin');
+    if (hasRecycleBin && window.electronAPI?.emptyRecycleBin) {
+      await window.electronAPI.emptyRecycleBin();
+    }
+    const folderPaths = items
+      .filter(j => j.category !== 'recycle_bin' && j.id !== 'recycle_bin')
+      .map(j => j.path);
+    if (folderPaths.length > 0) {
+      handleOpenDeleteModalForPaths(folderPaths);
+    } else {
+      loadJunk();
+    }
   };
 
   // Auto-trigger duplicate scan when switching to duplicate tab

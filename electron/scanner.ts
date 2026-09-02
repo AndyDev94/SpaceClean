@@ -3,6 +3,7 @@ import path from 'path';
 import crypto from 'crypto';
 import os from 'os';
 import { exec, spawn } from 'child_process';
+import { shell } from 'electron';
 import { promisify } from 'util';
 import { FileCategory, FileInfo, FolderInfo, DriveInfo, JunkItem, DuplicateGroup, ScanResult, ScanChunkInfo, InstalledApp } from '../src/types';
 
@@ -1096,6 +1097,25 @@ export async function scanSystemJunk(): Promise<JunkItem[]> {
 
   const results: JunkItem[] = [];
 
+  // Add OS Recycle Bin / Trash at the very top of Junk list
+  try {
+    const rbStats = await getRecycleBinStats();
+    results.push({
+      id: 'recycle_bin',
+      name: isWindows ? 'Windows Recycle Bin' : isMac ? 'macOS Trash' : 'Trash / Wastebasket',
+      description: isWindows
+        ? 'Deleted files, images, and folders currently kept in the Windows Recycle Bin'
+        : 'Deleted files and folders waiting in the Trash',
+      path: isWindows ? 'shell:RecycleBinFolder' : isMac ? path.join(homeDir, '.Trash') : path.join(homeDir, '.local', 'share', 'Trash'),
+      totalBytes: rbStats.totalBytes,
+      formattedBytes: formatBytes(rbStats.totalBytes),
+      fileCount: rbStats.count,
+      isSafe: true,
+      selected: rbStats.totalBytes > 0 || rbStats.count > 0,
+      category: 'recycle_bin'
+    });
+  } catch {}
+
   for (const target of targets) {
     if (!fs.existsSync(target.path)) continue;
 
@@ -1133,4 +1153,133 @@ export async function scanSystemJunk(): Promise<JunkItem[]> {
   }
 
   return results;
+}
+
+// Query OS Recycle Bin / Trash item count and total size
+export async function getRecycleBinStats(): Promise<{ count: number; totalBytes: number }> {
+  if (process.platform === 'win32') {
+    try {
+      const script = `
+        $sh = New-Object -ComObject Shell.Application
+        $rb = $sh.Namespace(0xa)
+        $items = $rb.Items()
+        $count = $items.Count
+        $size = 0
+        foreach ($i in $items) {
+          $size += $i.Size
+        }
+        Write-Output "$count,$size"
+      `;
+      const encoded = Buffer.from(script, 'utf16le').toString('base64');
+      const stdout = await new Promise<string>((resolve) => {
+        exec(`powershell.exe -NoProfile -NonInteractive -EncodedCommand ${encoded}`, (err, out) => {
+          resolve(out || '');
+        });
+      });
+      const parts = stdout.trim().split(',');
+      if (parts.length === 2) {
+        return {
+          count: parseInt(parts[0], 10) || 0,
+          totalBytes: parseInt(parts[1], 10) || 0
+        };
+      }
+    } catch {}
+  } else if (process.platform === 'darwin') {
+    const trashDir = path.join(os.homedir(), '.Trash');
+    try {
+      if (fs.existsSync(trashDir)) {
+        const files = await fs.promises.readdir(trashDir);
+        let totalBytes = 0;
+        for (const file of files) {
+          try {
+            const st = await fs.promises.stat(path.join(trashDir, file));
+            totalBytes += st.size;
+          } catch {}
+        }
+        return { count: files.length, totalBytes };
+      }
+    } catch {}
+  } else if (process.platform === 'linux') {
+    const trashDir = path.join(os.homedir(), '.local', 'share', 'Trash', 'files');
+    try {
+      if (fs.existsSync(trashDir)) {
+        const files = await fs.promises.readdir(trashDir);
+        let totalBytes = 0;
+        for (const file of files) {
+          try {
+            const st = await fs.promises.stat(path.join(trashDir, file));
+            totalBytes += st.size;
+          } catch {}
+        }
+        return { count: files.length, totalBytes };
+      }
+    } catch {}
+  }
+  return { count: 0, totalBytes: 0 };
+}
+
+// Open OS Recycle Bin / Trash in native file manager
+export async function openRecycleBin(): Promise<boolean> {
+  if (process.platform === 'win32') {
+    try {
+      exec('explorer.exe shell:RecycleBinFolder');
+      return true;
+    } catch {
+      return false;
+    }
+  } else if (process.platform === 'darwin') {
+    try {
+      const trashDir = path.join(os.homedir(), '.Trash');
+      shell.openPath(trashDir);
+      return true;
+    } catch {
+      return false;
+    }
+  } else if (process.platform === 'linux') {
+    try {
+      const trashDir = path.join(os.homedir(), '.local', 'share', 'Trash', 'files');
+      shell.openPath(trashDir);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  return false;
+}
+
+// Empty OS Recycle Bin / Trash
+export async function emptyRecycleBin(): Promise<{ success: boolean; error?: string }> {
+  if (process.platform === 'win32') {
+    try {
+      const script = `Clear-RecycleBin -Force -ErrorAction SilentlyContinue`;
+      const encoded = Buffer.from(script, 'utf16le').toString('base64');
+      await new Promise<void>((resolve) => {
+        exec(`powershell.exe -NoProfile -NonInteractive -EncodedCommand ${encoded}`, () => {
+          resolve();
+        });
+      });
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to empty Windows Recycle Bin' };
+    }
+  } else if (process.platform === 'darwin') {
+    const trashDir = path.join(os.homedir(), '.Trash');
+    try {
+      await fs.promises.rm(trashDir, { recursive: true, force: true });
+      await fs.promises.mkdir(trashDir, { recursive: true });
+      return { success: true };
+    } catch (e: any) {
+      return { success: false, error: e?.message };
+    }
+  } else if (process.platform === 'linux') {
+    const trashDir = path.join(os.homedir(), '.local', 'share', 'Trash');
+    try {
+      await fs.promises.rm(trashDir, { recursive: true, force: true });
+      await fs.promises.mkdir(trashDir, { recursive: true });
+      return { success: true };
+    } catch (e: any) {
+      return { success: false, error: e?.message };
+    }
+  }
+  return { success: true };
 }

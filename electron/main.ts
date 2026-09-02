@@ -11,7 +11,9 @@ import {
   findDuplicateFiles,
   getInstalledApplications,
   executeAppUninstall,
-  isSystemProtectedPath
+  isSystemProtectedPath,
+  openRecycleBin,
+  emptyRecycleBin
 } from './scanner';
 import { FileInfo, DeleteResult, ScanResult, ScanChunkInfo } from '../src/types';
 
@@ -187,6 +189,16 @@ ipcMain.handle('cancel-scan', async () => {
 // Scan system junk
 ipcMain.handle('scan-junk', async () => {
   return await scanSystemJunk();
+});
+
+// Open OS Recycle Bin / Trash in native explorer
+ipcMain.handle('open-recycle-bin', async () => {
+  return await openRecycleBin();
+});
+
+// Empty OS Recycle Bin / Trash
+ipcMain.handle('empty-recycle-bin', async () => {
+  return await emptyRecycleBin();
 });
 
 // Scan duplicates (on-demand only)

@@ -9,6 +9,8 @@ export interface IElectronAPI {
   getFolderContents: (dirPath: string) => Promise<{ folders: FolderInfo[]; files: FileInfo[] }>;
   cancelScan: () => Promise<void>;
   scanJunk: () => Promise<JunkItem[]>;
+  openRecycleBin: () => Promise<boolean>;
+  emptyRecycleBin: () => Promise<{ success: boolean; error?: string }>;
   scanDuplicates: (files: FileInfo[]) => Promise<DuplicateGroup[]>;
   getInstalledApps: () => Promise<import('../src/types').InstalledApp[]>;
   uninstallApp: (uninstallString: string, installLocation?: string) => Promise<{ success: boolean; error?: string }>;
@@ -31,6 +33,8 @@ const api: IElectronAPI = {
   getFolderContents: (dirPath: string) => ipcRenderer.invoke('get-folder-contents', dirPath),
   cancelScan: () => ipcRenderer.invoke('cancel-scan'),
   scanJunk: () => ipcRenderer.invoke('scan-junk'),
+  openRecycleBin: () => ipcRenderer.invoke('open-recycle-bin'),
+  emptyRecycleBin: () => ipcRenderer.invoke('empty-recycle-bin'),
   scanDuplicates: (files: FileInfo[]) => ipcRenderer.invoke('scan-duplicates', files),
   getInstalledApps: () => ipcRenderer.invoke('get-installed-apps'),
   uninstallApp: (uninstallString: string, installLocation?: string) => ipcRenderer.invoke('uninstall-app', uninstallString, installLocation),

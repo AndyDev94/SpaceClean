@@ -88,7 +88,7 @@ export interface JunkItem {
   fileCount: number;
   isSafe: boolean;
   selected: boolean;
-  category: 'system_temp' | 'user_temp' | 'prefetch' | 'crash_dumps' | 'cache' | 'logs';
+  category: 'system_temp' | 'user_temp' | 'prefetch' | 'crash_dumps' | 'cache' | 'logs' | 'recycle_bin';
 }
 
 export interface ScanChunkInfo {

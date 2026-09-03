@@ -133,6 +133,18 @@ export const App: React.FC = () => {
     localStorage.setItem('spaceclean_ignored_threats', JSON.stringify(Array.from(next)));
   };
 
+  const handleIgnoreAllThreats = () => {
+    const allActiveThreatIds = threats.map(t => t.id);
+    const next = new Set([...ignoredThreatIds, ...allActiveThreatIds]);
+    setIgnoredThreatIds(next);
+    localStorage.setItem('spaceclean_ignored_threats', JSON.stringify(Array.from(next)));
+  };
+
+  const handleResetIgnoredThreats = () => {
+    setIgnoredThreatIds(new Set());
+    localStorage.removeItem('spaceclean_ignored_threats');
+  };
+
   const handleDeleteThreats = (threatsToDelete: ThreatItem[]) => {
     const paths = threatsToDelete.map(t => t.file.path);
     handleOpenDeleteModalForPaths(paths);
@@ -1048,6 +1060,8 @@ export const App: React.FC = () => {
               onRefresh={() => handleStartScan(selectedPath)}
               onDeleteThreats={handleDeleteThreats}
               onToggleTrustThreat={handleToggleTrustThreat}
+              onIgnoreAllThreats={handleIgnoreAllThreats}
+              onResetIgnoredThreats={handleResetIgnoredThreats}
               onPreviewFile={setPreviewFile}
               onShowInFolder={path => window.electronAPI?.showItemInFolder(path)}
             />

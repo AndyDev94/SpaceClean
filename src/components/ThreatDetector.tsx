@@ -35,6 +35,8 @@ interface ThreatDetectorProps {
   onRefresh: () => void;
   onDeleteThreats: (threatsToDelete: ThreatItem[]) => void;
   onToggleTrustThreat: (threatId: string, isTrusted: boolean) => void;
+  onIgnoreAllThreats?: () => void;
+  onResetIgnoredThreats?: () => void;
   onPreviewFile?: (file: FileInfo) => void;
   onShowInFolder?: (path: string) => void;
 }
@@ -46,6 +48,8 @@ export const ThreatDetector: React.FC<ThreatDetectorProps> = ({
   onRefresh,
   onDeleteThreats,
   onToggleTrustThreat,
+  onIgnoreAllThreats,
+  onResetIgnoredThreats,
   onPreviewFile,
   onShowInFolder
 }) => {
@@ -229,8 +233,32 @@ export const ThreatDetector: React.FC<ThreatDetectorProps> = ({
           </div>
         </div>
 
-        {/* Action button */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {/* Action buttons */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          {activeThreatsCount > 0 && onIgnoreAllThreats && (
+            <button
+              className="btn btn-secondary"
+              onClick={onIgnoreAllThreats}
+              style={{ fontSize: '12px', padding: '6px 12px', borderColor: 'rgba(16, 185, 129, 0.4)' }}
+              title="Mark all active threats as trusted (hide alerts)"
+            >
+              <ShieldCheck size={13} style={{ color: '#10b981' }} />
+              <span>Ignore All (Trust All)</span>
+            </button>
+          )}
+
+          {activeThreatsCount === 0 && trustedCount > 0 && onResetIgnoredThreats && (
+            <button
+              className="btn btn-secondary"
+              onClick={onResetIgnoredThreats}
+              style={{ fontSize: '12px', padding: '6px 12px' }}
+              title="Clear whitelist and restore all threat alerts"
+            >
+              <RotateCw size={13} />
+              <span>Restore All Alerts ({trustedCount})</span>
+            </button>
+          )}
+
           <button
             className="btn btn-secondary"
             onClick={onRefresh}

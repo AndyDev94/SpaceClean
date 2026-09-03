@@ -165,10 +165,6 @@ export const JunkCleaner: React.FC<JunkCleanerProps> = ({
       {/* Action quick selection links */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '16px', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          <button className="btn btn-secondary" style={{ padding: '4px 10px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '5px' }} onClick={clearSelection} title="Ignore all items and keep all caches/junk">
-            <ShieldCheck size={14} style={{ color: '#10b981' }} />
-            <span>Ignore All (Keep All)</span>
-          </button>
           <button className="btn btn-secondary" style={{ padding: '4px 10px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '5px' }} onClick={selectAllSafe} title="Select all safe temporary caches and error logs">
             <Zap size={14} style={{ color: '#f59e0b' }} />
             <span>Select All Safe Targets</span>

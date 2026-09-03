@@ -48,7 +48,7 @@
       "identityName": "AneeshGupta.SpaceClean-DiskSpaceCleanerandAnalyzer",
       "publisher": "CN=D45DC341-5BA6-4D11-AA86-C14FBFD3E63F",
       "publisherDisplayName": "Aneesh Gupta",
-      "displayName": "SpaceClean",
+      "displayName": "SpaceClean - Disk Space Cleaner and Analyzer",
       "backgroundColor": "#0c1220"
     },
     "nsis": {

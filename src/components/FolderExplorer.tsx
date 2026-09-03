@@ -197,9 +197,9 @@ export const FolderExplorer: React.FC<FolderExplorerProps> = ({
   const renderSortIcon = (field: FolderSortBy) => {
     if (sortBy !== field) return <ArrowUpDown size={12} style={{ opacity: 0.3, marginLeft: 4 }} />;
     return sortOrder === 'asc' ? (
-      <ArrowUp size={12} style={{ color: 'var(--accent-cyan)', marginLeft: 4 }} />
+      <ArrowUp size={12} style={{ color: 'var(--accent-primary)', marginLeft: 4 }} />
     ) : (
-      <ArrowDown size={12} style={{ color: 'var(--accent-cyan)', marginLeft: 4 }} />
+      <ArrowDown size={12} style={{ color: 'var(--accent-primary)', marginLeft: 4 }} />
     );
   };
 
@@ -208,11 +208,11 @@ export const FolderExplorer: React.FC<FolderExplorerProps> = ({
       {/* Top Header & Breadcrumbs */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', marginBottom: '14px', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(0, 229, 255, 0.15)', color: '#00e5ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(59, 130, 246, 0.15)', color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <FolderTree size={18} />
           </div>
           <div>
-            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '17px', fontWeight: 700, color: 'var(--text-primary)' }}>
+            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '17px', fontWeight: 700, color: 'var(--text-main)' }}>
               Folder Size Analyzer & Tree Manager
             </h2>
             <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
@@ -235,42 +235,67 @@ export const FolderExplorer: React.FC<FolderExplorerProps> = ({
       </div>
 
       {/* Interactive Breadcrumb Bar */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', background: 'rgba(15, 23, 42, 0.7)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', marginBottom: '12px', overflowX: 'auto' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '8px 12px',
+          background: 'var(--bg-subtle)',
+          borderRadius: 'var(--radius-md)',
+          border: '1px solid var(--border-color)',
+          marginBottom: '12px',
+          overflowX: 'auto'
+        }}
+      >
         <button
           className="btn btn-secondary"
-          style={{ padding: '4px 8px', fontSize: '11px' }}
+          style={{ padding: '4px 10px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}
           disabled={breadcrumbs.length <= 1}
           onClick={handleUpLevel}
           title="Go up one folder level"
         >
-          <ArrowUp size={13} />
+          <ArrowUp size={12} />
           <span>Up</span>
         </button>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}>
-          <HardDrive size={14} style={{ color: 'var(--accent-cyan)' }} />
-          {breadcrumbs.map((crumb, idx) => (
-            <React.Fragment key={crumb.path}>
-              {idx > 0 && <ChevronRight size={12} style={{ color: 'var(--text-muted)' }} />}
-              <button
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: idx === breadcrumbs.length - 1 ? '#38bdf8' : 'var(--text-secondary)',
-                  fontWeight: idx === breadcrumbs.length - 1 ? 600 : 400,
-                  cursor: 'pointer',
-                  padding: '2px 6px',
-                  borderRadius: '4px',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.06)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                onClick={() => onNavigateToFolder(crumb.path)}
-                title={`Jump to ${crumb.path}`}
-              >
-                {crumb.name}
-              </button>
-            </React.Fragment>
-          ))}
+          <HardDrive size={14} style={{ color: 'var(--accent-primary)', flexShrink: 0, marginRight: 2 }} />
+          {breadcrumbs.map((crumb, idx) => {
+            const isLast = idx === breadcrumbs.length - 1;
+            return (
+              <React.Fragment key={crumb.path}>
+                {idx > 0 && <ChevronRight size={12} style={{ color: 'var(--text-dim)', flexShrink: 0 }} />}
+                <button
+                  style={{
+                    background: isLast ? 'rgba(59, 130, 246, 0.12)' : 'transparent',
+                    border: isLast ? '1px solid rgba(59, 130, 246, 0.25)' : '1px solid transparent',
+                    color: isLast ? 'var(--accent-primary)' : 'var(--text-main)',
+                    fontWeight: isLast ? 700 : 500,
+                    cursor: 'pointer',
+                    padding: '3px 8px',
+                    borderRadius: 'var(--radius-sm)',
+                    transition: 'all 0.15s ease',
+                    whiteSpace: 'nowrap'
+                  }}
+                  onMouseEnter={e => {
+                    if (!isLast) {
+                      e.currentTarget.style.background = 'var(--border-subtle)';
+                    }
+                  }}
+                  onMouseLeave={e => {
+                    if (!isLast) {
+                      e.currentTarget.style.background = 'transparent';
+                    }
+                  }}
+                  onClick={() => onNavigateToFolder(crumb.path)}
+                  title={`Jump to ${crumb.path}`}
+                >
+                  {crumb.name}
+                </button>
+              </React.Fragment>
+            );
+          })}
         </div>
       </div>
 

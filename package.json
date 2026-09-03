@@ -46,8 +46,10 @@
       "artifactName": "${productName}.${ext}",
       "applicationId": "SpaceClean",
       "identityName": "AneeshGupta.SpaceClean",
+      "publisher": "CN=Aneesh Gupta",
       "publisherDisplayName": "Aneesh Gupta",
-      "backgroundColor": "#0c1220"
+      "backgroundColor": "#0c1220",
+      "assets": "build/appx"
     },
     "nsis": {
       "oneClick": false,

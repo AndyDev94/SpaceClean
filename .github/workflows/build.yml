@@ -52,6 +52,15 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Upload Windows MSIX / AppX Artifacts
+        if: matrix.platform == 'win'
+        uses: actions/upload-artifact@v4
+        with:
+          name: spaceclean-windows-appx
+          path: |
+            release/*.appx
+            release/*.exe
+
       - name: Package & Publish for macOS
         if: matrix.platform == 'mac'
         run: npx electron-builder --mac --publish always

@@ -238,11 +238,12 @@ export const ThreatDetector: React.FC<ThreatDetectorProps> = ({
   };
 
   const renderSortIcon = (field: ThreatSortBy) => {
-    if (sortBy !== field) return <ArrowUpDown size={11} style={{ opacity: 0.3, marginLeft: 3 }} />;
+    const isActive = sortBy === field;
+    if (!isActive) return <ArrowUpDown size={11} style={{ color: 'var(--text-dim)', opacity: 0.5, marginLeft: 2 }} />;
     return sortOrder === 'asc' ? (
-      <ArrowUp size={11} style={{ color: 'var(--accent-primary)', marginLeft: 3 }} />
+      <ArrowUp size={11} style={{ color: '#ffffff', marginLeft: 2 }} />
     ) : (
-      <ArrowDown size={11} style={{ color: 'var(--accent-primary)', marginLeft: 3 }} />
+      <ArrowDown size={11} style={{ color: '#ffffff', marginLeft: 2 }} />
     );
   };
 
@@ -444,11 +445,11 @@ export const ThreatDetector: React.FC<ThreatDetectorProps> = ({
         </div>
       ) : null}
 
-      {/* Control Bar: Risk Filters, Sort Controls, Part Switcher & Search */}
+      {/* Control Bar: Risk Filters, High-Contrast Sort Controls, Part Switcher & Search */}
       <div
         style={{
           padding: '10px 20px',
-          background: 'var(--bg-subtle)',
+          background: 'var(--bg-panel)',
           borderBottom: '1px solid var(--border-color)',
           display: 'flex',
           alignItems: 'center',
@@ -457,11 +458,19 @@ export const ThreatDetector: React.FC<ThreatDetectorProps> = ({
           flexWrap: 'wrap'
         }}
       >
-        {/* Left Side: Risk Pills */}
+        {/* Left Side: Risk Filter Pills */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
           <button
             className={`btn ${selectedRiskFilter === 'all' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ fontSize: '11px', padding: '4px 8px', height: '26px' }}
+            style={{
+              fontSize: '11px',
+              padding: '4px 10px',
+              height: '28px',
+              fontWeight: 600,
+              background: selectedRiskFilter === 'all' ? 'var(--accent-primary)' : 'var(--bg-card)',
+              borderColor: selectedRiskFilter === 'all' ? 'var(--accent-primary)' : 'var(--border-color)',
+              color: selectedRiskFilter === 'all' ? '#ffffff' : 'var(--text-main)'
+            }}
             onClick={() => setSelectedRiskFilter('all')}
           >
             <span>All Active ({activeThreatsCount})</span>
@@ -471,78 +480,109 @@ export const ThreatDetector: React.FC<ThreatDetectorProps> = ({
             className={`btn ${selectedRiskFilter === 'high' ? 'btn-primary' : 'btn-secondary'}`}
             style={{
               fontSize: '11px',
-              padding: '4px 8px',
-              height: '26px',
-              borderColor: highRiskCount > 0 ? 'rgba(239, 68, 68, 0.4)' : undefined
+              padding: '4px 10px',
+              height: '28px',
+              fontWeight: 600,
+              background: selectedRiskFilter === 'high' ? 'var(--accent-primary)' : 'var(--bg-card)',
+              borderColor: selectedRiskFilter === 'high' ? 'var(--accent-primary)' : highRiskCount > 0 ? 'rgba(239, 68, 68, 0.5)' : 'var(--border-color)',
+              color: selectedRiskFilter === 'high' ? '#ffffff' : 'var(--text-main)'
             }}
             onClick={() => setSelectedRiskFilter('high')}
           >
-            <span style={{ color: '#ef4444', fontWeight: 700 }}>●</span>
+            <span style={{ color: selectedRiskFilter === 'high' ? '#ffffff' : '#ef4444', fontWeight: 700 }}>●</span>
             <span>High Risk ({highRiskCount})</span>
           </button>
 
           <button
             className={`btn ${selectedRiskFilter === 'suspicious' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ fontSize: '11px', padding: '4px 8px', height: '26px' }}
+            style={{
+              fontSize: '11px',
+              padding: '4px 10px',
+              height: '28px',
+              fontWeight: 600,
+              background: selectedRiskFilter === 'suspicious' ? 'var(--accent-primary)' : 'var(--bg-card)',
+              borderColor: selectedRiskFilter === 'suspicious' ? 'var(--accent-primary)' : suspiciousCount > 0 ? 'rgba(245, 158, 11, 0.5)' : 'var(--border-color)',
+              color: selectedRiskFilter === 'suspicious' ? '#ffffff' : 'var(--text-main)'
+            }}
             onClick={() => setSelectedRiskFilter('suspicious')}
           >
-            <span style={{ color: '#f59e0b', fontWeight: 700 }}>●</span>
+            <span style={{ color: selectedRiskFilter === 'suspicious' ? '#ffffff' : '#f59e0b', fontWeight: 700 }}>●</span>
             <span>Suspicious ({suspiciousCount})</span>
           </button>
 
           {trustedCount > 0 && (
             <button
               className={`btn ${selectedRiskFilter === 'trusted' ? 'btn-primary' : 'btn-secondary'}`}
-              style={{ fontSize: '11px', padding: '4px 8px', height: '26px' }}
+              style={{
+                fontSize: '11px',
+                padding: '4px 10px',
+                height: '28px',
+                fontWeight: 600,
+                background: selectedRiskFilter === 'trusted' ? 'var(--accent-primary)' : 'var(--bg-card)',
+                borderColor: selectedRiskFilter === 'trusted' ? 'var(--accent-primary)' : 'var(--border-color)',
+                color: selectedRiskFilter === 'trusted' ? '#ffffff' : 'var(--text-main)'
+              }}
               onClick={() => setSelectedRiskFilter('trusted')}
             >
-              <ShieldCheck size={12} style={{ color: '#10b981' }} />
+              <ShieldCheck size={12} style={{ color: selectedRiskFilter === 'trusted' ? '#ffffff' : '#10b981' }} />
               <span>Trusted ({trustedCount})</span>
             </button>
           )}
         </div>
 
-        {/* Middle & Right: Sort Controls, Part Selector & Search */}
+        {/* Middle & Right: High-Contrast Segmented Sort Controls, Part Selector & Search */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-          {/* Sort Buttons */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Sort:</span>
-            <button
-              className={`btn ${sortBy === 'risk' ? 'btn-primary' : 'btn-secondary'}`}
-              style={{ fontSize: '11px', padding: '3px 8px', height: '26px' }}
-              onClick={() => handleToggleSort('risk')}
-              title="Sort by threat severity risk"
+          {/* Segmented Sort Pill Container */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>Sort:</span>
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                background: 'var(--bg-card)',
+                padding: '2px',
+                borderRadius: 'var(--radius-sm)',
+                border: '1px solid var(--border-color)',
+                gap: '2px'
+              }}
             >
-              <span>Risk</span>
-              {renderSortIcon('risk')}
-            </button>
-            <button
-              className={`btn ${sortBy === 'date' ? 'btn-primary' : 'btn-secondary'}`}
-              style={{ fontSize: '11px', padding: '3px 8px', height: '26px' }}
-              onClick={() => handleToggleSort('date')}
-              title="Sort by file modification date"
-            >
-              <span>Date</span>
-              {renderSortIcon('date')}
-            </button>
-            <button
-              className={`btn ${sortBy === 'size' ? 'btn-primary' : 'btn-secondary'}`}
-              style={{ fontSize: '11px', padding: '3px 8px', height: '26px' }}
-              onClick={() => handleToggleSort('size')}
-              title="Sort by file size"
-            >
-              <span>Size</span>
-              {renderSortIcon('size')}
-            </button>
-            <button
-              className={`btn ${sortBy === 'name' ? 'btn-primary' : 'btn-secondary'}`}
-              style={{ fontSize: '11px', padding: '3px 8px', height: '26px' }}
-              onClick={() => handleToggleSort('name')}
-              title="Sort by filename"
-            >
-              <span>Name</span>
-              {renderSortIcon('name')}
-            </button>
+              {(['risk', 'date', 'size', 'name'] as ThreatSortBy[]).map(field => {
+                const isActive = sortBy === field;
+                const label = field.charAt(0).toUpperCase() + field.slice(1);
+                return (
+                  <button
+                    key={field}
+                    onClick={() => handleToggleSort(field)}
+                    style={{
+                      fontSize: '11px',
+                      fontWeight: isActive ? 700 : 500,
+                      padding: '3px 9px',
+                      height: '24px',
+                      borderRadius: '3px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '3px',
+                      background: isActive ? 'var(--accent-primary)' : 'transparent',
+                      color: isActive ? '#ffffff' : 'var(--text-main)',
+                      transition: 'all 0.15s ease',
+                      boxShadow: isActive ? '0 1px 3px rgba(0,0,0,0.2)' : 'none'
+                    }}
+                    onMouseEnter={e => {
+                      if (!isActive) e.currentTarget.style.background = 'var(--bg-subtle)';
+                    }}
+                    onMouseLeave={e => {
+                      if (!isActive) e.currentTarget.style.background = 'transparent';
+                    }}
+                    title={`Sort by ${field} (${isActive ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'click to sort'})`}
+                  >
+                    <span>{label}</span>
+                    {renderSortIcon(field)}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Part Filter dropdown (when not paused) */}
@@ -554,12 +594,12 @@ export const ThreatDetector: React.FC<ThreatDetectorProps> = ({
                 padding: '3px 8px',
                 fontSize: '11px',
                 fontWeight: 600,
-                background: 'var(--bg-panel)',
+                background: 'var(--bg-card)',
                 border: '1px solid var(--border-color)',
                 borderRadius: 'var(--radius-sm)',
                 color: 'var(--text-main)',
                 cursor: 'pointer',
-                height: '26px'
+                height: '28px'
               }}
               title="Filter threats by scanned part"
             >
@@ -573,7 +613,14 @@ export const ThreatDetector: React.FC<ThreatDetectorProps> = ({
           {highRiskCount > 0 && (
             <button
               className="btn btn-secondary"
-              style={{ fontSize: '11px', padding: '3px 8px', height: '26px', color: '#ef4444' }}
+              style={{
+                fontSize: '11px',
+                padding: '3px 8px',
+                height: '28px',
+                color: '#ef4444',
+                background: 'var(--bg-card)',
+                borderColor: 'rgba(239, 68, 68, 0.4)'
+              }}
               onClick={handleSelectAllHighRisk}
             >
               <span>Select High Risk ({highRiskCount})</span>
@@ -588,7 +635,7 @@ export const ThreatDetector: React.FC<ThreatDetectorProps> = ({
               placeholder="Search threats..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              style={{ fontSize: '11px', padding: '3px 8px 3px 26px', height: '26px', width: '100%' }}
+              style={{ fontSize: '11px', padding: '3px 8px 3px 26px', height: '28px', width: '100%', background: 'var(--bg-card)' }}
             />
           </div>
         </div>

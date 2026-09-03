@@ -45,8 +45,8 @@
     "appx": {
       "artifactName": "${productName}.${ext}",
       "applicationId": "SpaceClean",
-      "identityName": "AneeshGupta.SpaceClean",
-      "publisher": "CN=Aneesh Gupta",
+      "identityName": "AneeshGupta.SpaceClean-DiskSpaceCleanerandAnalyzer",
+      "publisher": "CN=D45DC341-5BA6-4D11-AA86-C14FBFD3E63F",
       "publisherDisplayName": "Aneesh Gupta",
       "backgroundColor": "#0c1220"
     },

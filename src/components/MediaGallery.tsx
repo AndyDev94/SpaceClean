@@ -879,6 +879,7 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
               const isSelected = selectedPaths.has(file.path);
               const isFocused = focusedIndex === idx;
               const subtype = getMediaSubtype(file);
+              const directFileUrl = 'file:///' + encodeURI(file.path.replace(/\\/g, '/')).replace(/#/g, '%23').replace(/\?/g, '%3F');
 
               return (
                 <div
@@ -920,42 +921,102 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                     }}
                   >
                     {subtype === 'video' ? (
-                      /* Camera roll video poster */
-                      <div
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          background: 'linear-gradient(135deg, #111827 0%, #1e1b4b 100%)',
-                          color: '#fff',
-                          gap: '6px'
-                        }}
-                      >
+                      /* Live Video Thumbnail Frame */
+                      <div style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden', background: '#090d16' }}>
+                        <video
+                          src={directFileUrl}
+                          preload="metadata"
+                          muted
+                          playsInline
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            display: 'block'
+                          }}
+                          onLoadedMetadata={(e) => {
+                            const v = e.currentTarget;
+                            try {
+                              if (v.duration > 1) {
+                                v.currentTime = 1;
+                              } else if (v.duration > 0) {
+                                v.currentTime = 0.1;
+                              }
+                            } catch {}
+                          }}
+                          onError={(e) => {
+                            // If video codec is unsupported, fallback to gradient poster
+                            (e.currentTarget as HTMLElement).style.display = 'none';
+                            const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                            if (fallback) fallback.style.display = 'flex';
+                          }}
+                        />
+
+                        {/* Fallback gradient poster if video cannot be decoded */}
                         <div
                           style={{
-                            width: '40px',
-                            height: '40px',
+                            display: 'none',
+                            width: '100%',
+                            height: '100%',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: 'linear-gradient(135deg, #111827 0%, #1e1b4b 100%)',
+                            color: '#fff',
+                            gap: '6px'
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: '40px',
+                              height: '40px',
+                              borderRadius: '50%',
+                              background: 'rgba(239, 68, 68, 0.2)',
+                              border: '1.5px solid rgba(239, 68, 68, 0.5)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: '#ef4444'
+                            }}
+                          >
+                            <Play size={18} fill="#ef4444" />
+                          </div>
+                          <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.7)', fontWeight: 600, textTransform: 'uppercase' }}>
+                            .{file.extension} Video
+                          </span>
+                        </div>
+
+                        {/* Play Center Overlay */}
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            width: '36px',
+                            height: '36px',
                             borderRadius: '50%',
-                            background: 'rgba(239, 68, 68, 0.2)',
-                            border: '1.5px solid rgba(239, 68, 68, 0.5)',
+                            background: 'rgba(0, 0, 0, 0.55)',
+                            backdropFilter: 'blur(4px)',
+                            border: '1px solid rgba(255, 255, 255, 0.3)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            color: '#ef4444'
+                            color: '#ffffff',
+                            pointerEvents: 'none',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+                            zIndex: 1
                           }}
                         >
-                          <Play size={18} fill="#ef4444" />
+                          <Play size={16} fill="#ffffff" style={{ marginLeft: 2 }} />
                         </div>
-                        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.7)', fontWeight: 600, textTransform: 'uppercase' }}>
-                          .{file.extension} Video
-                        </span>
                       </div>
                     ) : (
                       <img
-                        src={`file:///${file.path.replace(/\\/g, '/')}`}
+                        src={directFileUrl}
                         alt={file.name}
                         loading="lazy"
                         decoding="async"

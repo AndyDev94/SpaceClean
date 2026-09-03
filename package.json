@@ -48,8 +48,7 @@
       "identityName": "AneeshGupta.SpaceClean",
       "publisher": "CN=Aneesh Gupta",
       "publisherDisplayName": "Aneesh Gupta",
-      "backgroundColor": "#0c1220",
-      "assets": "build/appx"
+      "backgroundColor": "#0c1220"
     },
     "nsis": {
       "oneClick": false,

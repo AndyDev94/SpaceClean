@@ -299,7 +299,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       SpaceClean
                     </h3>
                     <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', background: 'rgba(59, 130, 246, 0.15)', color: 'var(--accent-primary)', fontWeight: 600 }}>
-                      v2.0.0 Stable
+                      v3.0.0 Stable
                     </span>
                   </div>
                   <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '4px' }}>
@@ -361,7 +361,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               >
                 <div>
                   <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-main)' }}>
-                    Current Version: <strong style={{ color: 'var(--accent-primary)' }}>v2.0.0</strong>
+                    Current Version: <strong style={{ color: 'var(--accent-primary)' }}>v3.0.0</strong>
                   </div>
                   <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '2px' }}>
                     Automatic update checking via GitHub Releases for {osName}.
@@ -477,80 +477,155 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
               )}
 
-              <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '14px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                  <h4 style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Sparkles size={14} style={{ color: 'var(--accent-primary)' }} />
-                    <span>What's New in SpaceClean v2.0.0:</span>
-                  </h4>
-                  <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '3px', background: 'rgba(59, 130, 246, 0.15)', color: 'var(--accent-primary)', fontWeight: 600 }}>Major Release</span>
+              {/* Scrollable Version Release History */}
+              <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '14px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {/* 🌟 What's New in v3.0.0 */}
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                    <h4 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Sparkles size={15} style={{ color: '#10b981' }} />
+                      <span>What's New in SpaceClean v3.0.0</span>
+                    </h4>
+                    <span style={{ fontSize: '10px', padding: '1px 8px', borderRadius: '4px', background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', fontWeight: 700 }}>
+                      Latest Major Release
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {/* Duplicate Finder Multi-Field & Date Sorting */}
+                    <div style={{ padding: '9px 12px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
+                      <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                        <Copy size={13} style={{ color: '#a855f7' }} />
+                        <span>Duplicate Finder: New → Old & Old → New Date Sorting</span>
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.45 }}>
+                        Added 1-click segmented sorting controls to sort duplicate groups by <strong>Date (Newest to Oldest & Oldest to Newest)</strong>, <strong>Waste Size</strong>, <strong>Duplicate Copies Count</strong>, and <strong>Alphabetical Name</strong>.
+                      </div>
+                    </div>
+
+                    {/* Threats Mode Navigation & Ignore All */}
+                    <div style={{ padding: '9px 12px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
+                      <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                        <ShieldAlert size={13} style={{ color: '#ef4444' }} />
+                        <span>Threats Mode: Part Navigation, 1-Click Whitelist & Multi-Field Sorting</span>
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.45 }}>
+                        Integrated RAM Optimizer part-by-part scanning banner directly inside Threats Mode, 1-click <strong>Ignore All (Trust All)</strong> with persistent whitelist storage & restore, plus multi-field date, risk, and size sorting.
+                      </div>
+                    </div>
+
+                    {/* Live Video Thumbnail Frame Generator */}
+                    <div style={{ padding: '9px 12px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
+                      <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                        <Film size={13} style={{ color: '#3b82f6' }} />
+                        <span>Media Gallery: Live Video Thumbnail Frame Extraction</span>
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.45 }}>
+                        Hardware-accelerated native HTML5 video frame capture automatically seeks to real representative frames (<code>1.0s</code> / <code>0.1s</code>) with glassmorphic play badges and graceful format fallback.
+                      </div>
+                    </div>
+
+                    {/* Universal High Contrast Segmented Redesign */}
+                    <div style={{ padding: '9px 12px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
+                      <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                        <Sparkles size={13} style={{ color: '#f59e0b' }} />
+                        <span>Universal Theme Contrast & UI Streamlining</span>
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.45 }}>
+                        High-contrast segmented pill containers across all 9 modes ensuring pristine readability in Light Mode, Solarized Light, Obsidian, and Dark Modern themes. Streamlined Junk Cleaner selection controls.
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {/* Mode 7: Threat Detection */}
-                  <div style={{ padding: '8px 10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
-                    <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
-                      <ShieldAlert size={13} style={{ color: '#ef4444' }} />
-                      <span>Mode 7: Threat Detection & VirusTotal Cloud Intelligence</span>
-                    </div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.4 }}>
-                      Heuristic scanner for camouflaged malware (<code>.pdf.exe</code>), rogue temp binaries, ransomware locking patterns, with direct 1-click <strong>VirusTotal (70+ Antivirus engines)</strong> cloud verification.
-                    </div>
+                {/* 🚀 What's New in v2.0.0 */}
+                <div style={{ borderTop: '1px dashed var(--border-subtle)', paddingTop: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                    <h4 style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>What's New in SpaceClean v2.0.0</span>
+                    </h4>
+                    <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '3px', background: 'rgba(59, 130, 246, 0.15)', color: 'var(--accent-primary)', fontWeight: 600 }}>v2.0.0</span>
                   </div>
 
-                  {/* Mode 8: Media Gallery */}
-                  <div style={{ padding: '8px 10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
-                    <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
-                      <Film size={13} style={{ color: '#10b981' }} />
-                      <span>Mode 8: Media Gallery & Hardware-Accelerated Visual Grid</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {/* Mode 7: Threat Detection */}
+                    <div style={{ padding: '8px 10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
+                      <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                        <ShieldAlert size={13} style={{ color: '#ef4444' }} />
+                        <span>Mode 7: Threat Detection & VirusTotal Cloud Intelligence</span>
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                        Heuristic scanner for camouflaged malware (<code>.pdf.exe</code>), rogue temp binaries, ransomware locking patterns, with direct 1-click <strong>VirusTotal (70+ Antivirus engines)</strong> cloud verification.
+                      </div>
                     </div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.4 }}>
-                      Interactive visual manager for photos, screenshots, and videos with a responsive zoom grid slider, inline video playback with timeline scrubbing, and 1-click multi-select cleanup.
+
+                    {/* Mode 8: Media Gallery */}
+                    <div style={{ padding: '8px 10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
+                      <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                        <Film size={13} style={{ color: '#10b981' }} />
+                        <span>Mode 8: Media Gallery & Hardware-Accelerated Visual Grid</span>
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                        Interactive visual manager for photos, screenshots, and videos with a responsive zoom grid slider, inline video playback with timeline scrubbing, and 1-click multi-select cleanup.
+                      </div>
+                    </div>
+
+                    {/* Mode 9: Apps Uninstaller */}
+                    <div style={{ padding: '8px 10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
+                      <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                        <AppWindow size={13} style={{ color: 'var(--accent-primary)' }} />
+                        <span>Mode 9: Multi-Select Batch Applications Uninstaller</span>
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                        Detects installed software, publishers, and storage footprint. Select multiple unwanted programs or heavy games (&gt;500MB) to uninstall sequentially without installer conflicts.
+                      </div>
+                    </div>
+
+                    {/* Smart RAM Optimizer */}
+                    <div style={{ padding: '8px 10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
+                      <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                        <Sparkles size={13} style={{ color: '#f59e0b' }} />
+                        <span>Smart RAM Optimizer & Milestone Part Navigator</span>
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                        Effortlessly scans massive 500GB–2TB+ drives in smooth 5,000-file parts without memory bloat. Switch seamlessly between Part 1, Part 2, and All Scanned parts.
+                      </div>
+                    </div>
+
+                    {/* Duplicate Finder */}
+                    <div style={{ padding: '8px 10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
+                      <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                        <Search size={13} style={{ color: '#a855f7' }} />
+                        <span>Duplicate Finder Preview Drawer & "Keep Both" Protection</span>
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                        Live side-preview for audio, video, images, and text. Lock intentional copies permanently with <strong>Keep Both (Important)</strong>.
+                      </div>
+                    </div>
+
+                    {/* Cross-Platform & Auto-Updates */}
+                    <div style={{ padding: '8px 10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
+                      <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                        <Globe size={13} style={{ color: 'var(--accent-primary)' }} />
+                        <span>Dynamic Cross-Platform Engine & Auto-Updates</span>
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                        Auto-detects macOS, Linux, and Windows for OS terminology (Cmd vs Ctrl, Finder vs File Explorer, Trash vs Recycle Bin) and supports silent background auto-updates.
+                      </div>
                     </div>
                   </div>
+                </div>
 
-                  {/* Mode 9: Apps Uninstaller */}
-                  <div style={{ padding: '8px 10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
-                    <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
-                      <AppWindow size={13} style={{ color: 'var(--accent-primary)' }} />
-                      <span>Mode 9: Multi-Select Batch Applications Uninstaller</span>
-                    </div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.4 }}>
-                      Detects installed software, publishers, and storage footprint. Select multiple unwanted programs or heavy games (&gt;500MB) to uninstall sequentially without installer conflicts.
-                    </div>
+                {/* 📦 What's New in v1.0.0 */}
+                <div style={{ borderTop: '1px dashed var(--border-subtle)', paddingTop: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                    <h4 style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
+                      <span>SpaceClean v1.0.0 (Foundation)</span>
+                    </h4>
+                    <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '3px', background: 'var(--bg-subtle)', color: 'var(--text-muted)', fontWeight: 600 }}>v1.0.0</span>
                   </div>
-
-                  {/* Smart RAM Optimizer */}
-                  <div style={{ padding: '8px 10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
-                    <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
-                      <Sparkles size={13} style={{ color: '#f59e0b' }} />
-                      <span>Smart RAM Optimizer & Milestone Part Navigator</span>
-                    </div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.4 }}>
-                      Effortlessly scans massive 500GB–2TB+ drives in smooth 5,000-file parts without memory bloat. Switch seamlessly between Part 1, Part 2, and All Scanned parts.
-                    </div>
-                  </div>
-
-                  {/* Duplicate Finder */}
-                  <div style={{ padding: '8px 10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
-                    <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
-                      <Search size={13} style={{ color: '#a855f7' }} />
-                      <span>Duplicate Finder Preview Drawer & "Keep Both" Protection</span>
-                    </div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.4 }}>
-                      Live side-preview for audio, video, images, and text. Lock intentional copies permanently with <strong>Keep Both (Important)</strong>.
-                    </div>
-                  </div>
-
-                  {/* Cross-Platform & Auto-Updates */}
-                  <div style={{ padding: '8px 10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
-                    <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
-                      <Globe size={13} style={{ color: 'var(--accent-primary)' }} />
-                      <span>Dynamic Cross-Platform Engine & Auto-Updates</span>
-                    </div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.4 }}>
-                      Auto-detects macOS, Linux, and Windows for OS terminology (Cmd vs Ctrl, Finder vs File Explorer, Trash vs Recycle Bin) and supports silent background auto-updates.
-                    </div>
+                  <div style={{ padding: '8px 10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.45 }}>
+                    Initial foundation release featuring ultra-fast multithreaded directory scanning, recursive folder size analysis, Top 100 space hogs, Windows system junk cleaner, and OS Recycle Bin safety.
                   </div>
                 </div>
               </div>

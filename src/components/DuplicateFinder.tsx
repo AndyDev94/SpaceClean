@@ -13,7 +13,10 @@ import {
   X,
   ShieldCheck,
   Star,
-  Check
+  Check,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown
 } from 'lucide-react';
 import { DuplicateGroup, FileInfo } from '../types';
 import { formatBytes } from '../utils/filterUtils';
@@ -29,6 +32,9 @@ type DateFilterPreset =
   | '1year'
   | 'older_1year'
   | 'custom';
+
+type DuplicateSortBy = 'date' | 'waste' | 'count' | 'name';
+type DuplicateSortOrder = 'desc' | 'asc';
 
 interface DuplicateFinderProps {
   duplicates: DuplicateGroup[];
@@ -59,6 +65,29 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
   const [customStartDate, setCustomStartDate] = useState<string>('');
   const [customEndDate, setCustomEndDate] = useState<string>('');
   const [hideIgnored, setHideIgnored] = useState<boolean>(false);
+
+  // Sorting state (Waste, Date New->Old / Old->New, Duplicate Copies Count, Name)
+  const [sortBy, setSortBy] = useState<DuplicateSortBy>('waste');
+  const [sortOrder, setSortOrder] = useState<DuplicateSortOrder>('desc');
+
+  const handleToggleSort = (field: DuplicateSortBy) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('desc');
+    }
+  };
+
+  const renderSortIcon = (field: DuplicateSortBy) => {
+    const isActive = sortBy === field;
+    if (!isActive) return <ArrowUpDown size={11} style={{ color: 'var(--text-dim)', opacity: 0.5, marginLeft: 2 }} />;
+    return sortOrder === 'asc' ? (
+      <ArrowUp size={11} style={{ color: '#ffffff', marginLeft: 2 }} />
+    ) : (
+      <ArrowDown size={11} style={{ color: '#ffffff', marginLeft: 2 }} />
+    );
+  };
 
   // Persistent Intentionally Duplicated / Important Group Hashes
   const [ignoredGroupHashes, setIgnoredGroupHashes] = useState<Set<string>>(() => {
@@ -99,7 +128,7 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
     });
   };
 
-  // Filter duplicates by search, date range, and ignored state
+  // Filter & Sort duplicates by search, date range, and sorting preference
   const filteredDuplicates = useMemo(() => {
     let result = duplicates;
 
@@ -171,8 +200,32 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
       });
     }
 
+    // 3. Multi-Field Sorting (Date New->Old / Old->New, Waste Size, Copies Count, Name)
+    result = [...result].sort((a, b) => {
+      let comp = 0;
+      if (sortBy === 'date') {
+        const dateA = Math.max(...a.files.map(f => f.modifiedAt || f.createdAt || 0));
+        const dateB = Math.max(...b.files.map(f => f.modifiedAt || f.createdAt || 0));
+        comp = dateA - dateB;
+      } else if (sortBy === 'waste') {
+        comp = a.wastedBytes - b.wastedBytes;
+      } else if (sortBy === 'count') {
+        comp = a.files.length - b.files.length;
+      } else if (sortBy === 'name') {
+        const nameA = a.files[0]?.name || '';
+        const nameB = b.files[0]?.name || '';
+        comp = nameA.localeCompare(nameB, undefined, { numeric: true, sensitivity: 'base' });
+      }
+
+      if (comp === 0) {
+        comp = b.wastedBytes - a.wastedBytes;
+      }
+
+      return sortOrder === 'asc' ? comp : -comp;
+    });
+
     return result;
-  }, [duplicates, searchQuery, datePreset, customStartDate, customEndDate, hideIgnored, ignoredGroupHashes]);
+  }, [duplicates, searchQuery, datePreset, customStartDate, customEndDate, hideIgnored, ignoredGroupHashes, sortBy, sortOrder]);
 
   // Total wasted bytes (excluding intentionally kept duplicate groups)
   const totalWastedBytes = filteredDuplicates
@@ -425,6 +478,63 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
               />
             </div>
           )}
+
+          {/* High-Contrast Segmented Sort Controls (New to Old, Old to New, Waste, Copies, Name) */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>Sort:</span>
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                background: 'var(--bg-card)',
+                padding: '2px',
+                borderRadius: 'var(--radius-sm)',
+                border: '1px solid var(--border-color)',
+                gap: '2px'
+              }}
+            >
+              {[
+                { field: 'date' as DuplicateSortBy, label: sortBy === 'date' ? (sortOrder === 'desc' ? 'New → Old' : 'Old → New') : 'Date ↕' },
+                { field: 'waste' as DuplicateSortBy, label: 'Waste' },
+                { field: 'count' as DuplicateSortBy, label: 'Copies' },
+                { field: 'name' as DuplicateSortBy, label: 'Name' }
+              ].map(({ field, label }) => {
+                const isActive = sortBy === field;
+                return (
+                  <button
+                    key={field}
+                    onClick={() => handleToggleSort(field)}
+                    style={{
+                      fontSize: '11px',
+                      fontWeight: isActive ? 700 : 500,
+                      padding: '3px 8px',
+                      height: '24px',
+                      borderRadius: '3px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '3px',
+                      background: isActive ? 'var(--accent-primary)' : 'transparent',
+                      color: isActive ? '#ffffff' : 'var(--text-main)',
+                      transition: 'all 0.15s ease',
+                      boxShadow: isActive ? '0 1px 3px rgba(0,0,0,0.2)' : 'none'
+                    }}
+                    onMouseEnter={e => {
+                      if (!isActive) e.currentTarget.style.background = 'var(--bg-subtle)';
+                    }}
+                    onMouseLeave={e => {
+                      if (!isActive) e.currentTarget.style.background = 'transparent';
+                    }}
+                    title={`Sort duplicates by ${field} (${isActive ? (sortOrder === 'desc' ? 'Newest to Oldest / Descending' : 'Oldest to Newest / Ascending') : 'Click to toggle sort'})`}
+                  >
+                    <span>{label}</span>
+                    {renderSortIcon(field)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
           {/* Filter toggle to hide/show intentionally kept files */}
           {ignoredCount > 0 && (

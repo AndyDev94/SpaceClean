@@ -1062,6 +1062,11 @@ export const App: React.FC = () => {
               onToggleTrustThreat={handleToggleTrustThreat}
               onIgnoreAllThreats={handleIgnoreAllThreats}
               onResetIgnoredThreats={handleResetIgnoredThreats}
+              chunkInfo={chunkInfo}
+              onResumeScan={handleResumeScan}
+              availableParts={availableParts}
+              selectedPartFilter={selectedPartFilter}
+              onSelectPartFilter={setSelectedPartFilter}
               onPreviewFile={setPreviewFile}
               onShowInFolder={path => window.electronAPI?.showItemInFolder(path)}
             />

@@ -20,9 +20,17 @@ import {
   Sparkles,
   Lock,
   ChevronRight,
-  ChevronDown
+  ChevronDown,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  Calendar,
+  Play,
+  Zap,
+  Layers,
+  Clock
 } from 'lucide-react';
-import { ThreatItem, ThreatRiskLevel, FileInfo } from '../types';
+import { ThreatItem, ThreatRiskLevel, FileInfo, ScanChunkInfo } from '../types';
 import { formatBytes } from '../utils/filterUtils';
 import { format } from 'date-fns';
 import { osName, fileManagerName, trashName } from '../utils/platform';
@@ -37,9 +45,17 @@ interface ThreatDetectorProps {
   onToggleTrustThreat: (threatId: string, isTrusted: boolean) => void;
   onIgnoreAllThreats?: () => void;
   onResetIgnoredThreats?: () => void;
+  chunkInfo?: ScanChunkInfo | null;
+  onResumeScan?: (unlimited?: boolean) => void;
+  availableParts?: number[];
+  selectedPartFilter?: number | 'all';
+  onSelectPartFilter?: (part: number | 'all') => void;
   onPreviewFile?: (file: FileInfo) => void;
   onShowInFolder?: (path: string) => void;
 }
+
+type ThreatSortBy = 'risk' | 'date' | 'size' | 'name';
+type ThreatSortOrder = 'asc' | 'desc';
 
 export const ThreatDetector: React.FC<ThreatDetectorProps> = ({
   threats,
@@ -50,6 +66,11 @@ export const ThreatDetector: React.FC<ThreatDetectorProps> = ({
   onToggleTrustThreat,
   onIgnoreAllThreats,
   onResetIgnoredThreats,
+  chunkInfo,
+  onResumeScan,
+  availableParts = [],
+  selectedPartFilter = 'all',
+  onSelectPartFilter,
   onPreviewFile,
   onShowInFolder
 }) => {
@@ -57,6 +78,19 @@ export const ThreatDetector: React.FC<ThreatDetectorProps> = ({
   const [selectedRiskFilter, setSelectedRiskFilter] = useState<'all' | 'high' | 'suspicious' | 'trusted'>('all');
   const [selectedThreatIds, setSelectedThreatIds] = useState<Set<string>>(new Set());
   const [expandedThreatId, setExpandedThreatId] = useState<string | null>(null);
+
+  // Sorting state
+  const [sortBy, setSortBy] = useState<ThreatSortBy>('risk');
+  const [sortOrder, setSortOrder] = useState<ThreatSortOrder>('desc');
+
+  const handleToggleSort = (field: ThreatSortBy) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('desc');
+    }
+  };
 
   // File hash cache and loading states
   const [fileHashes, setFileHashes] = useState<Record<string, { sha256: string; md5: string; isLoading?: boolean }>>({});
@@ -120,9 +154,9 @@ export const ThreatDetector: React.FC<ThreatDetectorProps> = ({
     setTimeout(() => setCopiedHashKey(null), 2000);
   };
 
-  // Filtered threats
+  // Filtered & Sorted threats
   const filteredThreats = useMemo(() => {
-    return threats.filter(t => {
+    const list = threats.filter(t => {
       // Risk filter
       if (selectedRiskFilter === 'trusted' && !t.isIgnored) return false;
       if (selectedRiskFilter === 'high' && (t.riskLevel !== 'high' || t.isIgnored)) return false;
@@ -141,7 +175,29 @@ export const ThreatDetector: React.FC<ThreatDetectorProps> = ({
       }
       return true;
     });
-  }, [threats, selectedRiskFilter, searchQuery]);
+
+    return [...list].sort((a, b) => {
+      let comp = 0;
+      if (sortBy === 'risk') {
+        const score = (r: ThreatRiskLevel) => (r === 'high' ? 3 : r === 'suspicious' ? 2 : 1);
+        comp = score(a.riskLevel) - score(b.riskLevel);
+      } else if (sortBy === 'date') {
+        const dateA = a.file.modifiedAt || a.file.createdAt || 0;
+        const dateB = b.file.modifiedAt || b.file.createdAt || 0;
+        comp = dateA - dateB;
+      } else if (sortBy === 'size') {
+        comp = a.file.size - b.file.size;
+      } else if (sortBy === 'name') {
+        comp = a.file.name.localeCompare(b.file.name, undefined, { numeric: true, sensitivity: 'base' });
+      }
+
+      if (comp === 0) {
+        comp = a.file.name.localeCompare(b.file.name);
+      }
+
+      return sortOrder === 'asc' ? comp : -comp;
+    });
+  }, [threats, selectedRiskFilter, searchQuery, sortBy, sortOrder]);
 
   // Counts
   const highRiskCount = useMemo(() => threats.filter(t => t.riskLevel === 'high' && !t.isIgnored).length, [threats]);
@@ -179,6 +235,15 @@ export const ThreatDetector: React.FC<ThreatDetectorProps> = ({
       onDeleteThreats(itemsToDelete);
       setSelectedThreatIds(new Set());
     }
+  };
+
+  const renderSortIcon = (field: ThreatSortBy) => {
+    if (sortBy !== field) return <ArrowUpDown size={11} style={{ opacity: 0.3, marginLeft: 3 }} />;
+    return sortOrder === 'asc' ? (
+      <ArrowUp size={11} style={{ color: 'var(--accent-primary)', marginLeft: 3 }} />
+    ) : (
+      <ArrowDown size={11} style={{ color: 'var(--accent-primary)', marginLeft: 3 }} />
+    );
   };
 
   return (
@@ -283,10 +348,106 @@ export const ThreatDetector: React.FC<ThreatDetectorProps> = ({
         </div>
       </div>
 
-      {/* Control Bar: Risk Filter Cards & Search */}
+      {/* RAM Optimizer Multi-Part Scanning & Part Navigation Banner for Threats Mode */}
+      {chunkInfo?.isChunkPaused ? (
+        <div
+          style={{
+            padding: '10px 16px',
+            background: 'rgba(245, 158, 11, 0.08)',
+            borderBottom: '1px solid rgba(245, 158, 11, 0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+            flexWrap: 'wrap'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: 'var(--radius-sm)',
+                background: 'rgba(245, 158, 11, 0.15)',
+                color: '#f59e0b',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
+              }}
+            >
+              <ShieldAlert size={16} />
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-main)' }}>
+                  Part {chunkInfo.chunkNumber} Evaluated for Threats ({chunkInfo.scannedFiles.toLocaleString()} files scanned)
+                </span>
+                <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '3px', background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', fontWeight: 600 }}>
+                  RAM Saver Active
+                </span>
+              </div>
+              <div style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '1px' }}>
+                {chunkInfo.remainingQueueCount} subfolder queues remaining to scan for threats & camouflaged binaries.
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            {availableParts.length > 1 && onSelectPartFilter && (
+              <select
+                value={selectedPartFilter}
+                onChange={e => onSelectPartFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))}
+                style={{
+                  padding: '4px 8px',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  background: 'var(--bg-panel)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: 'var(--radius-sm)',
+                  color: 'var(--text-main)',
+                  cursor: 'pointer'
+                }}
+                title="Filter threats by scanned part"
+              >
+                <option value="all">🌐 All Scanned Parts (1–{availableParts.length})</option>
+                {availableParts.map(p => (
+                  <option key={p} value={p}>📦 Part {p} Only</option>
+                ))}
+              </select>
+            )}
+
+            {onResumeScan && (
+              <>
+                <button
+                  className="btn btn-primary"
+                  style={{ fontSize: '11px', padding: '5px 12px' }}
+                  onClick={() => onResumeScan(false)}
+                  title="Scan next part of directory for threats"
+                >
+                  <Play size={12} />
+                  <span>Scan Next Part for Threats</span>
+                </button>
+
+                <button
+                  className="btn btn-secondary"
+                  style={{ fontSize: '11px', padding: '5px 10px' }}
+                  onClick={() => onResumeScan(true)}
+                  title="Scan all remaining files for threats without pausing"
+                >
+                  <Zap size={12} />
+                  <span>Scan All Remaining for Threats</span>
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      ) : null}
+
+      {/* Control Bar: Risk Filters, Sort Controls, Part Switcher & Search */}
       <div
         style={{
-          padding: '12px 20px',
+          padding: '10px 20px',
           background: 'var(--bg-subtle)',
           borderBottom: '1px solid var(--border-color)',
           display: 'flex',
@@ -296,11 +457,11 @@ export const ThreatDetector: React.FC<ThreatDetectorProps> = ({
           flexWrap: 'wrap'
         }}
       >
-        {/* Risk Pills */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        {/* Left Side: Risk Pills */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
           <button
             className={`btn ${selectedRiskFilter === 'all' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ fontSize: '11px', padding: '5px 10px', height: '28px' }}
+            style={{ fontSize: '11px', padding: '4px 8px', height: '26px' }}
             onClick={() => setSelectedRiskFilter('all')}
           >
             <span>All Active ({activeThreatsCount})</span>
@@ -310,8 +471,8 @@ export const ThreatDetector: React.FC<ThreatDetectorProps> = ({
             className={`btn ${selectedRiskFilter === 'high' ? 'btn-primary' : 'btn-secondary'}`}
             style={{
               fontSize: '11px',
-              padding: '5px 10px',
-              height: '28px',
+              padding: '4px 8px',
+              height: '26px',
               borderColor: highRiskCount > 0 ? 'rgba(239, 68, 68, 0.4)' : undefined
             }}
             onClick={() => setSelectedRiskFilter('high')}
@@ -322,7 +483,7 @@ export const ThreatDetector: React.FC<ThreatDetectorProps> = ({
 
           <button
             className={`btn ${selectedRiskFilter === 'suspicious' ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ fontSize: '11px', padding: '5px 10px', height: '28px' }}
+            style={{ fontSize: '11px', padding: '4px 8px', height: '26px' }}
             onClick={() => setSelectedRiskFilter('suspicious')}
           >
             <span style={{ color: '#f59e0b', fontWeight: 700 }}>●</span>
@@ -332,36 +493,102 @@ export const ThreatDetector: React.FC<ThreatDetectorProps> = ({
           {trustedCount > 0 && (
             <button
               className={`btn ${selectedRiskFilter === 'trusted' ? 'btn-primary' : 'btn-secondary'}`}
-              style={{ fontSize: '11px', padding: '5px 10px', height: '28px' }}
+              style={{ fontSize: '11px', padding: '4px 8px', height: '26px' }}
               onClick={() => setSelectedRiskFilter('trusted')}
             >
               <ShieldCheck size={12} style={{ color: '#10b981' }} />
-              <span>Trusted / Whitelisted ({trustedCount})</span>
+              <span>Trusted ({trustedCount})</span>
             </button>
           )}
         </div>
 
-        {/* Quick Select & Search */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        {/* Middle & Right: Sort Controls, Part Selector & Search */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          {/* Sort Buttons */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Sort:</span>
+            <button
+              className={`btn ${sortBy === 'risk' ? 'btn-primary' : 'btn-secondary'}`}
+              style={{ fontSize: '11px', padding: '3px 8px', height: '26px' }}
+              onClick={() => handleToggleSort('risk')}
+              title="Sort by threat severity risk"
+            >
+              <span>Risk</span>
+              {renderSortIcon('risk')}
+            </button>
+            <button
+              className={`btn ${sortBy === 'date' ? 'btn-primary' : 'btn-secondary'}`}
+              style={{ fontSize: '11px', padding: '3px 8px', height: '26px' }}
+              onClick={() => handleToggleSort('date')}
+              title="Sort by file modification date"
+            >
+              <span>Date</span>
+              {renderSortIcon('date')}
+            </button>
+            <button
+              className={`btn ${sortBy === 'size' ? 'btn-primary' : 'btn-secondary'}`}
+              style={{ fontSize: '11px', padding: '3px 8px', height: '26px' }}
+              onClick={() => handleToggleSort('size')}
+              title="Sort by file size"
+            >
+              <span>Size</span>
+              {renderSortIcon('size')}
+            </button>
+            <button
+              className={`btn ${sortBy === 'name' ? 'btn-primary' : 'btn-secondary'}`}
+              style={{ fontSize: '11px', padding: '3px 8px', height: '26px' }}
+              onClick={() => handleToggleSort('name')}
+              title="Sort by filename"
+            >
+              <span>Name</span>
+              {renderSortIcon('name')}
+            </button>
+          </div>
+
+          {/* Part Filter dropdown (when not paused) */}
+          {availableParts.length > 1 && !chunkInfo?.isChunkPaused && onSelectPartFilter && (
+            <select
+              value={selectedPartFilter}
+              onChange={e => onSelectPartFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))}
+              style={{
+                padding: '3px 8px',
+                fontSize: '11px',
+                fontWeight: 600,
+                background: 'var(--bg-panel)',
+                border: '1px solid var(--border-color)',
+                borderRadius: 'var(--radius-sm)',
+                color: 'var(--text-main)',
+                cursor: 'pointer',
+                height: '26px'
+              }}
+              title="Filter threats by scanned part"
+            >
+              <option value="all">🌐 All Parts (1–{availableParts.length})</option>
+              {availableParts.map(p => (
+                <option key={p} value={p}>📦 Part {p}</option>
+              ))}
+            </select>
+          )}
+
           {highRiskCount > 0 && (
             <button
               className="btn btn-secondary"
-              style={{ fontSize: '11px', padding: '5px 10px', height: '28px', color: '#ef4444' }}
+              style={{ fontSize: '11px', padding: '3px 8px', height: '26px', color: '#ef4444' }}
               onClick={handleSelectAllHighRisk}
             >
               <span>Select High Risk ({highRiskCount})</span>
             </button>
           )}
 
-          <div style={{ position: 'relative', width: '200px' }}>
-            <Search size={13} style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)' }} />
+          <div style={{ position: 'relative', width: '180px' }}>
+            <Search size={12} style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)' }} />
             <input
               type="text"
               className="form-input"
-              placeholder="Search threat name/path..."
+              placeholder="Search threats..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              style={{ fontSize: '12px', padding: '4px 8px 4px 28px', height: '28px', width: '100%' }}
+              style={{ fontSize: '11px', padding: '3px 8px 3px 26px', height: '26px', width: '100%' }}
             />
           </div>
         </div>

@@ -36,10 +36,18 @@
     "win": {
       "target": [
         "nsis",
-        "portable"
+        "portable",
+        "appx"
       ],
       "icon": "build/icon.png",
       "artifactName": "${productName}-Setup.${ext}"
+    },
+    "appx": {
+      "artifactName": "${productName}.${ext}",
+      "applicationId": "SpaceClean",
+      "identityName": "AneeshGupta.SpaceClean",
+      "publisherDisplayName": "Aneesh Gupta",
+      "backgroundColor": "#0c1220"
     },
     "nsis": {
       "oneClick": false,

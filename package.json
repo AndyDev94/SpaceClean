@@ -1,7 +1,7 @@
 {
   "name": "spaceclean",
   "version": "3.0.0",
-  "description": "Next-generation, ultra-fast storage cleaner & visual disk analyzer by Aneesh",
+  "description": "Next-generation, ultra-fast storage cleaner and visual disk analyzer by Aneesh",
   "author": "Aneesh <aneeshgupta.work@gmail.com>",
   "license": "MIT",
   "main": "dist-electron/main.js",
@@ -48,6 +48,7 @@
       "identityName": "AneeshGupta.SpaceClean-DiskSpaceCleanerandAnalyzer",
       "publisher": "CN=D45DC341-5BA6-4D11-AA86-C14FBFD3E63F",
       "publisherDisplayName": "Aneesh Gupta",
+      "displayName": "SpaceClean",
       "backgroundColor": "#0c1220"
     },
     "nsis": {

@@ -18,7 +18,8 @@ import {
   Square,
   Sparkles,
   SlidersHorizontal,
-  RefreshCw
+  RefreshCw,
+  Calendar
 } from 'lucide-react';
 import { FolderInfo } from '../types';
 import { formatBytes } from '../utils/filterUtils';
@@ -311,6 +312,15 @@ export const FolderExplorer: React.FC<FolderExplorerProps> = ({
             <span>Name</span>
             {renderSortIcon('name')}
           </button>
+          <button
+            className={`btn btn-secondary ${sortBy === 'modifiedAt' ? 'btn-primary' : ''}`}
+            style={{ padding: '4px 10px', fontSize: '12px' }}
+            onClick={() => handleToggleSort('modifiedAt')}
+            title="Sort folders by last modified date"
+          >
+            <span>Date</span>
+            {renderSortIcon('modifiedAt')}
+          </button>
         </div>
       </div>
 
@@ -416,14 +426,22 @@ export const FolderExplorer: React.FC<FolderExplorerProps> = ({
                   </div>
                 </div>
 
-                {/* Right section: Size, File Count & Action buttons */}
+                {/* Right section: Size, File Count, Modified Date & Action buttons */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexShrink: 0 }}>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-main)' }}>
                       {folder.formattedSize}
                     </div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>
-                      {folder.fileCount.toLocaleString()} files
+                    <div style={{ fontSize: '11px', color: 'var(--text-dim)', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '5px' }}>
+                      <span>{folder.fileCount.toLocaleString()} files</span>
+                      {folder.modifiedAt > 0 && (
+                        <>
+                          <span>•</span>
+                          <span title={`Modified on ${format(new Date(folder.modifiedAt), 'PPpp')}`}>
+                            {format(new Date(folder.modifiedAt), 'MMM d, yyyy')}
+                          </span>
+                        </>
+                      )}
                     </div>
                   </div>
 

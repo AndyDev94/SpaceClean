@@ -38,6 +38,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   if (!isOpen) return null;
 
   const [activeTab, setActiveTab] = useState<SettingsTab>('about');
+  const [currentAppVersion, setCurrentAppVersion] = useState('v3.0.1');
   const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState<{
     percent: number;
@@ -50,6 +51,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     message: string;
     releaseUrl?: string;
   } | null>(null);
+
+  // Fetch current version on mount
+  React.useEffect(() => {
+    window.electronAPI?.getAppVersion?.().then((ver) => {
+      if (ver) setCurrentAppVersion(ver.startsWith('v') ? ver : `v${ver}`);
+    }).catch(() => {});
+  }, []);
 
   // Subscribe to live auto-updater events
   React.useEffect(() => {
@@ -92,12 +100,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             const ghRes = await fetch('https://api.github.com/repos/AndyDev94/SpaceClean/releases/latest');
             if (ghRes.ok) {
               const release = await ghRes.json();
-              const latestTag = release.tag_name || 'v2.0.0';
+              const latestTag = release.tag_name || currentAppVersion;
               
-              // Semver comparison: only flag update if remote version is strictly newer than 2.0.0
+              // Semver comparison: only flag update if remote version is strictly newer
               const parseVer = (v: string) => v.replace(/^v/, '').split('.').map(n => parseInt(n, 10) || 0);
               const [rMaj = 0, rMin = 0, rPatch = 0] = parseVer(latestTag);
-              const [cMaj = 2, cMin = 0, cPatch = 0] = parseVer('v2.0.0');
+              const [cMaj = 0, cMin = 0, cPatch = 0] = parseVer(currentAppVersion);
               const isNewer =
                 rMaj > cMaj ||
                 (rMaj === cMaj && rMin > cMin) ||
@@ -109,7 +117,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 version: latestTag,
                 message: isNewer
                   ? `New release ${latestTag} is available on GitHub Releases!`
-                  : 'You are running the latest version of SpaceClean (v2.0.0).',
+                  : `You are running the latest version (${currentAppVersion}).`,
                 releaseUrl: isNewer ? release.html_url : undefined
               });
               return;
@@ -121,8 +129,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           setIsCheckingUpdate(false);
           setUpdateStatus({
             status: 'not-available',
-            version: 'v2.0.0',
-            message: 'You are running the latest version of SpaceClean (v2.0.0).'
+            version: currentAppVersion,
+            message: `You are running the latest version (${currentAppVersion}).`
           });
         }
       } else {
@@ -130,8 +138,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           setIsCheckingUpdate(false);
           setUpdateStatus({
             status: 'not-available',
-            version: 'v2.0.0',
-            message: 'You are running the latest version of SpaceClean (v2.0.0).'
+            version: currentAppVersion,
+            message: `You are running the latest version (${currentAppVersion}).`
           });
         }, 1000);
       }
@@ -361,7 +369,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               >
                 <div>
                   <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-main)' }}>
-                    Current Version: <strong style={{ color: 'var(--accent-primary)' }}>v3.0.0</strong>
+                    Current Version: <strong style={{ color: 'var(--accent-primary)' }}>{currentAppVersion}</strong>
                   </div>
                   <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '2px' }}>
                     Automatic update checking via GitHub Releases for {osName}.
@@ -445,9 +453,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       >
                         {updateStatus.message}
                       </div>
-                      {updateStatus.version && (
+                      {updateStatus.version && (updateStatus.status === 'available' || updateStatus.status === 'downloaded') && (
                         <div style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '2px' }}>
-                          Target Version: {updateStatus.version}
+                          Available Version: {updateStatus.version}
                         </div>
                       )}
                     </div>

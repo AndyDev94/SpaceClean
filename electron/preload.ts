@@ -21,6 +21,7 @@ export interface IElectronAPI {
   getFileDataUrl: (path: string) => Promise<string | null>;
   getFileHash: (path: string) => Promise<{ sha256: string; md5: string; size: number; error?: string }>;
   openExternalUrl: (url: string) => Promise<boolean>;
+  getAppVersion: () => Promise<string>;
   checkForUpdates: () => Promise<{ status: string; version?: string; message?: string }>;
   quitAndInstallUpdate: () => Promise<void>;
   onUpdateStatus: (callback: (data: { status: string; version?: string; message?: string; releaseNotes?: any }) => void) => () => void;
@@ -51,6 +52,7 @@ const api: IElectronAPI = {
   getFileDataUrl: (path: string) => ipcRenderer.invoke('get-file-data-url', path),
   getFileHash: (path: string) => ipcRenderer.invoke('get-file-hash', path),
   openExternalUrl: (url: string) => ipcRenderer.invoke('open-external-url', url),
+  getAppVersion: () => ipcRenderer.invoke('get-app-version'),
   checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
   quitAndInstallUpdate: () => ipcRenderer.invoke('quit-and-install'),
   onUpdateStatus: (callback) => {

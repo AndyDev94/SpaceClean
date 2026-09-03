@@ -443,6 +443,11 @@ ipcMain.handle('quit-and-install', () => {
   autoUpdater.quitAndInstall();
 });
 
+// App Info: Get current running version
+ipcMain.handle('get-app-version', () => {
+  return app.getVersion();
+});
+
 // Security & Threat Analysis: Compute SHA-256 and MD5 hashes for VirusTotal lookup
 ipcMain.handle('get-file-hash', async (_event, filePath: string) => {
   try {

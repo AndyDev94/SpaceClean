@@ -10,7 +10,12 @@
     <script>
       (function() {
         try {
-          var saved = localStorage.getItem('spaceclean_theme') || 'obsidian';
+          var saved = localStorage.getItem('spaceclean_theme');
+          var validThemes = ['obsidian', 'midnight', 'nordic', 'tokyo', 'ocean', 'clean-white', 'warm-sand', 'arctic', 'sage-light'];
+          if (!saved || validThemes.indexOf(saved) === -1) {
+            var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            saved = prefersDark ? 'obsidian' : 'clean-white';
+          }
           document.documentElement.setAttribute('data-theme', saved);
         } catch(e) {}
       })();

@@ -86,70 +86,96 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     };
   }, []);
 
+  // Robust semver comparison: 1 if v1 > v2, -1 if v1 < v2, 0 if equal
+  const compareSemver = (v1: string, v2: string): number => {
+    const parse = (v: string) =>
+      v.replace(/^v/, '').split('.').map(n => parseInt(n, 10) || 0);
+    const [maj1 = 0, min1 = 0, pat1 = 0] = parse(v1);
+    const [maj2 = 0, min2 = 0, pat2 = 0] = parse(v2);
+
+    if (maj1 !== maj2) return maj1 > maj2 ? 1 : -1;
+    if (min1 !== min2) return min1 > min2 ? 1 : -1;
+    if (pat1 !== pat2) return pat1 > pat2 ? 1 : -1;
+    return 0;
+  };
+
   const handleCheckUpdate = async () => {
     setIsCheckingUpdate(true);
     setUpdateStatus(null);
     setDownloadProgress(null);
 
+    // Get live running version
+    let runningVer = currentAppVersion;
     try {
-      if (window.electronAPI?.checkForUpdates) {
+      const liveVer = await window.electronAPI?.getAppVersion?.();
+      if (liveVer) {
+        runningVer = liveVer.startsWith('v') ? liveVer : `v${liveVer}`;
+        setCurrentAppVersion(runningVer);
+      }
+    } catch (e) {}
+
+    // First attempt: Query GitHub Releases directly
+    try {
+      const ghRes = await fetch('https://api.github.com/repos/AndyDev94/SpaceClean/releases/latest');
+      if (ghRes.ok) {
+        const release = await ghRes.json();
+        const latestTag = release.tag_name || runningVer;
+        const isNewer = compareSemver(latestTag, runningVer) > 0;
+
+        setIsCheckingUpdate(false);
+        setUpdateStatus({
+          status: isNewer ? 'available' : 'not-available',
+          version: latestTag,
+          message: isNewer
+            ? `New release ${latestTag} is available on GitHub Releases!`
+            : `You are running the latest version (${runningVer}).`,
+          releaseUrl: isNewer ? release.html_url : undefined
+        });
+
+        // If newer release exists, trigger electron auto-updater download if available
+        if (isNewer && window.electronAPI?.checkForUpdates) {
+          window.electronAPI.checkForUpdates().catch(() => {});
+        }
+        return;
+      }
+    } catch (ghErr) {
+      // Offline fallback
+    }
+
+    // Fallback attempt: electron auto-updater IPC
+    if (window.electronAPI?.checkForUpdates) {
+      try {
         const res = await window.electronAPI.checkForUpdates();
-        if (res.status === 'dev-mode') {
-          // In development mode, query public GitHub releases API directly
-          try {
-            const ghRes = await fetch('https://api.github.com/repos/AndyDev94/SpaceClean/releases/latest');
-            if (ghRes.ok) {
-              const release = await ghRes.json();
-              const latestTag = release.tag_name || currentAppVersion;
-              
-              // Semver comparison: only flag update if remote version is strictly newer
-              const parseVer = (v: string) => v.replace(/^v/, '').split('.').map(n => parseInt(n, 10) || 0);
-              const [rMaj = 0, rMin = 0, rPatch = 0] = parseVer(latestTag);
-              const [cMaj = 0, cMin = 0, cPatch = 0] = parseVer(currentAppVersion);
-              const isNewer =
-                rMaj > cMaj ||
-                (rMaj === cMaj && rMin > cMin) ||
-                (rMaj === cMaj && rMin === cMin && rPatch > cPatch);
-
-              setIsCheckingUpdate(false);
-              setUpdateStatus({
-                status: isNewer ? 'available' : 'not-available',
-                version: latestTag,
-                message: isNewer
-                  ? `New release ${latestTag} is available on GitHub Releases!`
-                  : `You are running the latest version (${currentAppVersion}).`,
-                releaseUrl: isNewer ? release.html_url : undefined
-              });
-              return;
-            }
-          } catch (e) {
-            // Ignore offline fallback
-          }
-
-          setIsCheckingUpdate(false);
+        setIsCheckingUpdate(false);
+        if (res.status === 'error') {
+          setUpdateStatus({
+            status: 'error',
+            message: `Could not contact update server: ${res.message || 'Offline / unreachable'}`
+          });
+        } else {
           setUpdateStatus({
             status: 'not-available',
-            version: currentAppVersion,
-            message: `You are running the latest version (${currentAppVersion}).`
+            version: runningVer,
+            message: `You are running the latest version (${runningVer}).`
           });
         }
-      } else {
-        setTimeout(() => {
-          setIsCheckingUpdate(false);
-          setUpdateStatus({
-            status: 'not-available',
-            version: currentAppVersion,
-            message: `You are running the latest version (${currentAppVersion}).`
-          });
-        }, 1000);
+        return;
+      } catch (err: any) {
+        setIsCheckingUpdate(false);
+        setUpdateStatus({
+          status: 'error',
+          message: 'Could not contact update server: ' + (err?.message || 'Network error')
+        });
+        return;
       }
-    } catch (err: any) {
-      setIsCheckingUpdate(false);
-      setUpdateStatus({
-        status: 'error',
-        message: 'Could not contact update server: ' + (err?.message || 'Network error')
-      });
     }
+
+    setIsCheckingUpdate(false);
+    setUpdateStatus({
+      status: 'not-available',
+      version: runningVer,
+      message: `You are running the latest version (${runningVer}).`
+    });
   };
 
   const handleInstallNow = () => {

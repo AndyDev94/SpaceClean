@@ -32,6 +32,26 @@
 
 /* ================= DARK THEME PRESETS ================= */
 
+/* 0. Obsidian Slate (Default Dark) */
+[data-theme="obsidian"] {
+  --bg-app: #0d0f14;
+  --bg-panel: #13161f;
+  --bg-panel-hover: #181c27;
+  --bg-subtle: #1c202c;
+  --bg-input: #151822;
+  --border-color: #222634;
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-hover: #32384a;
+  --accent-primary: #3b82f6;
+  --accent-primary-hover: #2563eb;
+  --accent-danger: #ef4444;
+  --accent-success: #10b981;
+  --accent-warning: #f59e0b;
+  --text-main: #f3f4f6;
+  --text-muted: #9ca3af;
+  --text-dim: #6b7280;
+}
+
 /* 1. Midnight OLED (True Black) */
 [data-theme="midnight"] {
   --bg-app: #000000;

@@ -69,18 +69,52 @@ export const App: React.FC = () => {
 
   // Theme Management
   const [currentTheme, setCurrentTheme] = useState<ThemePreset>(() => {
-    return (localStorage.getItem('spaceclean_theme') as ThemePreset) || 'obsidian';
+    try {
+      const saved = localStorage.getItem('spaceclean_theme') as ThemePreset;
+      const validThemes: ThemePreset[] = [
+        'obsidian', 'midnight', 'nordic', 'tokyo', 'ocean',
+        'clean-white', 'warm-sand', 'arctic', 'sage-light'
+      ];
+      if (saved && validThemes.includes(saved)) {
+        return saved;
+      }
+    } catch (e) {}
+
+    const prefersDark = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return prefersDark ? 'obsidian' : 'clean-white';
   });
 
   const handleSelectTheme = (newTheme: ThemePreset) => {
     setCurrentTheme(newTheme);
-    localStorage.setItem('spaceclean_theme', newTheme);
+    try {
+      localStorage.setItem('spaceclean_theme', newTheme);
+    } catch (e) {}
     document.documentElement.setAttribute('data-theme', newTheme);
   };
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', currentTheme);
   }, [currentTheme]);
+
+  // If user hasn't explicitly set a preference, keep matching OS color scheme changes
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e: MediaQueryListEvent) => {
+      try {
+        const saved = localStorage.getItem('spaceclean_theme');
+        if (!saved) {
+          const autoTheme: ThemePreset = e.matches ? 'obsidian' : 'clean-white';
+          setCurrentTheme(autoTheme);
+          document.documentElement.setAttribute('data-theme', autoTheme);
+        }
+      } catch (err) {}
+    };
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    }
+  }, []);
 
   // Junk & Duplicates
   const [junkItems, setJunkItems] = useState<JunkItem[]>([]);

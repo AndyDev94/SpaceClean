@@ -5,22 +5,28 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      publish_release:
+        description: 'Publish draft/full release to GitHub'
+        required: false
+        type: boolean
+        default: true
 
 permissions:
   contents: write
 
 jobs:
-  build-and-release:
-    name: Build on ${{ matrix.os }}
+  build-and-export:
+    name: Build & Export (${{ matrix.platform }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: windows-latest
-            platform: win
+            platform: windows
           - os: macos-latest
-            platform: mac
+            platform: macos
           - os: ubuntu-22.04
             platform: linux
 
@@ -43,33 +49,59 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Build Web Assets
+      - name: Build Web & Electron Assets
         run: npm run build
 
-      - name: Package & Publish for Windows
-        if: matrix.platform == 'win'
+      # ================= Windows Export =================
+      - name: Package Windows (MSIX, NSIS Setup, Portable)
+        if: matrix.platform == 'windows'
         run: npx electron-builder --win --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload Windows MSIX / AppX Artifacts
-        if: matrix.platform == 'win'
+      - name: Upload Windows Artifacts
+        if: matrix.platform == 'windows'
         uses: actions/upload-artifact@v4
         with:
-          name: spaceclean-windows-appx
+          name: SpaceClean-v3.5.0-Windows
           path: |
             release/*.appx
             release/*.exe
+            release/*.blockmap
+          if-no-files-found: warn
 
-      - name: Package & Publish for macOS
-        if: matrix.platform == 'mac'
+      # ================= macOS Export =================
+      - name: Package macOS (DMG & ZIP)
+        if: matrix.platform == 'macos'
         run: npx electron-builder --mac --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_IDENTITY_AUTO_DISCOVERY: false
 
-      - name: Package & Publish for Linux
+      - name: Upload macOS Artifacts
+        if: matrix.platform == 'macos'
+        uses: actions/upload-artifact@v4
+        with:
+          name: SpaceClean-v3.5.0-macOS
+          path: |
+            release/*.dmg
+            release/*.zip
+            release/*.blockmap
+          if-no-files-found: warn
+
+      # ================= Linux Export =================
+      - name: Package Linux (AppImage & DEB)
         if: matrix.platform == 'linux'
         run: npx electron-builder --linux --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Linux Artifacts
+        if: matrix.platform == 'linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: SpaceClean-v3.5.0-Linux
+          path: |
+            release/*.AppImage
+            release/*.deb
+          if-no-files-found: warn

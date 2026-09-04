@@ -828,11 +828,24 @@ export async function getInstalledApplications(): Promise<InstalledApp[]> {
               }
             } catch {}
 
+            let installDate = undefined;
+            try {
+              const stat = await fs.promises.stat(appPath);
+              const d = stat.birthtime && stat.birthtime.getTime() > 0 ? stat.birthtime : stat.mtime;
+              if (d && !isNaN(d.getTime())) {
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                installDate = `${y}/${m}/${day}`;
+              }
+            } catch {}
+
             apps.push({
               id: `mac_app_${idx++}`,
               name: appName,
               publisher,
               version,
+              installDate,
               installLocation: appPath,
               uninstallString: appPath,
               isSystemProtected: appPath.startsWith('/System') || appName === 'Safari' || appName === 'Finder'
@@ -857,9 +870,22 @@ export async function getInstalledApplications(): Promise<InstalledApp[]> {
               const execMatch = content.match(/^Exec=(.+)$/m);
               const iconMatch = content.match(/^Icon=(.+)$/m);
               if (nameMatch) {
+                let installDate = undefined;
+                try {
+                  const stat = await fs.promises.stat(fullPath);
+                  const d = stat.birthtime && stat.birthtime.getTime() > 0 ? stat.birthtime : stat.mtime;
+                  if (d && !isNaN(d.getTime())) {
+                    const y = d.getFullYear();
+                    const m = String(d.getMonth() + 1).padStart(2, '0');
+                    const day = String(d.getDate()).padStart(2, '0');
+                    installDate = `${y}/${m}/${day}`;
+                  }
+                } catch {}
+
                 apps.push({
                   id: `linux_app_${idx++}`,
                   name: nameMatch[1].trim(),
+                  installDate,
                   installLocation: fullPath,
                   uninstallString: execMatch ? execMatch[1].trim() : undefined,
                   icon: iconMatch ? iconMatch[1].trim() : undefined

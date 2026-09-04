@@ -847,12 +847,16 @@ export const App: React.FC = () => {
                         }}
                         title="Cross-check files in Part 1 vs Part 2 vs All Scanned"
                       >
-                        <option value="all">🌐 All Scanned Parts (1–{availableParts.length}) ({files.length.toLocaleString()} files)</option>
+                        <option value="all">
+                          🌐 All Scanned Parts (1–{availableParts.length}) ({files.length.toLocaleString()} files • {formatBytes(files.reduce((s, f) => s + f.size, 0))})
+                        </option>
                         {availableParts.map(p => {
-                          const count = files.filter(f => (f.scanPart || 1) === p).length;
+                          const partFiles = files.filter(f => (f.scanPart || 1) === p);
+                          const count = partFiles.length;
+                          const partBytes = partFiles.reduce((s, f) => s + f.size, 0);
                           return (
                             <option key={p} value={p}>
-                              📦 Part {p} Only ({count.toLocaleString()} files)
+                              📦 Part {p} ({count.toLocaleString()} files • {formatBytes(partBytes)})
                             </option>
                           );
                         })}
@@ -960,12 +964,16 @@ export const App: React.FC = () => {
                       }}
                       title="Cross-check files in Part 1 vs Part 2 vs All Scanned"
                     >
-                      <option value="all">🌐 All Scanned Parts (1–{availableParts.length}) ({files.length.toLocaleString()} files)</option>
+                      <option value="all">
+                        🌐 All Scanned Parts (1–{availableParts.length}) ({files.length.toLocaleString()} files • {formatBytes(files.reduce((s, f) => s + f.size, 0))})
+                      </option>
                       {availableParts.map(p => {
-                        const count = files.filter(f => (f.scanPart || 1) === p).length;
+                        const partFiles = files.filter(f => (f.scanPart || 1) === p);
+                        const count = partFiles.length;
+                        const partBytes = partFiles.reduce((s, f) => s + f.size, 0);
                         return (
                           <option key={p} value={p}>
-                            📦 Part {p} Only ({count.toLocaleString()} files)
+                            📦 Part {p} ({count.toLocaleString()} files • {formatBytes(partBytes)})
                           </option>
                         );
                       })}

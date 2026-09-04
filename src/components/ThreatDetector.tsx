@@ -411,10 +411,19 @@ export const ThreatDetector: React.FC<ThreatDetectorProps> = ({
                 }}
                 title="Filter threats by scanned part"
               >
-                <option value="all">🌐 All Scanned Parts (1–{availableParts.length})</option>
-                {availableParts.map(p => (
-                  <option key={p} value={p}>📦 Part {p} Only</option>
-                ))}
+                <option value="all">
+                  🌐 All Scanned Parts (1–{availableParts.length} • {threats.length} threats • {formatBytes(threats.reduce((s, t) => s + (t.file.size || 0), 0))})
+                </option>
+                {availableParts.map(p => {
+                  const partThreats = threats.filter(t => (t.file.scanPart || 1) === p);
+                  const count = partThreats.length;
+                  const partBytes = partThreats.reduce((s, t) => s + (t.file.size || 0), 0);
+                  return (
+                    <option key={p} value={p}>
+                      📦 Part {p} ({count} threats • {formatBytes(partBytes)})
+                    </option>
+                  );
+                })}
               </select>
             )}
 
@@ -603,10 +612,19 @@ export const ThreatDetector: React.FC<ThreatDetectorProps> = ({
               }}
               title="Filter threats by scanned part"
             >
-              <option value="all">🌐 All Parts (1–{availableParts.length})</option>
-              {availableParts.map(p => (
-                <option key={p} value={p}>📦 Part {p}</option>
-              ))}
+              <option value="all">
+                🌐 All Parts (1–{availableParts.length} • {threats.length} threats • {formatBytes(threats.reduce((s, t) => s + (t.file.size || 0), 0))})
+              </option>
+              {availableParts.map(p => {
+                const partThreats = threats.filter(t => (t.file.scanPart || 1) === p);
+                const count = partThreats.length;
+                const partBytes = partThreats.reduce((s, t) => s + (t.file.size || 0), 0);
+                return (
+                  <option key={p} value={p}>
+                    📦 Part {p} ({count} threats • {formatBytes(partBytes)})
+                  </option>
+                );
+              })}
             </select>
           )}
 

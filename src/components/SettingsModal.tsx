@@ -419,7 +419,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             onClick={() => setActiveTab('preferences')}
           >
             <SlidersHorizontal size={13} />
-            <span>Scanner & Display</span>
+            <span>Engine & Preferences</span>
           </button>
 
           <button
@@ -477,7 +477,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
           )}
 
-          {/* 0. SCANNER & DISPLAY PREFERENCES TAB */}
+          {/* 0. ENGINE & PREFERENCES TAB */}
           {activeTab === 'preferences' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               {/* SECTION 1: DATE FORMAT */}

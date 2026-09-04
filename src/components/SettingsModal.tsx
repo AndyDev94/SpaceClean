@@ -881,15 +881,36 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
 
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                     <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
                       SpaceClean
                     </h3>
                     <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', background: 'rgba(59, 130, 246, 0.15)', color: 'var(--accent-primary)', fontWeight: 600 }}>
-                      v3.0.0 Stable
+                      {currentAppVersion}
                     </span>
+                    <button
+                      onClick={() => setActiveTab('updates')}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: 'var(--accent-primary)',
+                        fontSize: '11.5px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '2px 4px',
+                        textDecoration: 'underline',
+                        textUnderlineOffset: '2px'
+                      }}
+                      title="Switch to Updates tab to check for the latest releases"
+                    >
+                      <RefreshCw size={11} />
+                      <span>Check for updates</span>
+                    </button>
                   </div>
-                  <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '4px' }}>
+                  <p style={{ fontSize: '12px', color: 'var(--text-dim)', margin: '4px 0 0' }}>
                     Next-Gen Memory-Optimized {osName} Disk Storage Analyzer & Deep Cleaner
                   </p>
                 </div>

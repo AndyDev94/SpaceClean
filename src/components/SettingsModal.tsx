@@ -446,7 +446,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             onClick={() => setActiveTab('guide')}
           >
             <BookOpen size={13} />
-            <span>Detailed Guide</span>
+            <span>Guide</span>
           </button>
         </div>
 
@@ -1373,7 +1373,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
           )}
 
-          {/* 4. DETAILED GUIDE TAB */}
+          {/* 4. GUIDE TAB */}
           {activeTab === 'guide' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               {/* Step-by-Step Workflow */}

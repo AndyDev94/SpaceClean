@@ -812,7 +812,7 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
                       const isSelected = selectedPaths.has(file.path);
                       const isPreviewed = previewedFilePath === file.path;
                       const fileDate = file.modifiedAt || file.createdAt;
-                      const formattedDate = fileDate ? formatDisplayDate(new Date(fileDate), true, preferredDateFormat) : '—';
+                      const formattedDate = fileDate ? formatDisplayDate(new Date(fileDate), false, preferredDateFormat) : '—';
 
                       // Find if this is newest or oldest copy in group
                       const timestamps = group.files.map(f => f.modifiedAt || f.createdAt || 0).filter(t => t > 0);

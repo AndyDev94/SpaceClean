@@ -492,7 +492,7 @@ export const FileTable: React.FC<FileTableProps> = ({
 
                     {/* Modified Date */}
                     <td onClick={() => onPreviewFile?.(file)} style={{ fontSize: '11px', color: 'var(--text-dim)', cursor: 'pointer' }}>
-                      {formatDisplayDate(file.modifiedAt, true, preferredDateFormat)}
+                      {formatDisplayDate(file.modifiedAt, false, preferredDateFormat)}
                     </td>
 
                     {/* Location */}

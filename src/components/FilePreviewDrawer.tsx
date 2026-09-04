@@ -310,7 +310,7 @@ export const FilePreviewDrawer: React.FC<FilePreviewDrawerProps> = ({
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--text-dim)' }}>Modified:</span>
               <span style={{ color: 'var(--text-main)' }}>
-                {formatDisplayDate(file.modifiedAt, true)}
+                {formatDisplayDate(file.modifiedAt, false)}
               </span>
             </div>
 
@@ -318,7 +318,7 @@ export const FilePreviewDrawer: React.FC<FilePreviewDrawerProps> = ({
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--text-dim)' }}>Created:</span>
               <span style={{ color: 'var(--text-main)' }}>
-                {formatDisplayDate(file.createdAt, true)}
+                {formatDisplayDate(file.createdAt, false)}
               </span>
             </div>
 

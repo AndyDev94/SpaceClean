@@ -797,7 +797,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </div>
 
                   <div style={{ fontSize: '12px', padding: '4px 10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', color: 'var(--text-main)', fontWeight: 600 }}>
-                    Live Preview: <strong style={{ color: 'var(--accent-primary)' }}>{formatDisplayDate(new Date(), true, selectedDateFormat)}</strong>
+                    Live Preview: <strong style={{ color: 'var(--accent-primary)' }}>{formatDisplayDate(new Date(), false, selectedDateFormat)}</strong>
                   </div>
                 </div>
 

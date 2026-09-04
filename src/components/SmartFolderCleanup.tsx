@@ -807,7 +807,7 @@ export const SmartFolderCleanup: React.FC<SmartFolderCleanupProps> = ({
                                     {file.formattedSize}
                                   </td>
                                   <td style={{ fontSize: '10px', color: 'var(--text-dim)' }}>
-                                    {formatDisplayDate(file.modifiedAt, true)}
+                                    {formatDisplayDate(file.modifiedAt, false)}
                                   </td>
                                   <td>
                                     <span className="file-path-text" title={file.path}>
@@ -1083,7 +1083,7 @@ export const SmartFolderCleanup: React.FC<SmartFolderCleanupProps> = ({
                                   {file.formattedSize}
                                 </td>
                                  <td style={{ fontSize: '10px', color: 'var(--text-dim)' }}>
-                                   {formatDisplayDate(file.modifiedAt, true)}
+                                   {formatDisplayDate(file.modifiedAt, false)}
                                  </td>
                                 <td>
                                   <span className="file-path-text" title={file.path}>

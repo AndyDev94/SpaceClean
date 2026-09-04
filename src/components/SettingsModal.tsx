@@ -480,73 +480,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {/* 0. ENGINE & PREFERENCES TAB */}
           {activeTab === 'preferences' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              {/* SECTION 1: DATE FORMAT */}
-              <div
-                style={{
-                  padding: '16px',
-                  background: 'var(--bg-subtle)',
-                  borderRadius: 'var(--radius-md)',
-                  border: '1px solid var(--border-color)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '14px'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Calendar size={18} style={{ color: 'var(--accent-primary)' }} />
-                    <div>
-                      <h4 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
-                        Universal Date & Time Format
-                      </h4>
-                      <p style={{ fontSize: '12px', color: 'var(--text-dim)', margin: '2px 0 0' }}>
-                        Customize how dates are displayed across all 9 modes in SpaceClean.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div style={{ fontSize: '12px', padding: '4px 10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', color: 'var(--text-main)', fontWeight: 600 }}>
-                    Live Preview: <strong style={{ color: 'var(--accent-primary)' }}>{formatDisplayDate(new Date(), true, selectedDateFormat)}</strong>
-                  </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '8px' }}>
-                  {DATE_FORMAT_OPTIONS.map(opt => {
-                    const isSelected = selectedDateFormat === opt.id;
-                    return (
-                      <button
-                        key={opt.id}
-                        onClick={() => handleSelectDateFormat(opt.id)}
-                        className="panel"
-                        style={{
-                          padding: '10px 12px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          borderRadius: 'var(--radius-sm)',
-                          border: isSelected ? '1.5px solid var(--accent-primary)' : '1px solid var(--border-color)',
-                          background: isSelected ? 'rgba(59, 130, 246, 0.12)' : 'var(--bg-panel)',
-                          cursor: 'pointer',
-                          textAlign: 'left'
-                        }}
-                      >
-                        <div>
-                          <div style={{ fontSize: '12px', fontWeight: 600, color: isSelected ? 'var(--accent-primary)' : 'var(--text-main)' }}>
-                            {opt.id}
-                          </div>
-                          <div style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '2px' }}>
-                            {opt.label.split('(')[1]?.replace(')', '') || opt.example}
-                          </div>
-                        </div>
-
-                        {isSelected && <Check size={16} style={{ color: 'var(--accent-primary)', flexShrink: 0 }} />}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* SECTION 2: SCANNER ENGINE & PART LIMITS */}
+              {/* SECTION 1: SMART PART SCANNING ENGINE */}
               <div
                 style={{
                   padding: '16px',
@@ -835,6 +769,72 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* SECTION 2: UNIVERSAL DATE FORMAT */}
+              <div
+                style={{
+                  padding: '16px',
+                  background: 'var(--bg-subtle)',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--border-color)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '14px'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Calendar size={18} style={{ color: 'var(--accent-primary)' }} />
+                    <div>
+                      <h4 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
+                        Universal Date Format
+                      </h4>
+                      <p style={{ fontSize: '12px', color: 'var(--text-dim)', margin: '2px 0 0' }}>
+                        Customize how dates are displayed across all 9 modes in SpaceClean.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div style={{ fontSize: '12px', padding: '4px 10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', color: 'var(--text-main)', fontWeight: 600 }}>
+                    Live Preview: <strong style={{ color: 'var(--accent-primary)' }}>{formatDisplayDate(new Date(), true, selectedDateFormat)}</strong>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '8px' }}>
+                  {DATE_FORMAT_OPTIONS.map(opt => {
+                    const isSelected = selectedDateFormat === opt.id;
+                    return (
+                      <button
+                        key={opt.id}
+                        onClick={() => handleSelectDateFormat(opt.id)}
+                        className="panel"
+                        style={{
+                          padding: '10px 12px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          borderRadius: 'var(--radius-sm)',
+                          border: isSelected ? '1.5px solid var(--accent-primary)' : '1px solid var(--border-color)',
+                          background: isSelected ? 'rgba(59, 130, 246, 0.12)' : 'var(--bg-panel)',
+                          cursor: 'pointer',
+                          textAlign: 'left'
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontSize: '12px', fontWeight: 600, color: isSelected ? 'var(--accent-primary)' : 'var(--text-main)' }}>
+                            {opt.id}
+                          </div>
+                          <div style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '2px' }}>
+                            {opt.label.split('(')[1]?.replace(')', '') || opt.example}
+                          </div>
+                        </div>
+
+                        {isSelected && <Check size={16} style={{ color: 'var(--accent-primary)', flexShrink: 0 }} />}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* RESET BUTTON */}

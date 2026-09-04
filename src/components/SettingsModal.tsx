@@ -889,7 +889,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       {currentAppVersion} Stable
                     </span>
                     <button
-                      onClick={() => setActiveTab('updates')}
+                      onClick={() => {
+                        setActiveTab('updates');
+                        handleCheckUpdate();
+                      }}
                       style={{
                         background: 'transparent',
                         border: 'none',
@@ -904,10 +907,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         textDecoration: 'underline',
                         textUnderlineOffset: '2px'
                       }}
-                      title="Switch to Updates tab to check for the latest releases"
+                      title="Switch to Updates tab and check for latest releases"
                     >
-                      <RefreshCw size={11} />
-                      <span>Check for updates</span>
+                      <RefreshCw size={11} className={isCheckingUpdate ? 'animate-spin' : ''} />
+                      <span>{isCheckingUpdate ? 'Checking...' : 'Check for updates'}</span>
                     </button>
                   </div>
                   <p style={{ fontSize: '12px', color: 'var(--text-dim)', margin: '4px 0 0' }}>

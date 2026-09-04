@@ -886,7 +886,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       SpaceClean
                     </h3>
                     <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', background: 'rgba(59, 130, 246, 0.15)', color: 'var(--accent-primary)', fontWeight: 600 }}>
-                      {currentAppVersion}
+                      {currentAppVersion} Stable
                     </span>
                     <button
                       onClick={() => setActiveTab('updates')}

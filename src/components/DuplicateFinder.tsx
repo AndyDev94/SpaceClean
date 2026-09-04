@@ -516,7 +516,7 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
               }}
             >
               {[
-                { field: 'waste' as DuplicateSortBy, label: 'Waste' },
+                { field: 'waste' as DuplicateSortBy, label: 'Wasted Space' },
                 { field: 'size' as DuplicateSortBy, label: 'Size' },
                 {
                   field: 'date' as DuplicateSortBy,

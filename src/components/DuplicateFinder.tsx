@@ -33,7 +33,7 @@ type DateFilterPreset =
   | 'older_1year'
   | 'custom';
 
-type DuplicateSortBy = 'date' | 'waste' | 'count' | 'name';
+type DuplicateSortBy = 'size' | 'waste' | 'date' | 'count' | 'name';
 type DuplicateSortOrder = 'desc' | 'asc';
 
 interface DuplicateFinderProps {
@@ -200,13 +200,15 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
       });
     }
 
-    // 3. Multi-Field Sorting (Date New->Old / Old->New, Waste Size, Copies Count, Name)
+    // 3. Multi-Field Sorting (Date New->Old / Old->New, Single File Size, Waste Size, Copies Count, Name)
     result = [...result].sort((a, b) => {
       let comp = 0;
       if (sortBy === 'date') {
         const dateA = Math.max(...a.files.map(f => f.modifiedAt || f.createdAt || 0));
         const dateB = Math.max(...b.files.map(f => f.modifiedAt || f.createdAt || 0));
         comp = dateA - dateB;
+      } else if (sortBy === 'size') {
+        comp = a.size - b.size;
       } else if (sortBy === 'waste') {
         comp = a.wastedBytes - b.wastedBytes;
       } else if (sortBy === 'count') {
@@ -494,8 +496,9 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
               }}
             >
               {[
-                { field: 'date' as DuplicateSortBy, label: sortBy === 'date' ? (sortOrder === 'desc' ? 'New → Old' : 'Old → New') : 'Date ↕' },
                 { field: 'waste' as DuplicateSortBy, label: 'Waste' },
+                { field: 'size' as DuplicateSortBy, label: 'Size' },
+                { field: 'date' as DuplicateSortBy, label: sortBy === 'date' ? (sortOrder === 'desc' ? 'New → Old' : 'Old → New') : 'Date ↕' },
                 { field: 'count' as DuplicateSortBy, label: 'Copies' },
                 { field: 'name' as DuplicateSortBy, label: 'Name' }
               ].map(({ field, label }) => {

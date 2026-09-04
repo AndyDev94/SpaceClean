@@ -1159,6 +1159,12 @@ export const App: React.FC = () => {
       <SettingsModal
         isOpen={isSettingsModalOpen}
         onClose={() => setIsSettingsModalOpen(false)}
+        hasScannedData={files.length > 0}
+        hasActivePartScan={Boolean(chunkInfo?.canResume)}
+        onTriggerRescan={() => {
+          setIsSettingsModalOpen(false);
+          handleStartScan(selectedPath);
+        }}
       />
     </div>
   );

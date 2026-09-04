@@ -23,6 +23,7 @@ import {
   SlidersHorizontal,
   Calendar,
   Gauge,
+  AlertTriangle,
   RotateCcw,
   Check,
   Pencil
@@ -41,6 +42,9 @@ import { formatBytes } from '../utils/filterUtils';
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  hasScannedData?: boolean;
+  hasActivePartScan?: boolean;
+  onTriggerRescan?: () => void;
 }
 
 type SettingsTab = 'about' | 'preferences' | 'updates' | 'shortcuts' | 'guide';
@@ -48,6 +52,9 @@ type SettingsTab = 'about' | 'preferences' | 'updates' | 'shortcuts' | 'guide';
 export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
   onClose,
+  hasScannedData = false,
+  hasActivePartScan = false,
+  onTriggerRescan,
 }) => {
   if (!isOpen) return null;
 
@@ -78,6 +85,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     return parseInt(localStorage.getItem('spaceclean_chunk_bytes') || String(25 * 1024 * 1024 * 1024), 10);
   });
   const [saveToast, setSaveToast] = useState<string | null>(null);
+  const [showRescanPrompt, setShowRescanPrompt] = useState<boolean>(false);
 
   // Custom inputs state
   const [isEditingCustomFiles, setIsEditingCustomFiles] = useState<boolean>(() => {
@@ -106,7 +114,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   const showToast = (msg: string) => {
     setSaveToast(msg);
-    setTimeout(() => setSaveToast(null), 2500);
+    setTimeout(() => setSaveToast(null), 3000);
+  };
+
+  const notifyEngineChanged = (msg: string) => {
+    if (hasScannedData || hasActivePartScan) {
+      setShowRescanPrompt(true);
+      showToast(`${msg} • Rescan required for full accuracy & safety`);
+    } else {
+      showToast(msg);
+    }
   };
 
   const handleSelectDateFormat = (fmt: DateFormatOption) => {
@@ -118,7 +135,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const handleToggleChunkEnabled = (enabled: boolean) => {
     setChunkEnabled(enabled);
     localStorage.setItem('spaceclean_chunk_enabled', String(enabled));
-    showToast(enabled ? 'Smart Part Scanning enabled' : 'Continuous Full Scan enabled');
+    notifyEngineChanged(enabled ? 'Smart Part Scanning enabled' : 'Continuous Full Scan enabled');
   };
 
   const handleSelectChunkFiles = (filesCount: number) => {
@@ -126,7 +143,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     setCustomFilesInput(String(filesCount));
     setIsEditingCustomFiles(![5000, 10000, 20000, 50000, 100000].includes(filesCount));
     localStorage.setItem('spaceclean_chunk_files', String(filesCount));
-    showToast(`Part file limit set to ${filesCount.toLocaleString()} files`);
+    notifyEngineChanged(`Part file limit set to ${filesCount.toLocaleString()} files`);
   };
 
   const handleSelectChunkBytes = (bytesLimit: number) => {
@@ -140,7 +157,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     ];
     setIsEditingCustomBytes(!defaultBytePresets.includes(bytesLimit));
     localStorage.setItem('spaceclean_chunk_bytes', String(bytesLimit));
-    showToast(`Part size limit set to ${formatBytes(bytesLimit, 0)}`);
+    notifyEngineChanged(`Part size limit set to ${formatBytes(bytesLimit, 0)}`);
   };
 
   const handleApplyCustomFilesInput = (val: string) => {
@@ -149,7 +166,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     if (n && n > 0) {
       setChunkFiles(n);
       localStorage.setItem('spaceclean_chunk_files', String(n));
-      showToast(`Custom file limit set to ${n.toLocaleString()} files`);
+      notifyEngineChanged(`Custom file limit set to ${n.toLocaleString()} files`);
     }
   };
 
@@ -160,7 +177,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       const bytes = Math.round(gb * 1024 * 1024 * 1024);
       setChunkBytes(bytes);
       localStorage.setItem('spaceclean_chunk_bytes', String(bytes));
-      showToast(`Custom size limit set to ${gb} GB`);
+      notifyEngineChanged(`Custom size limit set to ${gb} GB`);
     }
   };
 
@@ -177,7 +194,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     setCustomGbInput('25');
     setIsEditingCustomBytes(false);
     localStorage.setItem('spaceclean_chunk_bytes', String(25 * 1024 * 1024 * 1024));
-    showToast('Reset all settings to recommended defaults');
+    notifyEngineChanged('Reset all settings to recommended defaults');
   };
 
   // Fetch current version on mount
@@ -568,6 +585,57 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </button>
                   </div>
                 </div>
+
+                {/* Rescan Required Warning Banner if limits modified during/after scan */}
+                {showRescanPrompt && (
+                  <div
+                    style={{
+                      padding: '12px 14px',
+                      background: 'rgba(234, 179, 8, 0.12)',
+                      borderRadius: 'var(--radius-sm)',
+                      border: '1px solid rgba(234, 179, 8, 0.35)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '8px'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                      <AlertTriangle size={16} style={{ color: '#eab308', flexShrink: 0, marginTop: '2px' }} />
+                      <div style={{ flex: 1, fontSize: '12px', lineHeight: '1.45', color: 'var(--text-main)' }}>
+                        <strong style={{ color: '#eab308' }}>Rescan Recommended: </strong>
+                        You modified the scanning engine limits while a scan was already performed. To ensure smooth operations, prevent missed files, and guarantee maximum safety, please run a fresh scan with your new engine configuration.
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '2px' }}>
+                      <button
+                        className="btn btn-secondary"
+                        style={{ fontSize: '11px', padding: '4px 10px' }}
+                        onClick={() => setShowRescanPrompt(false)}
+                      >
+                        Dismiss
+                      </button>
+                      {onTriggerRescan && (
+                        <button
+                          className="btn btn-primary"
+                          style={{
+                            fontSize: '11px',
+                            padding: '4px 12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '5px'
+                          }}
+                          onClick={() => {
+                            setShowRescanPrompt(false);
+                            onTriggerRescan();
+                          }}
+                        >
+                          <RefreshCw size={12} />
+                          <span>Start Fresh Scan Now</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {chunkEnabled && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', borderTop: '1px solid var(--border-color)', paddingTop: '14px' }}>

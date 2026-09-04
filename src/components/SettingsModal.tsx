@@ -423,15 +423,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </button>
 
           <button
-            className={`tab-btn ${activeTab === 'updates' ? 'active' : ''}`}
-            style={{ padding: '6px 12px', fontSize: '12px' }}
-            onClick={() => setActiveTab('updates')}
-          >
-            <RefreshCw size={13} />
-            <span>Updates</span>
-          </button>
-
-          <button
             className={`tab-btn ${activeTab === 'shortcuts' ? 'active' : ''}`}
             style={{ padding: '6px 12px', fontSize: '12px' }}
             onClick={() => setActiveTab('shortcuts')}
@@ -447,6 +438,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           >
             <BookOpen size={13} />
             <span>Guide</span>
+          </button>
+
+          <button
+            className={`tab-btn ${activeTab === 'updates' ? 'active' : ''}`}
+            style={{ padding: '6px 12px', fontSize: '12px' }}
+            onClick={() => setActiveTab('updates')}
+          >
+            <RefreshCw size={13} />
+            <span>Updates</span>
           </button>
         </div>
 

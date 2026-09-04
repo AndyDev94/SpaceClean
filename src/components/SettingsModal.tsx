@@ -37,6 +37,7 @@ import {
   setPreferredDateFormat,
   formatDisplayDate
 } from '../utils/dateUtils';
+import packageInfo from '../../package.json';
 import { formatBytes } from '../utils/filterUtils';
 
 interface SettingsModalProps {
@@ -58,8 +59,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
+  const defaultVersion = packageInfo.version.startsWith('v') ? packageInfo.version : `v${packageInfo.version}`;
   const [activeTab, setActiveTab] = useState<SettingsTab>('about');
-  const [currentAppVersion, setCurrentAppVersion] = useState('v3.5.0');
+  const [currentAppVersion, setCurrentAppVersion] = useState(defaultVersion);
   const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState<{
     percent: number;
@@ -1090,15 +1092,74 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
               {/* Scrollable Version Release History */}
               <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '14px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                {/* 🌟 What's New in v3.0.0 */}
+                {/* 🌟 What's New in v3.6.0 */}
                 <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                    <h4 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Sparkles size={15} style={{ color: '#10b981' }} />
+                      <span>What's New in SpaceClean v3.6.0</span>
+                    </h4>
+                    <span style={{ fontSize: '10px', padding: '1px 8px', borderRadius: '4px', background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', fontWeight: 700 }}>
+                      Latest Release
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {/* Universal Date Format Engine */}
+                    <div style={{ padding: '9px 12px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
+                      <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                        <Calendar size={13} style={{ color: 'var(--accent-primary)' }} />
+                        <span>Universal Pure Date Format Engine</span>
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.45 }}>
+                        Streamlined date formatting options across all tables (<code>YYYY/MM/DD</code>, <code>DD/MM/YYYY</code>, <code>MM/DD/YYYY</code>, <code>YYYY-MM-DD</code>, <code>DD.MM.YYYY</code>) displaying clean dates with uncluttered presentation.
+                      </div>
+                    </div>
+
+                    {/* Part Scanning with Live Volume Statistics */}
+                    <div style={{ padding: '9px 12px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
+                      <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                        <Cpu size={13} style={{ color: '#f59e0b' }} />
+                        <span>Part Scanning Engine with Live Storage Volume</span>
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.45 }}>
+                        Upgraded Part Navigator dropdown showing exact data volume per milestone (e.g., <code>Part 1 (5,000 files · 18.4 GB)</code>) and elevated Engine settings in Preferences for swift chunk tuning.
+                      </div>
+                    </div>
+
+                    {/* Duplicate Finder Wasted Space & Sorting */}
+                    <div style={{ padding: '9px 12px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
+                      <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                        <Copy size={13} style={{ color: '#a855f7' }} />
+                        <span>Duplicate Finder: Wasted Space Metrics & Bidirectional Date Sorting</span>
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.45 }}>
+                        Re-engineered duplicate statistics with explicit <strong>Wasted Space</strong> sorting, bidirectional <strong>New → Old & Old → New</strong> date sorting, and instant clone cleanup workflows.
+                      </div>
+                    </div>
+
+                    {/* Settings & 1-Click Update Trigger */}
+                    <div style={{ padding: '9px 12px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', fontSize: '12px' }}>
+                      <div style={{ fontWeight: 600, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                        <RefreshCw size={13} style={{ color: '#10b981' }} />
+                        <span>Settings Navigation & 1-Click Update Trigger</span>
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.45 }}>
+                        Added quick <strong>Check for updates</strong> button in the About badge that switches to the right-aligned Updates tab and triggers release scanning automatically.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 🌟 What's New in v3.0.0 */}
+                <div style={{ borderTop: '1px dashed var(--border-subtle)', paddingTop: '16px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
                     <h4 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <Sparkles size={15} style={{ color: '#10b981' }} />
                       <span>What's New in SpaceClean v3.0.0</span>
                     </h4>
-                    <span style={{ fontSize: '10px', padding: '1px 8px', borderRadius: '4px', background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', fontWeight: 700 }}>
-                      Latest Major Release
+                    <span style={{ fontSize: '10px', padding: '1px 8px', borderRadius: '4px', background: 'var(--bg-subtle)', color: 'var(--text-muted)', fontWeight: 600 }}>
+                      v3.0.0
                     </span>
                   </div>
 

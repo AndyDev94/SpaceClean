@@ -293,8 +293,22 @@ export const App: React.FC = () => {
     const matchedDrive = drives.find(d => target.toUpperCase().startsWith(d.drive.toUpperCase()));
     const totalExpectedBytes = matchedDrive ? matchedDrive.usedBytes : undefined;
 
+    // Read user chunking preferences from settings
+    let autoChunk = true;
+    let chunkMaxFiles = 20000;
+    let chunkMaxBytes = 25 * 1024 * 1024 * 1024;
     try {
-      const scanRes: ScanResult = await window.electronAPI.startScan(target, totalExpectedBytes, true);
+      if (localStorage.getItem('spaceclean_chunk_enabled') === 'false') {
+        autoChunk = false;
+      }
+      const filesPref = parseInt(localStorage.getItem('spaceclean_chunk_files') || '20000', 10);
+      if (filesPref >= 0) chunkMaxFiles = filesPref;
+      const bytesPref = parseInt(localStorage.getItem('spaceclean_chunk_bytes') || String(25 * 1024 * 1024 * 1024), 10);
+      if (bytesPref >= 0) chunkMaxBytes = bytesPref;
+    } catch {}
+
+    try {
+      const scanRes: ScanResult = await window.electronAPI.startScan(target, totalExpectedBytes, autoChunk, chunkMaxFiles, chunkMaxBytes);
       const uniqueMap = new Map<string, FileInfo>();
       scanRes.files.forEach(f => uniqueMap.set(f.path.toLowerCase(), f));
       setFiles(Array.from(uniqueMap.values()));
@@ -317,8 +331,17 @@ export const App: React.FC = () => {
     setChunkInfo(null);
     setScanProgress(prev => ({ ...prev, isScanning: true, isChunkPaused: false }));
 
+    let chunkMaxFiles = 20000;
+    let chunkMaxBytes = 25 * 1024 * 1024 * 1024;
     try {
-      const scanRes: ScanResult = await window.electronAPI.resumeScan(unlimitedRemaining);
+      const filesPref = parseInt(localStorage.getItem('spaceclean_chunk_files') || '20000', 10);
+      if (filesPref >= 0) chunkMaxFiles = filesPref;
+      const bytesPref = parseInt(localStorage.getItem('spaceclean_chunk_bytes') || String(25 * 1024 * 1024 * 1024), 10);
+      if (bytesPref >= 0) chunkMaxBytes = bytesPref;
+    } catch {}
+
+    try {
+      const scanRes: ScanResult = await window.electronAPI.resumeScan(unlimitedRemaining, chunkMaxFiles, chunkMaxBytes);
       const uniqueMap = new Map<string, FileInfo>();
       scanRes.files.forEach(f => uniqueMap.set(f.path.toLowerCase(), f));
       setFiles(Array.from(uniqueMap.values()));

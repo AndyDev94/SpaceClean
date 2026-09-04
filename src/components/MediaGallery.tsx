@@ -29,6 +29,7 @@ import {
 import { FileInfo } from '../types';
 import { formatBytes } from '../utils/filterUtils';
 import { format, subDays, isBefore, isAfter, startOfDay, endOfDay } from 'date-fns';
+import { formatDisplayDate } from '../utils/dateUtils';
 
 interface MediaGalleryProps {
   files: FileInfo[];
@@ -843,7 +844,7 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                         {file.formattedSize}
                       </td>
                       <td style={{ padding: '8px 10px', fontSize: '11px', color: 'var(--text-muted)' }}>
-                        {format(new Date(file.modifiedAt || file.createdAt), 'yyyy-MM-dd')}
+                        {formatDisplayDate(file.modifiedAt || file.createdAt)}
                       </td>
                       <td style={{ padding: '8px 10px', textAlign: 'center' }} onClick={e => e.stopPropagation()}>
                         <button
@@ -1171,7 +1172,7 @@ export const MediaGallery: React.FC<MediaGalleryProps> = ({
                         {file.formattedSize}
                       </span>
                       <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>
-                        {format(new Date(file.modifiedAt || file.createdAt), 'yyyy-MM-dd')}
+                        {formatDisplayDate(file.modifiedAt || file.createdAt)}
                       </span>
                     </div>
                   </div>

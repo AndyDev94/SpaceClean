@@ -33,7 +33,7 @@ import {
 import { FileInfo, FilterState, FileCategory } from '../types';
 import { formatBytes } from '../utils/filterUtils';
 import { osProtectedFileLabel } from '../utils/platform';
-import { format } from 'date-fns';
+import { formatDisplayDate, usePreferredDateFormat } from '../utils/dateUtils';
 
 interface FileTableProps {
   files: FileInfo[];
@@ -68,6 +68,7 @@ export const FileTable: React.FC<FileTableProps> = ({
   onStartScan,
   selectedPath,
 }) => {
+  const preferredDateFormat = usePreferredDateFormat();
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState<number | 'all'>(100);
 
@@ -491,7 +492,7 @@ export const FileTable: React.FC<FileTableProps> = ({
 
                     {/* Modified Date */}
                     <td onClick={() => onPreviewFile?.(file)} style={{ fontSize: '11px', color: 'var(--text-dim)', cursor: 'pointer' }}>
-                      {format(new Date(file.modifiedAt), 'yyyy-MM-dd HH:mm')}
+                      {formatDisplayDate(file.modifiedAt, true, preferredDateFormat)}
                     </td>
 
                     {/* Location */}

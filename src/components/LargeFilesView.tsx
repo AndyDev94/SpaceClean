@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { FileInfo } from '../types';
 import { formatBytes } from '../utils/filterUtils';
-import { format } from 'date-fns';
+import { formatDisplayDate } from '../utils/dateUtils';
 
 interface LargeFilesViewProps {
   files: FileInfo[];
@@ -168,7 +168,7 @@ export const LargeFilesView: React.FC<LargeFilesViewProps> = ({
                       {file.formattedSize}
                     </div>
                     <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>
-                      {format(new Date(file.modifiedAt), 'yyyy-MM-dd')}
+                      {formatDisplayDate(file.modifiedAt)}
                     </div>
                   </div>
 

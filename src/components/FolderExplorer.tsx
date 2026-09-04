@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { FolderInfo } from '../types';
 import { formatBytes } from '../utils/filterUtils';
-import { format } from 'date-fns';
+import { formatDisplayDate } from '../utils/dateUtils';
 
 interface FolderExplorerProps {
   currentRootPath: string;
@@ -462,8 +462,8 @@ export const FolderExplorer: React.FC<FolderExplorerProps> = ({
                       {folder.modifiedAt > 0 && (
                         <>
                           <span>•</span>
-                          <span title={`Modified on ${format(new Date(folder.modifiedAt), 'PPpp')}`}>
-                            {format(new Date(folder.modifiedAt), 'MMM d, yyyy')}
+                          <span title={`Modified on ${formatDisplayDate(folder.modifiedAt, true)}`}>
+                            {formatDisplayDate(folder.modifiedAt)}
                           </span>
                         </>
                       )}

@@ -23,49 +23,7 @@ import {
 import { InstalledApp } from '../types';
 import { formatBytes } from '../utils/filterUtils';
 import { osName } from '../utils/platform';
-
-// Formats install dates cleanly with '/' separators (e.g. YYYY/MM/DD)
-function formatAppDate(rawDate?: string): string {
-  if (!rawDate) return '';
-  const trimmed = rawDate.trim();
-
-  // 1. Windows Registry YYYYMMDD (e.g. "20240315" -> "2024/03/15")
-  if (/^\d{8}$/.test(trimmed)) {
-    const year = trimmed.substring(0, 4);
-    const month = trimmed.substring(4, 6);
-    const day = trimmed.substring(6, 8);
-    return `${year}/${month}/${day}`;
-  }
-
-  // 2. YYYY-MM-DD or ISO timestamp -> YYYY/MM/DD
-  if (/^\d{4}-\d{2}-\d{2}/.test(trimmed)) {
-    const parts = trimmed.substring(0, 10).split('-');
-    return `${parts[0]}/${parts[1]}/${parts[2]}`;
-  }
-
-  // 3. Dot separated (e.g. "2024.03.15")
-  if (trimmed.includes('.')) {
-    return trimmed.replace(/\./g, '/');
-  }
-
-  // 4. Dash separated (e.g. "15-03-2024")
-  if (trimmed.includes('-')) {
-    return trimmed.replace(/-/g, '/');
-  }
-
-  // 5. Standard date object fallback
-  try {
-    const d = new Date(trimmed);
-    if (!isNaN(d.getTime())) {
-      const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      return `${y}/${m}/${day}`;
-    }
-  } catch {}
-
-  return trimmed;
-}
+import { formatDisplayDate } from '../utils/dateUtils';
 
 export const AppUninstaller: React.FC = () => {
   const [apps, setApps] = useState<InstalledApp[]>([]);
@@ -707,7 +665,7 @@ export const AppUninstaller: React.FC = () => {
                         <>
                           <span style={{ opacity: 0.4 }}>•</span>
                           <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                            <Calendar size={11} /> {formatAppDate(app.installDate)}
+                            <Calendar size={11} /> {formatDisplayDate(app.installDate)}
                           </span>
                         </>
                       )}

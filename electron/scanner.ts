@@ -327,6 +327,8 @@ const SKIP_FOLDERS = new Set([
 export interface ScanOptions {
   totalTargetBytes?: number;
   autoChunk?: boolean;
+  chunkMaxFiles?: number;
+  chunkMaxBytes?: number;
   unlimitedRemaining?: boolean;
   onProgress?: (scannedFiles: number, scannedBytes: number, currentPath: string, percent: number) => void;
   onBatch?: (filesBatch: FileInfo[], foldersBatch: FolderInfo[]) => void;
@@ -419,7 +421,9 @@ async function executeScanSession(
 
     // 🧠 Smart Adaptive Chunk Halt Check:
     // If we've indexed a massive chunk and there are remaining directories in the queue, pause here!
-    if (autoChunk && (chunkFiles >= CHUNK_MAX_FILES || chunkBytes >= CHUNK_MAX_BYTES)) {
+    const maxFiles = options.chunkMaxFiles && options.chunkMaxFiles > 0 ? options.chunkMaxFiles : CHUNK_MAX_FILES;
+    const maxBytes = options.chunkMaxBytes && options.chunkMaxBytes > 0 ? options.chunkMaxBytes : CHUNK_MAX_BYTES;
+    if (autoChunk && (chunkFiles >= maxFiles || chunkBytes >= maxBytes)) {
       session.isPaused = true;
       break;
     }

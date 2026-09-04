@@ -19,17 +19,30 @@ import {
   Heart,
   ShieldAlert,
   Search,
-  Globe
+  Globe,
+  SlidersHorizontal,
+  Calendar,
+  Gauge,
+  RotateCcw,
+  Check
 } from 'lucide-react';
 import { StorageLogo } from './StorageLogo';
 import { osName, cmdOrCtrl, trashName, fileManagerName } from '../utils/platform';
+import {
+  DateFormatOption,
+  DATE_FORMAT_OPTIONS,
+  getPreferredDateFormat,
+  setPreferredDateFormat,
+  formatDisplayDate
+} from '../utils/dateUtils';
+import { formatBytes } from '../utils/filterUtils';
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-type SettingsTab = 'about' | 'updates' | 'shortcuts' | 'guide';
+type SettingsTab = 'about' | 'preferences' | 'updates' | 'shortcuts' | 'guide';
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
@@ -38,7 +51,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   if (!isOpen) return null;
 
   const [activeTab, setActiveTab] = useState<SettingsTab>('about');
-  const [currentAppVersion, setCurrentAppVersion] = useState('v3.0.1');
+  const [currentAppVersion, setCurrentAppVersion] = useState('v3.5.0');
   const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState<{
     percent: number;
@@ -51,6 +64,60 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     message: string;
     releaseUrl?: string;
   } | null>(null);
+
+  // Preference Settings States
+  const [selectedDateFormat, setSelectedDateFormat] = useState<DateFormatOption>(getPreferredDateFormat);
+  const [chunkEnabled, setChunkEnabled] = useState<boolean>(() => {
+    return localStorage.getItem('spaceclean_chunk_enabled') !== 'false';
+  });
+  const [chunkFiles, setChunkFiles] = useState<number>(() => {
+    return parseInt(localStorage.getItem('spaceclean_chunk_files') || '20000', 10);
+  });
+  const [chunkBytes, setChunkBytes] = useState<number>(() => {
+    return parseInt(localStorage.getItem('spaceclean_chunk_bytes') || String(25 * 1024 * 1024 * 1024), 10);
+  });
+  const [saveToast, setSaveToast] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setSaveToast(msg);
+    setTimeout(() => setSaveToast(null), 2500);
+  };
+
+  const handleSelectDateFormat = (fmt: DateFormatOption) => {
+    setSelectedDateFormat(fmt);
+    setPreferredDateFormat(fmt);
+    showToast(`Date format updated to ${fmt}`);
+  };
+
+  const handleToggleChunkEnabled = (enabled: boolean) => {
+    setChunkEnabled(enabled);
+    localStorage.setItem('spaceclean_chunk_enabled', String(enabled));
+    showToast(enabled ? 'Smart Part Scanning enabled' : 'Continuous Full Scan enabled');
+  };
+
+  const handleSelectChunkFiles = (filesCount: number) => {
+    setChunkFiles(filesCount);
+    localStorage.setItem('spaceclean_chunk_files', String(filesCount));
+    showToast(`Part file limit set to ${filesCount.toLocaleString()} files`);
+  };
+
+  const handleSelectChunkBytes = (bytesLimit: number) => {
+    setChunkBytes(bytesLimit);
+    localStorage.setItem('spaceclean_chunk_bytes', String(bytesLimit));
+    showToast(`Part size limit set to ${formatBytes(bytesLimit, 0)}`);
+  };
+
+  const handleResetPreferences = () => {
+    setSelectedDateFormat('YYYY/MM/DD');
+    setPreferredDateFormat('YYYY/MM/DD');
+    setChunkEnabled(true);
+    localStorage.setItem('spaceclean_chunk_enabled', 'true');
+    setChunkFiles(20000);
+    localStorage.setItem('spaceclean_chunk_files', '20000');
+    setChunkBytes(25 * 1024 * 1024 * 1024);
+    localStorage.setItem('spaceclean_chunk_bytes', String(25 * 1024 * 1024 * 1024));
+    showToast('Reset all settings to recommended defaults');
+  };
 
   // Fetch current version on mount
   React.useEffect(() => {
@@ -269,6 +336,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </button>
 
           <button
+            className={`tab-btn ${activeTab === 'preferences' ? 'active' : ''}`}
+            style={{ padding: '6px 12px', fontSize: '12px' }}
+            onClick={() => setActiveTab('preferences')}
+          >
+            <SlidersHorizontal size={13} />
+            <span>Scanner & Display</span>
+          </button>
+
+          <button
             className={`tab-btn ${activeTab === 'updates' ? 'active' : ''}`}
             style={{ padding: '6px 12px', fontSize: '12px' }}
             onClick={() => setActiveTab('updates')}
@@ -298,6 +374,208 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
         {/* Modal Scrollable Content Area */}
         <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
+          {/* Toast Notification */}
+          {saveToast && (
+            <div
+              style={{
+                position: 'sticky',
+                top: 0,
+                zIndex: 10,
+                marginBottom: '14px',
+                padding: '8px 14px',
+                background: 'rgba(59, 130, 246, 0.95)',
+                color: '#ffffff',
+                borderRadius: 'var(--radius-md)',
+                fontSize: '12px',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)'
+              }}
+            >
+              <span>{saveToast}</span>
+              <Check size={14} />
+            </div>
+          )}
+
+          {/* 0. SCANNER & DISPLAY PREFERENCES TAB */}
+          {activeTab === 'preferences' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {/* SECTION 1: DATE FORMAT */}
+              <div
+                style={{
+                  padding: '16px',
+                  background: 'var(--bg-subtle)',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--border-color)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '14px'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Calendar size={18} style={{ color: 'var(--accent-primary)' }} />
+                    <div>
+                      <h4 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
+                        Universal Date & Time Format
+                      </h4>
+                      <p style={{ fontSize: '12px', color: 'var(--text-dim)', margin: '2px 0 0' }}>
+                        Customize how dates are displayed across all 9 modes in SpaceClean.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div style={{ fontSize: '12px', padding: '4px 10px', background: 'var(--bg-panel)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', color: 'var(--text-main)', fontWeight: 600 }}>
+                    Live Preview: <strong style={{ color: 'var(--accent-primary)' }}>{formatDisplayDate(new Date(), true, selectedDateFormat)}</strong>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '8px' }}>
+                  {DATE_FORMAT_OPTIONS.map(opt => {
+                    const isSelected = selectedDateFormat === opt.id;
+                    return (
+                      <button
+                        key={opt.id}
+                        onClick={() => handleSelectDateFormat(opt.id)}
+                        className="panel"
+                        style={{
+                          padding: '10px 12px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          borderRadius: 'var(--radius-sm)',
+                          border: isSelected ? '1.5px solid var(--accent-primary)' : '1px solid var(--border-color)',
+                          background: isSelected ? 'rgba(59, 130, 246, 0.12)' : 'var(--bg-panel)',
+                          cursor: 'pointer',
+                          textAlign: 'left'
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontSize: '12px', fontWeight: 600, color: isSelected ? 'var(--accent-primary)' : 'var(--text-main)' }}>
+                            {opt.id}
+                          </div>
+                          <div style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '2px' }}>
+                            {opt.label.split('(')[1]?.replace(')', '') || opt.example}
+                          </div>
+                        </div>
+
+                        {isSelected && <Check size={16} style={{ color: 'var(--accent-primary)', flexShrink: 0 }} />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* SECTION 2: SCANNER ENGINE & PART LIMITS */}
+              <div
+                style={{
+                  padding: '16px',
+                  background: 'var(--bg-subtle)',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--border-color)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '16px'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Gauge size={18} style={{ color: 'var(--accent-primary)' }} />
+                    <div>
+                      <h4 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-main)', margin: 0 }}>
+                        Smart Part Scanning Engine
+                      </h4>
+                      <p style={{ fontSize: '12px', color: 'var(--text-dim)', margin: '2px 0 0' }}>
+                        Prevents memory spikes and UI freezing on large drives by indexing in responsive milestone parts.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Toggle Switch */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: 500 }}>
+                      {chunkEnabled ? 'Part Scanning (Active)' : 'Continuous Full Scan'}
+                    </span>
+                    <button
+                      className={`btn ${chunkEnabled ? 'btn-primary' : 'btn-secondary'}`}
+                      style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 600 }}
+                      onClick={() => handleToggleChunkEnabled(!chunkEnabled)}
+                    >
+                      {chunkEnabled ? 'Enabled' : 'Disabled'}
+                    </button>
+                  </div>
+                </div>
+
+                {chunkEnabled && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', borderTop: '1px solid var(--border-color)', paddingTop: '14px' }}>
+                    {/* File Limit per Part */}
+                    <div>
+                      <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-main)', marginBottom: '6px' }}>
+                        Maximum Files Indexed Per Part:
+                      </div>
+                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                        {[
+                          { val: 5000, label: '5,000 (Light RAM)' },
+                          { val: 10000, label: '10,000 (Balanced)' },
+                          { val: 20000, label: '20,000 (Default)' },
+                          { val: 50000, label: '50,000 (Heavy)' },
+                          { val: 100000, label: '100,000 (Max)' }
+                        ].map(item => (
+                          <button
+                            key={item.val}
+                            className={`btn ${chunkFiles === item.val ? 'btn-primary' : 'btn-secondary'}`}
+                            style={{ padding: '4px 10px', fontSize: '11px', borderRadius: 'var(--radius-sm)' }}
+                            onClick={() => handleSelectChunkFiles(item.val)}
+                          >
+                            {item.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Data Size Limit per Part */}
+                    <div>
+                      <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-main)', marginBottom: '6px' }}>
+                        Maximum Storage Volume Per Part:
+                      </div>
+                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                        {[
+                          { val: 10 * 1024 * 1024 * 1024, label: '10 GB' },
+                          { val: 25 * 1024 * 1024 * 1024, label: '25 GB (Default)' },
+                          { val: 50 * 1024 * 1024 * 1024, label: '50 GB' },
+                          { val: 100 * 1024 * 1024 * 1024, label: '100 GB' }
+                        ].map(item => (
+                          <button
+                            key={item.val}
+                            className={`btn ${chunkBytes === item.val ? 'btn-primary' : 'btn-secondary'}`}
+                            style={{ padding: '4px 10px', fontSize: '11px', borderRadius: 'var(--radius-sm)' }}
+                            onClick={() => handleSelectChunkBytes(item.val)}
+                          >
+                            {item.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* RESET BUTTON */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '6px' }}>
+                <button
+                  className="btn btn-secondary"
+                  onClick={handleResetPreferences}
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '6px 14px' }}
+                >
+                  <RotateCcw size={13} />
+                  <span>Restore Factory Defaults</span>
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* 1. ABOUT TAB */}
           {activeTab === 'about' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>

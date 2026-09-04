@@ -32,7 +32,7 @@ import {
 } from 'lucide-react';
 import { ThreatItem, ThreatRiskLevel, FileInfo, ScanChunkInfo } from '../types';
 import { formatBytes } from '../utils/filterUtils';
-import { format } from 'date-fns';
+import { formatDisplayDate } from '../utils/dateUtils';
 import { osName, fileManagerName, trashName } from '../utils/platform';
 import { Globe, Copy, Check } from 'lucide-react';
 
@@ -822,7 +822,7 @@ export const ThreatDetector: React.FC<ThreatDetectorProps> = ({
                           {threat.file.formattedSize}
                         </div>
                         <div style={{ fontSize: '10px', color: 'var(--text-dim)' }}>
-                          {format(threat.file.modifiedAt, 'MMM d, yyyy')}
+                          {formatDisplayDate(threat.file.modifiedAt)}
                         </div>
                       </div>
 

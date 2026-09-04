@@ -163,12 +163,14 @@ function safeSend(channel: string, data: any) {
 }
 
 // Storage scan (with progressive batch streaming & chunk pausing)
-ipcMain.handle('start-scan', async (event, targetPath: string, totalTargetBytes?: number, autoChunk?: boolean): Promise<ScanResult> => {
+ipcMain.handle('start-scan', async (event, targetPath: string, totalTargetBytes?: number, autoChunk?: boolean, chunkMaxFiles?: number, chunkMaxBytes?: number): Promise<ScanResult> => {
   isScanCancelled = false;
 
   const result = await scanDirectoryWithFolders(targetPath, {
     totalTargetBytes,
     autoChunk: autoChunk !== false,
+    chunkMaxFiles,
+    chunkMaxBytes,
     shouldCancel: () => isScanCancelled,
     onProgress: (scannedFiles, scannedBytes, currentFolder, percent) => {
       safeSend('scan:progress', {
@@ -202,11 +204,13 @@ ipcMain.handle('start-scan', async (event, targetPath: string, totalTargetBytes?
 });
 
 // Resume storage scan for next part
-ipcMain.handle('resume-scan', async (event, unlimitedRemaining?: boolean): Promise<ScanResult> => {
+ipcMain.handle('resume-scan', async (event, unlimitedRemaining?: boolean, chunkMaxFiles?: number, chunkMaxBytes?: number): Promise<ScanResult> => {
   isScanCancelled = false;
 
   const result = await resumeScanSession({
     unlimitedRemaining: !!unlimitedRemaining,
+    chunkMaxFiles,
+    chunkMaxBytes,
     shouldCancel: () => isScanCancelled,
     onProgress: (scannedFiles, scannedBytes, currentFolder, percent) => {
       safeSend('scan:progress', {

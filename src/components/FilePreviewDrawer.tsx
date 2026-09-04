@@ -22,7 +22,7 @@ import {
 import { FileInfo } from '../types';
 import { formatBytes } from '../utils/filterUtils';
 import { osName, fileManagerName } from '../utils/platform';
-import { format } from 'date-fns';
+import { formatDisplayDate } from '../utils/dateUtils';
 
 interface FilePreviewDrawerProps {
   file: FileInfo | null;
@@ -310,7 +310,7 @@ export const FilePreviewDrawer: React.FC<FilePreviewDrawerProps> = ({
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--text-dim)' }}>Modified:</span>
               <span style={{ color: 'var(--text-main)' }}>
-                {format(new Date(file.modifiedAt), 'yyyy-MM-dd HH:mm:ss')}
+                {formatDisplayDate(file.modifiedAt, true)}
               </span>
             </div>
 
@@ -318,7 +318,7 @@ export const FilePreviewDrawer: React.FC<FilePreviewDrawerProps> = ({
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--text-dim)' }}>Created:</span>
               <span style={{ color: 'var(--text-main)' }}>
-                {format(new Date(file.createdAt), 'yyyy-MM-dd HH:mm:ss')}
+                {formatDisplayDate(file.createdAt, true)}
               </span>
             </div>
 

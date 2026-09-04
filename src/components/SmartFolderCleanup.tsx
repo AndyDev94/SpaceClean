@@ -32,6 +32,7 @@ import {
 import { FileInfo, FolderInfo, DuplicateGroup, FileCategory, ScanChunkInfo } from '../types';
 import { formatBytes } from '../utils/filterUtils';
 import { subDays, isBefore, format, getYear } from 'date-fns';
+import { formatDisplayDate } from '../utils/dateUtils';
 
 interface SmartFolderCleanupProps {
   files: FileInfo[];
@@ -806,7 +807,7 @@ export const SmartFolderCleanup: React.FC<SmartFolderCleanupProps> = ({
                                     {file.formattedSize}
                                   </td>
                                   <td style={{ fontSize: '10px', color: 'var(--text-dim)' }}>
-                                    {format(new Date(file.modifiedAt), 'yyyy-MM-dd HH:mm')}
+                                    {formatDisplayDate(file.modifiedAt, true)}
                                   </td>
                                   <td>
                                     <span className="file-path-text" title={file.path}>
@@ -1081,9 +1082,9 @@ export const SmartFolderCleanup: React.FC<SmartFolderCleanupProps> = ({
                                 <td style={{ fontWeight: 500, color: 'var(--text-main)' }}>
                                   {file.formattedSize}
                                 </td>
-                                <td style={{ fontSize: '10px', color: 'var(--text-dim)' }}>
-                                  {format(new Date(file.modifiedAt), 'yyyy-MM-dd HH:mm')}
-                                </td>
+                                 <td style={{ fontSize: '10px', color: 'var(--text-dim)' }}>
+                                   {formatDisplayDate(file.modifiedAt, true)}
+                                 </td>
                                 <td>
                                   <span className="file-path-text" title={file.path}>
                                     {file.path}

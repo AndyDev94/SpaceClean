@@ -4,8 +4,8 @@ import { DriveInfo, FileInfo, FolderInfo, JunkItem, DuplicateGroup, DeleteResult
 export interface IElectronAPI {
   getDrives: () => Promise<DriveInfo[]>;
   selectFolder: () => Promise<string | null>;
-  startScan: (targetPath: string, totalTargetBytes?: number, autoChunk?: boolean) => Promise<ScanResult>;
-  resumeScan: (unlimitedRemaining?: boolean) => Promise<ScanResult>;
+  startScan: (targetPath: string, totalTargetBytes?: number, autoChunk?: boolean, chunkMaxFiles?: number, chunkMaxBytes?: number) => Promise<ScanResult>;
+  resumeScan: (unlimitedRemaining?: boolean, chunkMaxFiles?: number, chunkMaxBytes?: number) => Promise<ScanResult>;
   getFolderContents: (dirPath: string) => Promise<{ folders: FolderInfo[]; files: FileInfo[] }>;
   cancelScan: () => Promise<void>;
   scanJunk: () => Promise<JunkItem[]>;
@@ -35,8 +35,10 @@ export interface IElectronAPI {
 const api: IElectronAPI = {
   getDrives: () => ipcRenderer.invoke('get-drives'),
   selectFolder: () => ipcRenderer.invoke('select-folder'),
-  startScan: (targetPath: string, totalTargetBytes?: number, autoChunk?: boolean) => ipcRenderer.invoke('start-scan', targetPath, totalTargetBytes, autoChunk),
-  resumeScan: (unlimitedRemaining?: boolean) => ipcRenderer.invoke('resume-scan', unlimitedRemaining),
+  startScan: (targetPath: string, totalTargetBytes?: number, autoChunk?: boolean, chunkMaxFiles?: number, chunkMaxBytes?: number) =>
+    ipcRenderer.invoke('start-scan', targetPath, totalTargetBytes, autoChunk, chunkMaxFiles, chunkMaxBytes),
+  resumeScan: (unlimitedRemaining?: boolean, chunkMaxFiles?: number, chunkMaxBytes?: number) =>
+    ipcRenderer.invoke('resume-scan', unlimitedRemaining, chunkMaxFiles, chunkMaxBytes),
   getFolderContents: (dirPath: string) => ipcRenderer.invoke('get-folder-contents', dirPath),
   cancelScan: () => ipcRenderer.invoke('cancel-scan'),
   scanJunk: () => ipcRenderer.invoke('scan-junk'),

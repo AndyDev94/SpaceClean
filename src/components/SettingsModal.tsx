@@ -587,7 +587,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     >
                       <Sparkles size={15} style={{ color: 'var(--accent-primary)', flexShrink: 0, marginTop: '2px' }} />
                       <div style={{ fontSize: '11.5px', lineHeight: '1.45', color: 'var(--text-main)' }}>
-                        <strong style={{ color: 'var(--accent-primary)' }}>Milestone Rule: </strong>
+                        <strong style={{ color: 'var(--accent-primary)' }}>How Part Limits Work: </strong>
                         Whichever threshold is reached first — <strong>maximum file count</strong> or <strong>maximum storage volume</strong> — will complete the current part. You can inspect/clean files right away or resume the next part anytime.
                       </div>
                     </div>

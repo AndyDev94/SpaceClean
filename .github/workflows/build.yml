@@ -63,7 +63,7 @@ jobs:
         if: matrix.platform == 'windows'
         uses: actions/upload-artifact@v4
         with:
-          name: SpaceClean-v3.5.0-Windows
+          name: SpaceClean-${{ github.ref_name || 'v3.6.0' }}-Windows
           path: |
             release/*.appx
             release/*.exe
@@ -82,7 +82,7 @@ jobs:
         if: matrix.platform == 'macos'
         uses: actions/upload-artifact@v4
         with:
-          name: SpaceClean-v3.5.0-macOS
+          name: SpaceClean-${{ github.ref_name || 'v3.6.0' }}-macOS
           path: |
             release/*.dmg
             release/*.zip
@@ -100,7 +100,7 @@ jobs:
         if: matrix.platform == 'linux'
         uses: actions/upload-artifact@v4
         with:
-          name: SpaceClean-v3.5.0-Linux
+          name: SpaceClean-${{ github.ref_name || 'v3.6.0' }}-Linux
           path: |
             release/*.AppImage
             release/*.deb

@@ -24,7 +24,8 @@ import {
   Calendar,
   Gauge,
   RotateCcw,
-  Check
+  Check,
+  Pencil
 } from 'lucide-react';
 import { StorageLogo } from './StorageLogo';
 import { osName, cmdOrCtrl, trashName, fileManagerName } from '../utils/platform';
@@ -78,6 +79,31 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   });
   const [saveToast, setSaveToast] = useState<string | null>(null);
 
+  // Custom inputs state
+  const [isEditingCustomFiles, setIsEditingCustomFiles] = useState<boolean>(() => {
+    const defaultPresets = [5000, 10000, 20000, 50000, 100000];
+    const saved = parseInt(localStorage.getItem('spaceclean_chunk_files') || '20000', 10);
+    return !defaultPresets.includes(saved);
+  });
+  const [customFilesInput, setCustomFilesInput] = useState<string>(() => {
+    return localStorage.getItem('spaceclean_chunk_files') || '20000';
+  });
+
+  const [isEditingCustomBytes, setIsEditingCustomBytes] = useState<boolean>(() => {
+    const defaultBytePresets = [
+      10 * 1024 * 1024 * 1024,
+      25 * 1024 * 1024 * 1024,
+      50 * 1024 * 1024 * 1024,
+      100 * 1024 * 1024 * 1024
+    ];
+    const saved = parseInt(localStorage.getItem('spaceclean_chunk_bytes') || String(25 * 1024 * 1024 * 1024), 10);
+    return !defaultBytePresets.includes(saved);
+  });
+  const [customGbInput, setCustomGbInput] = useState<string>(() => {
+    const saved = parseInt(localStorage.getItem('spaceclean_chunk_bytes') || String(25 * 1024 * 1024 * 1024), 10);
+    return String(Math.max(1, Math.round(saved / (1024 * 1024 * 1024))));
+  });
+
   const showToast = (msg: string) => {
     setSaveToast(msg);
     setTimeout(() => setSaveToast(null), 2500);
@@ -97,14 +123,45 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   const handleSelectChunkFiles = (filesCount: number) => {
     setChunkFiles(filesCount);
+    setCustomFilesInput(String(filesCount));
+    setIsEditingCustomFiles(![5000, 10000, 20000, 50000, 100000].includes(filesCount));
     localStorage.setItem('spaceclean_chunk_files', String(filesCount));
     showToast(`Part file limit set to ${filesCount.toLocaleString()} files`);
   };
 
   const handleSelectChunkBytes = (bytesLimit: number) => {
     setChunkBytes(bytesLimit);
+    setCustomGbInput(String(Math.max(1, Math.round(bytesLimit / (1024 * 1024 * 1024)))));
+    const defaultBytePresets = [
+      10 * 1024 * 1024 * 1024,
+      25 * 1024 * 1024 * 1024,
+      50 * 1024 * 1024 * 1024,
+      100 * 1024 * 1024 * 1024
+    ];
+    setIsEditingCustomBytes(!defaultBytePresets.includes(bytesLimit));
     localStorage.setItem('spaceclean_chunk_bytes', String(bytesLimit));
     showToast(`Part size limit set to ${formatBytes(bytesLimit, 0)}`);
+  };
+
+  const handleApplyCustomFilesInput = (val: string) => {
+    setCustomFilesInput(val);
+    const n = parseInt(val, 10);
+    if (n && n > 0) {
+      setChunkFiles(n);
+      localStorage.setItem('spaceclean_chunk_files', String(n));
+      showToast(`Custom file limit set to ${n.toLocaleString()} files`);
+    }
+  };
+
+  const handleApplyCustomGbInput = (val: string) => {
+    setCustomGbInput(val);
+    const gb = parseFloat(val);
+    if (gb && gb > 0) {
+      const bytes = Math.round(gb * 1024 * 1024 * 1024);
+      setChunkBytes(bytes);
+      localStorage.setItem('spaceclean_chunk_bytes', String(bytes));
+      showToast(`Custom size limit set to ${gb} GB`);
+    }
   };
 
   const handleResetPreferences = () => {
@@ -113,8 +170,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     setChunkEnabled(true);
     localStorage.setItem('spaceclean_chunk_enabled', 'true');
     setChunkFiles(20000);
+    setCustomFilesInput('20000');
+    setIsEditingCustomFiles(false);
     localStorage.setItem('spaceclean_chunk_files', '20000');
     setChunkBytes(25 * 1024 * 1024 * 1024);
+    setCustomGbInput('25');
+    setIsEditingCustomBytes(false);
     localStorage.setItem('spaceclean_chunk_bytes', String(25 * 1024 * 1024 * 1024));
     showToast('Reset all settings to recommended defaults');
   };
@@ -510,37 +571,124 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
                 {chunkEnabled && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', borderTop: '1px solid var(--border-color)', paddingTop: '14px' }}>
+                    {/* Threshold Rule Info Banner */}
+                    <div
+                      style={{
+                        padding: '10px 12px',
+                        background: 'rgba(59, 130, 246, 0.08)',
+                        borderRadius: 'var(--radius-sm)',
+                        border: '1px solid rgba(59, 130, 246, 0.25)',
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '8px'
+                      }}
+                    >
+                      <Sparkles size={15} style={{ color: 'var(--accent-primary)', flexShrink: 0, marginTop: '2px' }} />
+                      <div style={{ fontSize: '11.5px', lineHeight: '1.45', color: 'var(--text-main)' }}>
+                        <strong style={{ color: 'var(--accent-primary)' }}>Milestone Rule: </strong>
+                        Whichever threshold is reached first — <strong>maximum file count</strong> or <strong>maximum storage volume</strong> — will complete the current part. You can inspect/clean files right away or resume the next part anytime.
+                      </div>
+                    </div>
+
                     {/* File Limit per Part */}
                     <div>
-                      <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-main)', marginBottom: '6px' }}>
-                        Maximum Files Indexed Per Part:
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                        <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-main)' }}>
+                          Maximum Files Indexed Per Part:
+                        </span>
+                        <span style={{ fontSize: '11px', color: 'var(--accent-primary)', fontWeight: 600 }}>
+                          Current: {chunkFiles.toLocaleString()} files
+                        </span>
                       </div>
-                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
                         {[
-                          { val: 5000, label: '5,000 (Light RAM)' },
-                          { val: 10000, label: '10,000 (Balanced)' },
+                          { val: 5000, label: '5,000' },
+                          { val: 10000, label: '10,000' },
                           { val: 20000, label: '20,000 (Default)' },
-                          { val: 50000, label: '50,000 (Heavy)' },
-                          { val: 100000, label: '100,000 (Max)' }
+                          { val: 50000, label: '50,000' },
+                          { val: 100000, label: '100,000' }
                         ].map(item => (
                           <button
                             key={item.val}
-                            className={`btn ${chunkFiles === item.val ? 'btn-primary' : 'btn-secondary'}`}
+                            className={`btn ${!isEditingCustomFiles && chunkFiles === item.val ? 'btn-primary' : 'btn-secondary'}`}
                             style={{ padding: '4px 10px', fontSize: '11px', borderRadius: 'var(--radius-sm)' }}
-                            onClick={() => handleSelectChunkFiles(item.val)}
+                            onClick={() => {
+                              setIsEditingCustomFiles(false);
+                              handleSelectChunkFiles(item.val);
+                            }}
                           >
                             {item.label}
                           </button>
                         ))}
+                        <button
+                          className={`btn ${isEditingCustomFiles ? 'btn-primary' : 'btn-secondary'}`}
+                          style={{
+                            padding: '4px 10px',
+                            fontSize: '11px',
+                            borderRadius: 'var(--radius-sm)',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px'
+                          }}
+                          onClick={() => {
+                            setIsEditingCustomFiles(true);
+                          }}
+                        >
+                          <Pencil size={11} />
+                          <span>Custom {isEditingCustomFiles ? `(${chunkFiles.toLocaleString()})` : ''}</span>
+                        </button>
                       </div>
+
+                      {/* Custom Files Inline Input */}
+                      {isEditingCustomFiles && (
+                        <div
+                          style={{
+                            marginTop: '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            background: 'var(--bg-panel)',
+                            padding: '8px 12px',
+                            borderRadius: 'var(--radius-sm)',
+                            border: '1px solid var(--border-color)',
+                            width: 'fit-content'
+                          }}
+                        >
+                          <Pencil size={12} style={{ color: 'var(--accent-primary)' }} />
+                          <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Custom File Limit:</span>
+                          <input
+                            type="number"
+                            min="500"
+                            step="500"
+                            className="search-input"
+                            style={{
+                              width: '110px',
+                              padding: '4px 8px',
+                              fontSize: '12px',
+                              fontWeight: 600,
+                              borderRadius: '4px',
+                              textAlign: 'center'
+                            }}
+                            value={customFilesInput}
+                            onChange={(e) => handleApplyCustomFilesInput(e.target.value)}
+                            placeholder="e.g. 15000"
+                          />
+                          <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>files / part</span>
+                        </div>
+                      )}
                     </div>
 
                     {/* Data Size Limit per Part */}
                     <div>
-                      <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-main)', marginBottom: '6px' }}>
-                        Maximum Storage Volume Per Part:
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                        <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-main)' }}>
+                          Maximum Storage Volume Per Part:
+                        </span>
+                        <span style={{ fontSize: '11px', color: 'var(--accent-primary)', fontWeight: 600 }}>
+                          Current: {formatBytes(chunkBytes, 0)}
+                        </span>
                       </div>
-                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
                         {[
                           { val: 10 * 1024 * 1024 * 1024, label: '10 GB' },
                           { val: 25 * 1024 * 1024 * 1024, label: '25 GB (Default)' },
@@ -549,14 +697,73 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         ].map(item => (
                           <button
                             key={item.val}
-                            className={`btn ${chunkBytes === item.val ? 'btn-primary' : 'btn-secondary'}`}
+                            className={`btn ${!isEditingCustomBytes && chunkBytes === item.val ? 'btn-primary' : 'btn-secondary'}`}
                             style={{ padding: '4px 10px', fontSize: '11px', borderRadius: 'var(--radius-sm)' }}
-                            onClick={() => handleSelectChunkBytes(item.val)}
+                            onClick={() => {
+                              setIsEditingCustomBytes(false);
+                              handleSelectChunkBytes(item.val);
+                            }}
                           >
                             {item.label}
                           </button>
                         ))}
+                        <button
+                          className={`btn ${isEditingCustomBytes ? 'btn-primary' : 'btn-secondary'}`}
+                          style={{
+                            padding: '4px 10px',
+                            fontSize: '11px',
+                            borderRadius: 'var(--radius-sm)',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px'
+                          }}
+                          onClick={() => {
+                            setIsEditingCustomBytes(true);
+                          }}
+                        >
+                          <Pencil size={11} />
+                          <span>Custom {isEditingCustomBytes ? `(${formatBytes(chunkBytes, 0)})` : ''}</span>
+                        </button>
                       </div>
+
+                      {/* Custom GB Inline Input */}
+                      {isEditingCustomBytes && (
+                        <div
+                          style={{
+                            marginTop: '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            background: 'var(--bg-panel)',
+                            padding: '8px 12px',
+                            borderRadius: 'var(--radius-sm)',
+                            border: '1px solid var(--border-color)',
+                            width: 'fit-content'
+                          }}
+                        >
+                          <Pencil size={12} style={{ color: 'var(--accent-primary)' }} />
+                          <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Custom Volume Limit:</span>
+                          <input
+                            type="number"
+                            min="1"
+                            max="2048"
+                            step="1"
+                            className="search-input"
+                            style={{
+                              width: '90px',
+                              padding: '4px 8px',
+                              fontSize: '12px',
+                              fontWeight: 600,
+                              borderRadius: '4px',
+                              textAlign: 'center'
+                            }}
+                            value={customGbInput}
+                            onChange={(e) => handleApplyCustomGbInput(e.target.value)}
+                            placeholder="e.g. 15"
+                          />
+                          <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>GB / part</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

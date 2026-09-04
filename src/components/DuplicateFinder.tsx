@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { DuplicateGroup, FileInfo } from '../types';
 import { formatBytes } from '../utils/filterUtils';
+import { usePreferredDateFormat, formatDisplayDate } from '../utils/dateUtils';
 import { format, subDays, isBefore, isAfter, startOfDay, endOfDay } from 'date-fns';
 
 type DateFilterPreset =
@@ -66,7 +67,9 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
   const [customEndDate, setCustomEndDate] = useState<string>('');
   const [hideIgnored, setHideIgnored] = useState<boolean>(false);
 
-  // Sorting state (Waste, Date New->Old / Old->New, Duplicate Copies Count, Name)
+  const preferredDateFormat = usePreferredDateFormat();
+
+  // Sorting state (Waste, Size, Date New->Old / Old->New, Duplicate Copies Count, Name)
   const [sortBy, setSortBy] = useState<DuplicateSortBy>('waste');
   const [sortOrder, setSortOrder] = useState<DuplicateSortOrder>('desc');
 
@@ -164,18 +167,23 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
           break;
         case '7days':
           startDate = subDays(now, 7);
+          endDate = endOfDay(now);
           break;
         case '30days':
           startDate = subDays(now, 30);
+          endDate = endOfDay(now);
           break;
         case '90days':
           startDate = subDays(now, 90);
+          endDate = endOfDay(now);
           break;
         case '6months':
           startDate = subDays(now, 180);
+          endDate = endOfDay(now);
           break;
         case '1year':
           startDate = subDays(now, 365);
+          endDate = endOfDay(now);
           break;
         case 'older_1year':
           startDate = subDays(now, 365);
@@ -204,8 +212,8 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
     result = [...result].sort((a, b) => {
       let comp = 0;
       if (sortBy === 'date') {
-        const dateA = Math.max(...a.files.map(f => f.modifiedAt || f.createdAt || 0));
-        const dateB = Math.max(...b.files.map(f => f.modifiedAt || f.createdAt || 0));
+        const dateA = a.files.reduce((m, f) => Math.max(m, f.modifiedAt || f.createdAt || 0), 0);
+        const dateB = b.files.reduce((m, f) => Math.max(m, f.modifiedAt || f.createdAt || 0), 0);
         comp = dateA - dateB;
       } else if (sortBy === 'size') {
         comp = a.size - b.size;
@@ -225,6 +233,18 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
 
       return sortOrder === 'asc' ? comp : -comp;
     });
+
+    // When sorting by date, sort files within each group chronologically as well
+    if (sortBy === 'date') {
+      result = result.map(group => ({
+        ...group,
+        files: [...group.files].sort((a, b) => {
+          const tA = a.modifiedAt || a.createdAt || 0;
+          const tB = b.modifiedAt || b.createdAt || 0;
+          return sortOrder === 'asc' ? tA - tB : tB - tA;
+        })
+      }));
+    }
 
     return result;
   }, [duplicates, searchQuery, datePreset, customStartDate, customEndDate, hideIgnored, ignoredGroupHashes, sortBy, sortOrder]);
@@ -498,7 +518,10 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
               {[
                 { field: 'waste' as DuplicateSortBy, label: 'Waste' },
                 { field: 'size' as DuplicateSortBy, label: 'Size' },
-                { field: 'date' as DuplicateSortBy, label: sortBy === 'date' ? (sortOrder === 'desc' ? 'New → Old' : 'Old → New') : 'Date ↕' },
+                {
+                  field: 'date' as DuplicateSortBy,
+                  label: sortBy === 'date' ? (sortOrder === 'desc' ? 'New → Old' : 'Old → New') : 'New → Old'
+                },
                 { field: 'count' as DuplicateSortBy, label: 'Copies' },
                 { field: 'name' as DuplicateSortBy, label: 'Name' }
               ].map(({ field, label }) => {
@@ -789,7 +812,14 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
                       const isSelected = selectedPaths.has(file.path);
                       const isPreviewed = previewedFilePath === file.path;
                       const fileDate = file.modifiedAt || file.createdAt;
-                      const formattedDate = fileDate ? format(new Date(fileDate), 'yyyy-MM-dd HH:mm') : '—';
+                      const formattedDate = fileDate ? formatDisplayDate(new Date(fileDate), true, preferredDateFormat) : '—';
+
+                      // Find if this is newest or oldest copy in group
+                      const timestamps = group.files.map(f => f.modifiedAt || f.createdAt || 0).filter(t => t > 0);
+                      const maxTime = timestamps.length > 1 ? Math.max(...timestamps) : null;
+                      const minTime = timestamps.length > 1 ? Math.min(...timestamps) : null;
+                      const isNewestCopy = maxTime !== null && fileDate === maxTime && maxTime !== minTime;
+                      const isOldestCopy = minTime !== null && fileDate === minTime && maxTime !== minTime;
 
                       return (
                         <div
@@ -856,7 +886,18 @@ export const DuplicateFinder: React.FC<DuplicateFinderProps> = ({
                             </div>
                           </div>
 
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                            {isNewestCopy && (
+                              <span style={{ fontSize: '10px', color: '#10b981', fontWeight: 600, background: 'rgba(16, 185, 129, 0.12)', padding: '1px 5px', borderRadius: '3px' }}>
+                                Newest
+                              </span>
+                            )}
+                            {isOldestCopy && (
+                              <span style={{ fontSize: '10px', color: '#3b82f6', fontWeight: 600, background: 'rgba(59, 130, 246, 0.12)', padding: '1px 5px', borderRadius: '3px' }}>
+                                Oldest
+                              </span>
+                            )}
+
                             <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>
                               {formattedDate}
                             </span>

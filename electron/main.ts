@@ -280,9 +280,78 @@ ipcMain.handle('scan-duplicates', async (event, files: FileInfo[]) => {
   });
 });
 
-// Scan installed applications (Windows Registry, macOS /Applications, Linux .desktop)
+function resolveAppIconPath(appItem: { icon?: string; installLocation?: string; uninstallString?: string }): string | null {
+  // 1. Explicit DisplayIcon from registry / desktop entry
+  if (appItem.icon) {
+    let clean = appItem.icon.replace(/^"|"$/g, '').trim();
+    clean = clean.replace(/,\s*-?\d+$/, ''); // Strip icon index like ,0
+    if (fs.existsSync(clean)) {
+      try {
+        const stat = fs.statSync(clean);
+        if (stat.isFile()) return clean;
+      } catch {}
+    }
+    const exeIdx = clean.toLowerCase().indexOf('.exe');
+    if (exeIdx !== -1) {
+      const sub = clean.slice(0, exeIdx + 4);
+      if (fs.existsSync(sub)) return sub;
+    }
+  }
+
+  // 2. From installLocation folder / app bundle
+  if (appItem.installLocation) {
+    const cleanLoc = appItem.installLocation.replace(/^"|"$/g, '').trim();
+    if (fs.existsSync(cleanLoc)) {
+      try {
+        const stat = fs.statSync(cleanLoc);
+        if (stat.isDirectory()) {
+          const entries = fs.readdirSync(cleanLoc);
+          const exe = entries.find(f => f.toLowerCase().endsWith('.exe') && !f.toLowerCase().includes('unins'));
+          if (exe) return path.join(cleanLoc, exe);
+          return cleanLoc;
+        }
+        if (stat.isFile()) return cleanLoc;
+      } catch {}
+    }
+  }
+
+  // 3. Fallback from uninstallString
+  if (appItem.uninstallString) {
+    let cleanUnins = appItem.uninstallString.replace(/^"|"$/g, '').trim();
+    const exeIdx = cleanUnins.toLowerCase().indexOf('.exe');
+    if (exeIdx !== -1) {
+      const sub = cleanUnins.slice(0, exeIdx + 4);
+      if (fs.existsSync(sub)) return sub;
+    }
+  }
+
+  return null;
+}
+
+// Scan installed applications (Windows Registry, macOS /Applications, Linux .desktop) with real icon extraction
 ipcMain.handle('get-installed-apps', async () => {
-  return await getInstalledApplications();
+  const apps = await getInstalledApplications();
+
+  // Asynchronously extract high-resolution native icons via Electron getFileIcon
+  const enriched = await Promise.all(
+    apps.map(async (item) => {
+      try {
+        const targetPath = resolveAppIconPath(item);
+        if (targetPath) {
+          const iconNative = await app.getFileIcon(targetPath, { size: 'normal' });
+          if (iconNative && !iconNative.isEmpty()) {
+            return {
+              ...item,
+              icon: iconNative.toDataURL()
+            };
+          }
+        }
+      } catch {}
+      return item;
+    })
+  );
+
+  return enriched;
 });
 
 // Trigger application uninstaller

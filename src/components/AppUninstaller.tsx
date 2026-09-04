@@ -614,22 +614,39 @@ export const AppUninstaller: React.FC = () => {
                     title={app.isSystemProtected ? 'Protected system app' : 'Select for batch uninstallation'}
                   />
 
-                  <div
-                    style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '8px',
-                      background: 'rgba(59, 130, 246, 0.1)',
-                      border: '1px solid rgba(59, 130, 246, 0.25)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: 'var(--accent-primary)',
-                      flexShrink: 0
-                    }}
-                  >
-                    <AppWindow size={20} />
-                  </div>
+                  {app.icon ? (
+                    <img
+                      src={app.icon}
+                      alt={app.name}
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '8px',
+                        objectFit: 'contain',
+                        flexShrink: 0
+                      }}
+                      onError={e => {
+                        (e.currentTarget as HTMLElement).style.display = 'none';
+                      }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '8px',
+                        background: 'rgba(59, 130, 246, 0.1)',
+                        border: '1px solid rgba(59, 130, 246, 0.25)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--accent-primary)',
+                        flexShrink: 0
+                      }}
+                    >
+                      <AppWindow size={20} />
+                    </div>
+                  )}
 
                   <div style={{ minWidth: 0, flex: 1 }}>
                     <div style={{ fontSize: '14px', fontWeight: 600, color: isSelected ? '#ef4444' : 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -781,10 +798,17 @@ export const AppUninstaller: React.FC = () => {
               }}
             >
               {selectedAppsList.map((app, i) => (
-                <div key={app.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px' }}>
-                  <span style={{ color: 'var(--text-main)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {i + 1}. {app.name}
-                  </span>
+                <div key={app.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
+                    {app.icon ? (
+                      <img src={app.icon} alt="" style={{ width: '16px', height: '16px', borderRadius: '3px', objectFit: 'contain', flexShrink: 0 }} />
+                    ) : (
+                      <AppWindow size={14} style={{ color: 'var(--accent-primary)', flexShrink: 0 }} />
+                    )}
+                    <span style={{ color: 'var(--text-main)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {i + 1}. {app.name}
+                    </span>
+                  </div>
                   <span style={{ color: 'var(--text-muted)', fontWeight: 600, flexShrink: 0 }}>
                     {app.formattedSize || '—'}
                   </span>

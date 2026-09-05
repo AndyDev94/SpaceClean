@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, shell, screen } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
@@ -82,11 +82,18 @@ function setupAutoUpdater() {
 }
 
 function createWindow() {
+  // Query primary display workAreaSize to adapt to High-DPI resolution scaling (e.g. 3000x2000 @ 250% = 1200x800 logical, Surface Laptop)
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { width: workWidth, height: workHeight } = primaryDisplay.workAreaSize;
+
+  const targetWidth = Math.min(1280, Math.max(800, Math.floor(workWidth * 0.92)));
+  const targetHeight = Math.min(840, Math.max(540, Math.floor(workHeight * 0.90)));
+
   win = new BrowserWindow({
-    width: 1360,
-    height: 900,
-    minWidth: 1080,
-    minHeight: 700,
+    width: targetWidth,
+    height: targetHeight,
+    minWidth: 760,
+    minHeight: 520,
     frame: false,
     backgroundColor: '#090d16',
     webPreferences: {

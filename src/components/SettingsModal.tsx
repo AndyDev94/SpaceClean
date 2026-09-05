@@ -403,7 +403,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             padding: '8px 16px',
             background: 'var(--bg-panel)',
             borderBottom: '1px solid var(--border-color)',
-            overflow: 'hidden'
+            overflowX: 'auto',
+            scrollbarWidth: 'none',
+            flexShrink: 0
           }}
         >
           <button

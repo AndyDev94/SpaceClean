@@ -93,16 +93,25 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 16px;
+  padding: 8px 14px;
   background: var(--bg-panel);
   border-bottom: 1px solid var(--border-color);
-  gap: 12px;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .drive-selector-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.drive-select {
+  max-width: 260px;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .tab-nav {
@@ -113,13 +122,22 @@
   padding: 3px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
+  overflow-x: auto;
+  max-width: 100%;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  flex-shrink: 1;
+}
+
+.tab-nav::-webkit-scrollbar {
+  display: none;
 }
 
 .tab-btn {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 12px;
+  padding: 5px 10px;
   border-radius: var(--radius-sm);
   background: transparent;
   border: none;
@@ -127,6 +145,8 @@
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
   transition: all 0.15s ease;
 }
 
@@ -147,15 +167,15 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  padding: 14px 16px;
-  gap: 12px;
+  padding: 10px 14px;
+  gap: 10px;
 }
 
 /* Minimal Metric Row */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr) 200px;
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 8px;
 }
 
 .stat-card {
@@ -433,8 +453,9 @@
 }
 
 .modal-content {
-  width: 90%;
-  max-width: 560px;
+  width: 92%;
+  max-width: 580px;
+  max-height: 90vh;
   background: var(--bg-panel);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
@@ -445,30 +466,32 @@
 }
 
 .modal-header {
-  padding: 14px 18px;
+  padding: 12px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
 }
 
 .modal-body {
-  padding: 16px 18px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  max-height: 65vh;
+  gap: 12px;
+  max-height: calc(90vh - 120px);
   overflow-y: auto;
 }
 
 .modal-footer {
-  padding: 12px 18px;
+  padding: 10px 16px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
   border-top: 1px solid var(--border-color);
   background: var(--bg-panel);
+  flex-shrink: 0;
 }
 
 .delete-mode-cards {
@@ -516,3 +539,106 @@
   background: var(--accent-primary);
   transition: width 0.3s ease;
 }
+
+/* ================= RESPONSIVE DESIGN FOR HIGH-DPI SCALING ================= */
+
+@media (max-width: 1200px) {
+  .header-bar {
+    padding: 6px 12px;
+    gap: 8px;
+  }
+
+  .drive-select {
+    max-width: 220px;
+    font-size: 11px;
+  }
+
+  .tab-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+    gap: 4px;
+  }
+
+  .main-content {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  .stat-card {
+    padding: 10px 12px;
+  }
+
+  .stat-card-value {
+    font-size: 16px;
+  }
+
+  .titlebar-path-badge {
+    max-width: 220px;
+  }
+}
+
+@media (max-width: 900px) {
+  .header-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  .drive-selector-group {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .drive-select {
+    flex: 1;
+    max-width: 100%;
+  }
+
+  .tab-nav {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .filter-row-top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .delete-mode-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-height: 740px) {
+  .titlebar {
+    height: 30px;
+  }
+
+  .header-bar {
+    padding: 4px 10px;
+  }
+
+  .main-content {
+    padding: 6px 10px;
+    gap: 6px;
+  }
+
+  .stat-card {
+    padding: 8px 10px;
+  }
+
+  .stat-card-value {
+    font-size: 15px;
+    margin-top: 2px;
+  }
+
+  .filter-container {
+    padding: 8px 10px;
+    gap: 6px;
+  }
+}
+
